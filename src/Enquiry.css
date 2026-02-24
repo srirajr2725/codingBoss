@@ -1,0 +1,71 @@
+.call-to-action-row {
+    margin: 2rem 0;
+  }
+  
+  .call-to-action-card,
+  .call-to-action-row .card {
+    border-radius: 0;
+    border-top-left-radius: 50px;
+    border-bottom-right-radius: 50px;
+    border-left: 5px solid #013c4c;
+    border-right: 5px solid #013c4c;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    background: #017a8c; /* Glassmorphism effect */
+    backdrop-filter: blur(10px); /* Glassmorphism effect */
+  }
+  
+  .call-to-action-card h2 {
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
+    
+  }
+  
+  .cta-list {
+    padding-left: 1.5rem;
+  }
+  
+  .cta-list li {
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+    text-align: left;
+  }
+  
+  .call-to-action-row .card {
+    padding: 2rem;
+  }
+  
+  .call-to-action-row h1{
+    color: #FFA003 ;
+  }
+  
+  .call-to-action-row h2{
+    color: white;
+    text-align: left;
+  }
+  .call-to-action-row h4 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+  }
+  
+  .call-to-action-row .form-group {
+    margin-bottom: 1rem;
+  }
+  
+  .call-to-action-row .btn-primary {
+    background-color: #004b56;
+    border-color: #013c4c;
+    border: none;
+    border-radius: 50px;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    transition: background-color 0.3s ease;
+  }
+  
+  .call-to-action-row .btn-primary:hover {
+    background-color: #009eca;
+    border-color: #017a8c;
+    color: rgb(41, 41, 41);
+  }
+  

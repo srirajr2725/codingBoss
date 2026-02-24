@@ -1,0 +1,181 @@
+/* Container styles */
+.carousel-container {
+   width: 100%; 
+  display: flex;
+  align-items: center;
+   flex-direction: column;
+  justify-content: space-between;
+  padding: 2rem 1rem;
+  background-color: #f8f8f8;
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+  opacity: 0;
+  transform: translateY(100px);
+  transition: opacity 0.8s ease-out, transform 1.2s ease-out;
+}
+
+/* Navigation buttons */
+.carousel-nav {
+  background-color: transparent;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+  color: #0071e3;
+   position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+}
+
+.carousel-nav:hover {
+  transform: scale(1.1);
+}
+
+.carousel-nav.prev {
+  left: 0.5rem;
+}
+
+.carousel-nav.next {
+  right: 0.5rem;
+}
+
+/* Content Section */
+.carousel-content {
+  text-align: center;
+  flex-grow: 1;
+  margin: 0 2rem;
+}
+
+.carousel-title {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #333;
+}
+
+.carousel-description {
+  font-size: 1.2rem;
+  color: #555;
+  margin: 0.5rem 0 1rem;
+}
+
+.carousel-container.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+
+/* Cards Container */
+.carousel-cards {
+ display: flex;
+  gap: 1rem;
+  overflow-x: auto; /* Enable horizontal scrolling */
+  padding: 10px;
+  scrollbar-width: none; /* Hide scrollbar for Firefox */
+  scroll-snap-type: x mandatory; /* Smooth snapping */
+}
+
+.carousel-cards::-webkit-scrollbar {
+  display: none; /* For Chrome/Safari */
+}
+
+.flip-card {
+  flex: 0 0 auto; /* Ensure cards stay in a row */
+  width: 200px; /* Card width */
+  height: 260px; /* Card height */
+  perspective: 1000px; /* Enable 3D effect */
+  scroll-snap-align: center; /* Snap each card to the center */
+}
+
+.flip-card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  transform-style: preserve-3d;
+  transition: transform 0.6s ease-in-out;
+}
+
+.flip-card:hover .flip-card-inner {
+  transform: rotateY(180deg); /* Rotate on hover */
+}
+
+.flip-card-front,
+.flip-card-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  background: white;
+  padding: 1rem;
+}
+
+.flip-card-back {
+  transform: rotateY(180deg);
+  background: #f4f4f4; /* Backside color */
+}
+
+
+/* Card Styles */
+.carousel-card {
+  flex: 0 0 auto;
+  background-color: #fff;
+  margin: 0 1rem;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 1rem;
+  text-align: center;
+  max-width: 250px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.carousel-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2);
+}
+
+.carousel-image {
+  width: 100px;
+  height: 100px;
+  object-fit: contain;
+  margin-bottom: 10px;
+}
+
+.product-name {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin: 0.5rem 0;
+}
+
+.product-price,
+.product-topics {
+  font-size: 1rem;
+  color: #666;
+  margin-bottom: 0.5rem;
+}
+
+.product-button {
+  margin-top: 10px;
+  padding: 8px 16px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+}
+
+.product-button:hover {
+  background-color: #005bb5;
+  transform: scale(1.05);
+}

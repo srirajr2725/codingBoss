@@ -1,0 +1,317 @@
+/* General Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Poppins", sans-serif;
+}
+
+body {
+  background-color: #f9fafb;
+}
+
+/* Layout */
+.login-container {
+  display: flex;
+  min-height: 100vh;
+  height: 100vh;
+}
+
+/* Left Section – 3D Glassmorphism Look */
+.left-content {
+  flex: 1;
+  position: relative;
+  background: radial-gradient(circle at top left, #1a1a1a, #0d0d0d);
+  color: white;
+  padding: 30px 30px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  overflow: hidden;
+}
+
+/* Frosted Glass Overlay */
+.left-content::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  z-index: 0;
+}
+
+/* Floating Glow Animation */
+.left-content::after {
+  content: "";
+  position: absolute;
+  width: 450px;
+  height: 450px;
+  background: radial-gradient(circle, rgba(0, 255, 255, 0.3), rgba(255, 255, 255, 0));
+  top: 10%;
+  left: 20%;
+  animation: floatGlow 8s ease-in-out infinite alternate;
+  filter: blur(100px);
+  z-index: 0;
+}
+
+/* Floating animation for glow */
+@keyframes floatGlow {
+  from {
+    transform: translateY(0) scale(1);
+  }
+  to {
+    transform: translateY(-40px) scale(1.2);
+  }
+}
+
+/* Ensure text & Spline stay above background */
+.left-content > * {
+  position: relative;
+  z-index: 1;
+}
+
+.left-content h1 {
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.highlight {
+  color: #ffa003;
+}
+
+/* Spline Section */
+.spline-wrappers {
+  width: 750px;
+  height: 500px;
+  margin-top: 20px;
+  margin-left: 150px;
+}
+
+/* Right Section */
+.login-form {
+  flex: 1;
+  background: #ffffff;
+  padding: 40px 50px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow-y: auto;
+}
+
+.login-form h2 {
+  font-size: 28px;
+  text-align: center;
+  margin-bottom: 20px;
+  font-weight: bold;
+}
+
+/* Inputs */
+label {
+  display: block;
+  margin-top: 12px;
+  font-weight: 500;
+  color: #333;
+}
+
+input {
+  width: 100%;
+  padding: 10px;
+  margin-top: 6px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 15px;
+  transition: border 0.3s ease;
+}
+
+input:focus {
+  border-color: #ffa003;
+  outline: none;
+}
+
+/* Password Field */
+.password-container {
+  position: relative;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #777;
+  cursor: pointer;
+}
+
+/* Buttons */
+.login-btn {
+  background: linear-gradient(135deg, #ffa003, #ff7b00);
+  color: white;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 17px;
+  font-weight: 600;
+  margin-top: 18px;
+  transition: background 0.3s ease, transform 0.2s ease;
+}
+
+.login-btn:hover {
+  background: linear-gradient(135deg, #ffb933, #ff8b00);
+  transform: translateY(-2px);
+}
+
+/* Alerts */
+.error-msg,
+.success-msg {
+  text-align: center;
+  padding: 12px;
+  border-radius: 6px;
+  font-weight: 500;
+  margin-bottom: 10px;
+  font-size: 14px;
+}
+
+.error-msg {
+  background: #ffe5e5;
+  color: #c62828;
+  border: 1px solid #f5c2c2;
+}
+
+.success-msg {
+  background: #e7f6e7;
+  color: #2e7d32;
+  border: 1px solid #a5d6a7;
+}
+
+/* Bottom Text */
+.signup-text {
+  text-align: center;
+  margin-top: 15px;
+  color: #333;
+}
+
+.signup-text a {
+  color: #ffa003;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.signup-text a:hover {
+  text-decoration: underline;
+}
+
+/* /* ============================= */
+/* 📱 Mobile Responsive Styling  */
+/* ============================= */
+
+@media (max-width: 900px) {
+  /* Container stacks vertically */
+  .login-container,
+  .signup-container {
+    flex-direction: column;
+  }
+
+  /* Left side (3D Spline + heading) */
+  .left-content {
+    align-items: center;
+    text-align: center;
+    padding: 40px 25px;
+  }
+
+  .left-content h1 {
+    font-size: 26px;
+    line-height: 1.3;
+  }
+
+  /* Reduce spline height for smaller screens */
+  .spline-wrappers,
+  .spline-wrapper {
+    width: 100%;
+    height: 350px;
+    margin-top: 25px;
+  }
+
+  /* Right side (form section) */
+  .login-form,
+  .signup-form {
+    padding: 40px 25px;
+    justify-content: center;
+  }
+
+  .login-form h2,
+  .signup-form h2 {
+    font-size: 26px;
+    margin-bottom: 25px;
+  }
+
+  /* Form inputs */
+  input {
+    padding: 10px;
+    font-size: 14px;
+  }
+
+  label {
+    font-size: 14px;
+    margin-top: 12px;
+  }
+
+  /* Buttons */
+  .login-btn,
+  .signup-btn {
+    width: 100%;
+    font-size: 16px;
+    padding: 12px;
+    margin-top: 20px;
+  }
+
+  /* Messages */
+  .error-msg,
+  .success-msg {
+    font-size: 13px;
+    padding: 10px;
+  }
+
+  /* Bottom text */
+  .signup-text,
+  .login-text {
+    font-size: 14px;
+    margin-top: 20px;
+  }
+
+  /* Hide floating glow on smaller screens (for performance) */
+  .left-content::after {
+    display: none;
+  }
+}
+
+/* 🧠 Ultra small devices (under 480px) */
+@media (max-width: 480px) {
+  .left-content {
+    padding: 30px 20px;
+  }
+
+  .left-content h1 {
+    font-size: 22px;
+  }
+
+  .login-form,
+  .signup-form {
+    padding: 30px 20px;
+  }
+
+  input {
+    font-size: 13px;
+  }
+
+  .login-btn,
+  .signup-btn {
+    font-size: 15px;
+    padding: 10px;
+  }
+}
+

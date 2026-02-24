@@ -1,0 +1,29 @@
+/* index.css */
+/* Ensure no extra scrollbars on body/html */
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: auto; /* Prevent body from scrolling */
+}
+
+body {
+  background-color: #ffffff;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  min-height: 100vh;
+  margin: 0;
+  justify-content: center;
+  align-items: center;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+@media (max-width: 576px) {
+  .hide-on-mobile {
+    display: none;
+  }
+}
+
+

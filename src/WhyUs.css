@@ -1,0 +1,141 @@
+.why-us-section {
+    position: relative;
+    background-color: #000;
+    color: white;
+    padding: 100px 0;
+    text-align: center;
+    overflow: hidden;
+}
+
+/* Progress Line */
+.progress-line {
+    position: absolute;
+    left: 30px;
+    width: 5px;
+    height: 0;
+    background-color: orange;
+    transition: height 0.5s ease-in-out;
+}
+
+/* WHY US Title */
+.why-us-title {
+    font-size: 100px;
+    font-weight: bold;
+    letter-spacing: 5px;
+    color: transparent;
+    -webkit-text-stroke: 1px white;
+    opacity: 0;
+    transform: translateY(50px);
+    transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+}
+
+.why-us-title.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Card Styling */
+.why-us-card {
+    background: #222;
+    color: white;
+    padding: 20px;
+    margin: 20px auto;
+    border-radius: 10px;
+    max-width: 600px;
+    font-size: 18px;
+    opacity: 0;
+    transform: translateY(30px) scale(0.9);
+    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+
+.why-us-card.visible {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+
+/* Hover Effect */
+.why-us-card.hovered {
+    transform: scale(1.2);
+}
+
+/* Word-by-Word Animation */
+.fade-in-word {
+    opacity: 0;
+    display: inline-block;
+    transform: translateY(20px);
+    transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+}
+
+.why-us-card.visible .fade-in-word,
+.why-us-final-text.visible .fade-in-word {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.fade-in-word:nth-child(1) { transition-delay: 0.1s; }
+.fade-in-word:nth-child(2) { transition-delay: 0.2s; }
+.fade-in-word:nth-child(3) { transition-delay: 0.3s; }
+.fade-in-word:nth-child(4) { transition-delay: 0.4s; }
+.fade-in-word:nth-child(5) { transition-delay: 0.5s; }
+.fade-in-word:nth-child(6) { transition-delay: 0.6s; }
+.fade-in-word:nth-child(7) { transition-delay: 0.7s; }
+
+/* Final Text Animation */
+.why-us-final-text {
+    font-size: 36px;
+    font-weight: bold;
+    opacity: 0;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 40px;
+    transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+}
+
+.why-us-final-text.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+
+
+/* Mobile-friendly adjustments */
+@media (max-width: 768px) {
+    .why-us-section {
+        padding:10px 20px;
+    }
+
+    .progress-line {
+        left: 10px;
+        width: 2px;
+    }
+
+    .why-us-title {
+        font-size: 40px;
+        letter-spacing: 2px;
+        -webkit-text-stroke: 0.5px white;
+        margin-top: 10px;
+    }
+
+    .why-us-card {
+        padding: 14px;
+        margin: 12px auto;
+        font-size: 14px;
+        border-radius: 10px;
+        transform: translateY(20px) scale(0.95);
+    }
+
+    .why-us-card.visible {
+        transform: translateY(0) scale(1);
+    }
+
+    .why-us-card.hovered {
+        transform: scale(1.02);
+    }
+
+    .why-us-final-text {
+        font-size: 15px;
+        gap: 5px;
+        margin-top: 55px;
+    }
+}

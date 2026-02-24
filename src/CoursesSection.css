@@ -1,0 +1,311 @@
+/* Main Courses Section */
+.courses-section {
+    background-color: #121212;
+    color: white;
+    padding: 80px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+/* Built for the Future Section */
+.future-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 1200px;
+    width: 100%;
+    gap: 50px;
+    margin-bottom: 80px;
+}
+
+.future-text {
+    flex: 1;
+    font-size: 1.3rem;
+    max-width: 600px;
+    text-align: left;
+}
+
+.title {
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+.future-text p {
+    line-height: 1.6;
+    margin-bottom: 15px;
+}
+
+.future-text strong {
+    color: #ffffff;
+    font-weight: bold;
+}
+
+.future-image {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+}
+
+.course-img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 10px;
+}
+
+/* Courses We Are Offering Title */
+.courses-offering-container {
+    text-align: left;
+    width: 100%;
+    max-width: 1200px;
+    margin-bottom: 50px;
+}
+
+.courses-title {
+    font-size: 80px; /* Increased font size */
+    font-weight: bold;
+    color: white;
+    opacity: 0.3;
+    transition: opacity 1.5s ease-out;
+}
+
+.courses-title.in-view {
+    opacity: 1;
+}
+
+/* Courses Slider */
+.courses-slider-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    max-width: 90%;
+    margin: auto;
+}
+
+/* Horizontal Scrolling */
+.courses-container {
+    display: flex;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    gap: 15px;
+    padding: 10px;
+    white-space: nowrap;
+    scrollbar-width: none;
+}
+
+.courses-container::-webkit-scrollbar {
+    display: none;
+}
+
+/* Course Card */
+.course-card {
+    background: linear-gradient(to bottom left, rgba(255, 255, 255, 0) 0%, #1e1e1e 100%);
+    padding: 20px;
+    border-radius: 12px;
+    text-align: center;
+    min-width: 220px;
+    width: 250px;
+    height: 350px;
+    display: flex;
+    flex-direction: column;
+    transition: background 0.5s ease-in-out, transform 0.3s ease, color 0.3s ease;
+    color: white;
+    position: relative;
+    box-shadow: 0px 4px 10px rgba(255, 255, 255, 0.1);
+    overflow: hidden;
+}
+
+.course-card:hover {
+    background: linear-gradient(to bottom left, white 0%, #1e1e1e 100%);
+    transform: scale(1.05);
+    color: black; /* Change text color for better contrast */
+}
+
+/* Course Image */
+.course-image-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 80px;
+    margin-bottom: 15px;
+    flex-shrink: 0;
+}
+
+.course-image {
+    width: 80px;
+    height: 80px;
+}
+
+/* Course Title */
+.course-title {
+    font-size: 1.3rem;
+    font-weight: bold;
+    margin-bottom: 10px;
+    flex-shrink: 0;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+/* Course Details */
+.course-details {
+    font-size: 0.9rem;
+    color: #bbbbbb;
+    margin-bottom: 8px;
+    flex-shrink: 0;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+/* Start Course Button */
+.start-course-btn {
+    background: #ff4c29;
+    color: white;
+    border: none;
+    padding: 10px;
+    cursor: pointer;
+    margin-top: auto;
+    border-radius: 5px;
+    font-weight: bold;
+    transition: background 0.3s ease;
+    flex-shrink: 0;
+}
+
+.start-course-btn:hover {
+    background: #ff3412;
+}
+
+/* Navigation Arrows */
+.arrow {
+    background: none;
+    border: none;
+    font-size: 2rem;
+    color: white;
+    cursor: pointer;
+    transition: color 0.3s;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.left-arrow {
+    left: -30px;
+}
+
+.right-arrow {
+    right: -30px;
+}
+
+.arrow:hover {
+    color: #d9d7cf;
+}
+
+/* Pagination Dots */
+.pagination-dots {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.dot {
+    height: 10px;
+    width: 10px;
+    margin: 0 5px;
+    background-color: #bbb;
+    border-radius: 50%;
+    display: inline-block;
+    transition: background 0.3s;
+}
+
+.dot.active {
+    background-color: #76756e;
+}
+
+/* Subtle glow effect with smooth color transition */
+.glow {
+    font-weight: bold;
+    color: #FFA003; /* Soft grayish-white */
+    text-shadow: 0 0 5px rgba(65, 67, 70, 0.5), 0 0 10px rgba(209, 213, 219, 0.3);
+    transition: color 0.5s ease-in-out, text-shadow 0.5s ease-in-out;
+}
+
+/* Hover effect - transitioning to soft blue glow */
+.glow:hover {
+    color: #a1c4fd; /* Light pastel blue */
+    text-shadow: 0 0 8px rgba(161, 196, 253, 0.7), 0 0 15px rgba(161, 196, 253, 0.5);
+}
+
+/* Responsive Design */
+
+@media (max-width: 900px) {
+
+    .courses-section {
+        padding: 40px 10px;  /* Smaller padding for mobile */
+    }
+
+    .future-container {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .future-text {
+        text-align: center;
+    }
+      
+    .courses-title {
+        font-size: 30px; /* Adjust title size for smaller screens */
+        text-align: center;
+    }
+    .courses-container {
+        display: flex;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        scroll-behavior: smooth;
+        gap: 15px;
+        padding: 10px 0;  /* No side padding, margin handled by first/last child */
+        scrollbar-width: none; /* Firefox */
+    }
+
+    .courses-container::-webkit-scrollbar {
+        display: none; /* Hide scrollbar on Chrome/Safari */
+    }
+
+    .course-card {
+        flex: 0 0 auto;
+        min-width: 80%;  /* Mobile-friendly card width */
+    }
+
+    .course-card:first-child {
+        margin-left: 20px;  /* Space from the left edge */
+    }
+
+    .course-card:last-child {
+        margin-right: 20px;  /* Space at the right end */
+    }
+
+    .left-arrow, .right-arrow {
+        width: 30px;
+        height: 30px;
+        font-size: 18px;
+        background: rgba(0, 0, 0, 0.5);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        z-index: 10;
+        cursor: pointer;
+        color: white;
+    }
+
+    .left-arrow {
+        left: 10px;
+    }
+
+    .right-arrow {
+        right: 10px;
+    }
+}
+

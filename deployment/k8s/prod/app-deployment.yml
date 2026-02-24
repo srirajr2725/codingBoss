@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-codingboss
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  selector:
+    matchLabels:
+      app: app-codingboss
+  template:
+    metadata:
+      labels:
+        app: app-codingboss
+    spec:
+      containers:
+      - name: app-codingboss
+        imagePullPolicy: Always
+        image: ${IMAGE_NAME}  # Replace with your image
+        ports:
+        - containerPort: 80
+        resources:
+          limits:
+            cpu: "0.5"
+            memory: "500Mi"
+          requests:
+            cpu: "0.25"
+            memory: "250Mi"
+      imagePullSecrets:
+      - name: registry-auth
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: app-codingboss-service
+spec:
+  selector:
+    app: app-codingboss
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: ClusterIP  # Internal service for the ingress to use

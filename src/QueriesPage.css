@@ -1,0 +1,120 @@
+/* Main container */
+.queries-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background-color: #fdece4;
+    padding: 40px 60px;
+    gap: 50px; /* Adjust space between image and form */
+}
+
+/* Responsive layout */
+@media (max-width: 1024px) {
+    .queries-container {
+        flex-direction: column; /* Stack form below image on small screens */
+        padding: 30px;
+        gap: 30px;
+    }
+}
+
+/* Left side - Image */
+.image-container {
+    flex: 1;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.query-image {
+    width: 350px;
+    max-width: 100%;
+    object-fit: contain;
+}
+
+@media (min-width: 1024px) {
+    .query-image {
+        width: 400px;
+    }
+}
+
+/* Right side - Form */
+.form-container {
+    flex: 1;
+    background-color: white;
+    padding: 32px;
+    border-radius: 12px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    max-width: 500px; /* Increased max-width for better layout */
+    align-self: center; /* Keep the form aligned with the image */
+}
+
+/* Form Title */
+.form-title {
+    font-size: 22px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    text-align: left;
+}
+
+/* Input Fields */
+.input-field {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 14px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+}
+
+/* Experience Section */
+.experience-options {
+    margin-top: 16px;
+    text-align: left;
+}
+
+.experience-options h3 {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+/* Align radio buttons in a row */
+.radio-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    justify-content: space-between;
+}
+
+.radio-group label {
+    font-size: 14px;
+    color: #444;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+}
+
+/* Responsive fix for radio buttons */
+@media (max-width: 768px) {
+    .radio-group {
+        flex-direction: column;
+        gap: 10px;
+    }
+}
+
+/* Submit Button */
+.submit-button {
+    width: 100%;
+    background-color: #ff6b3d;
+    color: white;
+    font-weight: 600;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.submit-button:hover {
+    background-color: #e05530;
+}

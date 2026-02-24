@@ -1,0 +1,204 @@
+
+ .container {
+  margin-top: 100px;
+} 
+
+h2 {
+  color: #333;
+  font-weight: bold;
+  margin-bottom: 30px;
+}
+
+/* Card Styling */
+.question-card {
+ /* background: rgba(255, 255, 255, 0.1); // Glassmorphism effect */
+  background-color: white;
+  border-radius: 15px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  padding: 20px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  
+}
+
+.question-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.15);
+  background: linear-gradient(to right, white 0%, #017a8c 100%);
+}
+
+/* Header and Body Styling */
+.card-header {
+  background-color: rgba(255, 255, 255, 0.2);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  color: #222;
+  font-size: 18px;
+  font-weight: bold;
+  text-align: center;
+  padding: 10px;
+  border-radius: 10px 10px 0 0;
+}
+
+.card-body {
+  padding: 15px;
+  text-align: center;
+}
+
+.card-text {
+  font-size: 16px;
+  color: #555;
+  margin-bottom: 15px;
+}
+
+/* Button Styling */
+.btn-primary {
+  background-color: #299aab;
+  
+  border: none;
+  padding: 10px 20px;
+  font-size: 16px;
+  border-radius: 30px;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+  width: 100;
+  height: auto;
+}
+
+.btn-primary:hover {
+  background: linear-gradient(to right, #9ad7e0 0.5%, white 100%);
+  color: black;
+  transform: scale(1.05);
+}
+
+/* Spinner Styling */
+.spinner-border {
+  color: #017a8c;
+}
+
+/* Alert Box */
+.alert-danger {
+  background-color: rgba(255, 0, 0, 0.1);
+  color: #d9534f;
+  border-radius: 10px;
+  padding: 15px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .question-card {
+    margin-bottom: 20px;
+  }
+
+  h2 {
+    font-size: 24px;
+  }
+
+  .card-header {
+    font-size: 16px;
+  }
+
+  .card-text {
+    font-size: 14px;
+  }
+
+  .btn-primary {
+    font-size: 14px;
+    padding: 8px 16px;
+  }
+}
+
+/* Add to ProgrammingTestPage.css */
+button {
+  font-size: 0.2em;
+  color: #017a8c; /* Bootstrap link color */
+}
+
+
+
+
+/* For the level buttons container */
+.level-buttons-container {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 0; /* Keep no gap between buttons */
+  padding: 0;
+  margin-bottom: 20px; /* Add space between level buttons and question cards */
+}
+
+/* Styles for each level button */
+.level-button {
+  width: 100px;
+  height: 50px;
+  font-size: 16px;
+  font-weight: bold;
+  color: white;
+  border: none;
+  border-radius: 0;
+  transition: background-color 0.3s; /* Smooth transition for background color */
+}
+
+/* Level buttons container */
+.level-buttons-container {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 0;
+  padding: 0;
+  margin-bottom: 20px;
+}
+
+/* Default styles for level buttons */
+.level-button {
+  width: 100px;
+  height: 50px;
+  font-size: 16px;
+  font-weight: bold;
+  color: white;
+  border: none;
+  border-radius: 0;
+  transition: background-color 0.3s, transform 0.3s;
+  background-color: rgb(206, 206, 206); /* Default background color */
+}
+
+/* Position buttons in an arch shape */
+.level-button.low {
+  transform: translate(-50%, 50%) rotate(-30deg);
+}
+
+.level-button.medium {
+  transform: translate(-50%, 0) rotate(0deg);
+}
+
+.level-button.high {
+  transform: translate(-50%, -50%) rotate(30deg);
+}
+
+/* Active state styles */
+.level-button.selected.low {
+  background-color: #4caf50; /* Green for Low */
+}
+
+.level-button.selected.medium {
+  background-color: #ff9800; /* Yellow for Medium */
+}
+
+.level-button.selected.high {
+  background-color: #f44336; /* Red for High */
+}
+
+/* Reset hover effect for non-selected buttons */
+.level-button:not(.selected):hover {
+  background-color: rgb(206, 206, 206); /* Reset to default on hover */
+}
+
+/* Add a separator between buttons */
+.level-button + .level-button {
+  border-left: 1px solid white;
+}
+
+
+/* Add space between the level buttons and question cards */
+.question-card-container {
+  margin-top: 20px; /* Adjust this value to add more or less space */
+}

@@ -1,0 +1,621 @@
+/* General */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Poppins", sans-serif;
+}
+
+body {
+  background-color: #f9fafb;
+}
+
+/* Layout */
+.signup-container {
+  display: flex;
+  min-height: 100vh;
+  height: 100vh;
+}
+
+/* Left Section – 3D Glassmorphism Look */
+.left-content {
+  flex: 1;
+  position: relative;
+  background: radial-gradient(circle at top left, #1a1a1a, #0d0d0d);
+  color: white;
+  padding: 30px 30px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  overflow: hidden;
+}
+
+/* Frosted Glass Overlay */
+.left-content::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  z-index: 0;
+}
+
+/* Floating Glow Animation */
+.left-content::after {
+  content: "";
+  position: absolute;
+  width: 450px;
+  height: 450px;
+ 
+  background: radial-gradient(circle, rgba(0, 255, 255, 0.3), rgba(255, 255, 255, 0));
+  top: 10%;
+  left: 20%;
+  animation: floatGlow 8s ease-in-out infinite alternate;
+  filter: blur(100px);
+  z-index: 0;
+}
+
+/* Floating animation for glow */
+@keyframes floatGlow {
+  from {
+    transform: translateY(0) scale(1);
+  }
+  to {
+    transform: translateY(-40px) scale(1.2);
+  }
+}
+
+/* Ensure text & Spline stay above background */
+.left-content > * {
+  position: relative;
+  z-index: 1;
+}
+
+
+.left-content h1 {
+  font-size: 32px;
+  font-weight: 600;
+  line-height: 1.4;
+  justify-content: center;
+}
+
+.highlight {
+  color: #ffa003;
+}
+
+.features-image {
+  width: 90%;
+  margin-top: 40px;
+  border-radius: 12px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+/* Right Section */
+.signup-form {
+  flex: 1;
+  background: #ffffff;
+  padding: 40px 50px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow-y: auto;
+}
+
+.signup-form h2 {
+  font-size: 28px;
+  text-align: center;
+  margin-bottom: 20px;
+  font-weight: bold;
+}
+
+/* Inputs */
+label {
+  display: block;
+  margin-top: 12px;
+  font-weight: 500;
+  color: #333;
+}
+
+input {
+  width: 100%;
+  padding: 10px;
+  margin-top: 6px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 15px;
+  transition: border 0.3s ease;
+}
+
+input:focus {
+  border-color: #ffa003;
+  outline: none;
+}
+
+/* Password Field */
+.password-container {
+  position: relative;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #777;
+  cursor: pointer;
+}
+
+/* Dropdown */
+.organization-dropdown {
+  margin-top: 8px;
+}
+
+/* Buttons */
+.signup-btn {
+  background: linear-gradient(135deg, #ffa003, #ff7b00);
+  color: white;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 17px;
+  font-weight: 600;
+  margin-top: 18px;
+  transition: background 0.3s ease, transform 0.2s ease;
+}
+
+.signup-btn:hover {
+  background: linear-gradient(135deg, #ffb933, #ff8b00);
+  transform: translateY(-2px);
+}
+
+/* Alerts */
+.error-msg,
+.success-msg {
+  text-align: center;
+  padding: 12px;
+  border-radius: 6px;
+  font-weight: 500;
+  margin-bottom: 10px;
+  font-size: 14px;
+}
+
+.error-msg {
+  background: #ffe5e5;
+  color: #c62828;
+  border: 1px solid #f5c2c2;
+}
+
+.success-msg {
+  background: #e7f6e7;
+  color: #2e7d32;
+  border: 1px solid #a5d6a7;
+}
+
+/* Bottom Text */
+.login-text {
+  text-align: center;
+  margin-top: 15px;
+  color: #333;
+}
+
+.login-text a {
+  color: #ffa003;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.login-text a:hover {
+  text-decoration: underline;
+}
+
+.spline-wrapper {
+  width: 100%;
+  height: 320px;
+  margin-top: 20px;
+}
+
+/* ============================= */
+/* 📱 MOBILE RESPONSIVE STYLING */
+/* ============================= */
+
+/* Tablet & Small Laptops (900px and below) */
+@media (max-width: 900px) {
+  /* Container stacks vertically */
+  .login-container,
+  .signup-container {
+    flex-direction: column;
+  }
+
+  /* Left side (3D Spline + heading) */
+  .left-content {
+    align-items: center;
+    text-align: center;
+    padding: 40px 25px;
+    min-height: 50vh;
+  }
+
+  .left-content h1 {
+    font-size: 26px;
+    line-height: 1.3;
+  }
+
+  /* Reduce spline height for smaller screens */
+  .spline-wrappers,
+  .spline-wrapper {
+    width: 100%;
+    height: 350px;
+    margin-top: 25px;
+  }
+
+  /* Right side (form section) */
+  .login-form,
+  .signup-form {
+    padding: 40px 25px;
+    justify-content: center;
+    margin-top: 0;
+  }
+
+  .login-form h2,
+  .signup-form h2 {
+    font-size: 26px;
+    margin-bottom: 25px;
+  }
+
+  /* Form inputs */
+  input,
+  select {
+    padding: 10px;
+    font-size: 14px;
+  }
+
+  label {
+    font-size: 14px;
+    margin-top: 12px;
+  }
+
+  /* Buttons */
+  .login-btn,
+  .signup-btn {
+    width: 100%;
+    font-size: 16px;
+    padding: 12px;
+    margin-top: 20px;
+  }
+
+  /* Messages */
+  .error-msg,
+  .success-msg {
+    font-size: 13px;
+    padding: 10px;
+  }
+
+  /* Bottom text */
+  .signup-text,
+  .login-text {
+    font-size: 14px;
+    margin-top: 20px;
+  }
+
+  /* Hide floating glow on smaller screens (for performance) */
+  .left-content::after {
+    display: none;
+  }
+
+  /* Features image if present */
+  .features-image {
+    width: 95%;
+    margin-top: 30px;
+  }
+
+  /* Password toggle */
+  .password-toggle {
+    font-size: 16px;
+  }
+}
+
+/* Mobile Devices (600px and below) */
+@media (max-width: 600px) {
+  .left-content {
+    padding: 35px 20px;
+    min-height: 45vh;
+  }
+
+  .left-content h1 {
+    font-size: 24px;
+  }
+
+  .spline-wrappers,
+  .spline-wrapper {
+    height: 300px;
+    margin-top: 20px;
+  }
+
+  .login-form,
+  .signup-form {
+    padding: 35px 20px;
+  }
+
+  .login-form h2,
+  .signup-form h2 {
+    font-size: 24px;
+    margin-bottom: 20px;
+  }
+
+  input,
+  select {
+    padding: 9px;
+    font-size: 13px;
+  }
+
+  label {
+    font-size: 13px;
+    margin-top: 10px;
+  }
+
+  .login-btn,
+  .signup-btn {
+    font-size: 15px;
+    padding: 11px;
+  }
+}
+
+/* Ultra Small Devices (480px and below) */
+@media (max-width: 480px) {
+  /* Reduce padding further */
+  .left-content {
+    padding: 30px 20px;
+    min-height: 40vh;
+  }
+
+  .left-content h1 {
+    font-size: 22px;
+    line-height: 1.4;
+  }
+
+  .highlight {
+    display: inline-block;
+  }
+
+  /* Compact spline/3D area */
+  .spline-wrappers,
+  .spline-wrapper {
+    height: 250px;
+    margin-top: 20px;
+  }
+
+  /* Form adjustments */
+  .login-form,
+  .signup-form {
+    padding: 30px 20px;
+  }
+
+  .login-form h2,
+  .signup-form h2 {
+    font-size: 22px;
+    margin-bottom: 20px;
+  }
+
+  /* Smaller inputs */
+  input,
+  select {
+    font-size: 13px;
+    padding: 10px;
+    border-radius: 6px;
+  }
+
+  label {
+    font-size: 13px;
+    margin-top: 10px;
+  }
+
+  /* Button adjustments */
+  .login-btn,
+  .signup-btn {
+    font-size: 15px;
+    padding: 10px;
+    border-radius: 6px;
+  }
+
+  /* Messages */
+  .error-msg,
+  .success-msg {
+    font-size: 12px;
+    padding: 9px;
+  }
+
+  /* Bottom text */
+  .signup-text,
+  .login-text {
+    font-size: 13px;
+    margin-top: 18px;
+  }
+
+  /* Password toggle */
+  .password-toggle {
+    font-size: 14px;
+    right: 10px;
+  }
+
+  /* Features image */
+  .features-image {
+    width: 100%;
+    margin-top: 25px;
+  }
+
+  /* Reduce glassmorphism blur on very small devices */
+  .left-content::before {
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+  }
+}
+
+/* Extra Small Devices (360px and below) */
+@media (max-width: 360px) {
+  .left-content {
+    padding: 25px 15px;
+  }
+
+  .left-content h1 {
+    font-size: 20px;
+  }
+
+  .spline-wrappers,
+  .spline-wrapper {
+    height: 220px;
+  }
+
+  .login-form,
+  .signup-form {
+    padding: 25px 15px;
+  }
+
+  .login-form h2,
+  .signup-form h2 {
+    font-size: 20px;
+  }
+
+  input,
+  select {
+    font-size: 12px;
+    padding: 9px;
+  }
+
+  label {
+    font-size: 12px;
+  }
+
+  .login-btn,
+  .signup-btn {
+    font-size: 14px;
+    padding: 9px;
+  }
+
+  .signup-text,
+  .login-text {
+    font-size: 12px;
+  }
+}
+
+/* ============================= */
+/* 📱 MOBILE TOUCH IMPROVEMENTS  */
+/* ============================= */
+
+@media (max-width: 900px) {
+  /* Increase tap targets for mobile */
+  input,
+  select,
+  button,
+  a {
+    min-height: 44px; /* iOS recommended tap target */
+  }
+
+  /* Remove hover effects on touch devices */
+  .login-btn:hover,
+  .signup-btn:hover {
+    transform: none;
+  }
+
+  /* Active state for touch feedback */
+  .login-btn:active,
+  .signup-btn:active {
+    transform: scale(0.98);
+    opacity: 0.9;
+  }
+
+  input:active,
+  select:active {
+    transform: scale(0.99);
+  }
+
+  /* Prevent text selection on buttons */
+  button {
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+  }
+
+  /* Improve form spacing on mobile */
+  label {
+    margin-top: 15px;
+  }
+
+  /* Better spacing between form elements */
+  input + label,
+  select + label {
+    margin-top: 18px;
+  }
+}
+
+/* ============================= */
+/* 📱 LANDSCAPE MOBILE FIXES     */
+/* ============================= */
+
+@media (max-width: 900px) and (orientation: landscape) {
+  /* Reduce vertical padding in landscape */
+  .left-content {
+    padding: 30px 25px;
+    min-height: auto;
+  }
+
+  .spline-wrappers,
+  .spline-wrapper {
+    height: 250px;
+  }
+
+  .login-form,
+  .signup-form {
+    padding: 30px 25px;
+  }
+
+  /* Make form more compact in landscape */
+  .login-form h2,
+  .signup-form h2 {
+    margin-bottom: 20px;
+  }
+
+  label {
+    margin-top: 10px;
+  }
+
+  .login-btn,
+  .signup-btn {
+    margin-top: 18px;
+  }
+}
+
+/* ============================= */
+/* 📱 ACCESSIBILITY IMPROVEMENTS */
+/* ============================= */
+
+@media (max-width: 900px) {
+  /* Ensure text is readable */
+  body {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  /* Better focus indicators on mobile */
+  input:focus,
+  select:focus,
+  button:focus {
+    outline: 2px solid #ffa003;
+    outline-offset: 2px;
+  }
+
+  /* Improve contrast for error messages */
+  .error-msg {
+    font-weight: 600;
+  }
+
+  .success-msg {
+    font-weight: 600;
+  }
+}
+
+
+
+
+

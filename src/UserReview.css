@@ -1,0 +1,147 @@
+/* Main Container */
+.resources-container {
+  background: linear-gradient(135deg, #001920 0%, #017a8c 100%);
+  padding: 2rem 1rem;
+  overflow-x: auto; /* Enable horizontal scrolling */
+  max-width: 100%;
+  border-radius: 15px;
+  -ms-overflow-style: none;  /* Hide scrollbar in IE */
+  scrollbar-width: none; /* Hide scrollbar in Firefox */
+}
+
+/* Scrollable Area */
+.scroll-container {
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto; /* Enable horizontal scrolling */
+  position: relative;
+}
+
+/* Scroll Track (no animation) */
+.scroll-track {
+  display: flex;
+  gap: 1rem;
+  will-change: transform; /* Performance optimization */
+  /* Removed animation */
+}
+
+/* Hide scrollbar for webkit browsers */
+.resources-container::-webkit-scrollbar {
+  display: none; /* Hides the scrollbar */
+}
+
+.scroll-container::-webkit-scrollbar {
+  display: none; /* Hides the scrollbar */
+}
+
+/* Review Cards */
+.glass-view {
+  background-color: rgba(255, 255, 255, 0.9); /* Semi-transparent background for glass effect */
+  backdrop-filter: blur(10px);
+  border-radius: 15px;
+  min-width: 250px;
+  min-height: 300px;
+  padding: 1rem;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  color: gray;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+/* User Profile Image */
+.user-profile {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 3px solid #017a8c;
+}
+
+/* Headings */
+.resources-heading {
+  font-size: 1.8rem;
+  color: whitesmoke;
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+
+.attract {
+  color: #ffa003;
+}
+
+.resources-subheading {
+  font-size: 1.2rem;
+  color: whitesmoke;
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+/* Card Text Styling */
+.text-warning {
+  font-size: 1.1rem;
+}
+
+.glass-view p {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 992px) {
+  .resources-heading {
+    font-size: 1.5rem;
+  }
+
+  .resources-subheading {
+    font-size: 1rem;
+  }
+
+  .glass-view {
+    min-height: 280px;
+  }
+
+  .user-profile {
+    width: 80px;
+    height: 80px;
+  }
+}
+
+@media (max-width: 768px) {
+  .resources-heading {
+    font-size: 1.3rem;
+  }
+
+  .resources-subheading {
+    font-size: 0.9rem;
+  }
+
+  .glass-view {
+    min-height: 250px;
+  }
+
+  .user-profile {
+    width: 70px;
+    height: 70px;
+  }
+}
+
+@media (max-width: 576px) {
+  .resources-heading {
+    font-size: 1.1rem;
+  }
+
+  .resources-subheading {
+    font-size: 0.8rem;
+  }
+
+  .glass-view {
+    min-height: 220px;
+    padding: 0.8rem;
+  }
+
+  .user-profile {
+    width: 60px;
+    height: 60px;
+  }
+}

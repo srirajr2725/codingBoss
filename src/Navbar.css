@@ -1,0 +1,226 @@
+/* Navigation Bar Styles */
+.navigation-container {
+    position: absolute;
+    top: 10px; /* Adjusted for positioning */
+    left: 50%;
+    transform: translateX(-50%); /* Ensures perfect centering */
+    width: 2000px; /* Fixed width for better alignment */
+    max-width: 95%; /* Ensures responsiveness */
+    z-index: 10;
+}
+
+
+
+/* Logo Styling */
+.logo {
+    height: 60px;
+    margin-left: 30px;
+   
+}
+
+/* Navbar Styles */
+.custom-navbar {
+    flex-grow: 1;
+    border-radius: 50px;
+    background: rgba(255, 255, 255, 0.25);
+    box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    padding: 0 40px;
+    transition: background-color 0.3s ease-in-out;
+}
+
+.custom-navbar:hover {
+    background: rgba(255, 255, 255, 0.35);
+}
+
+/* Sticky positioning */
+.sticky-top {
+    position: sticky !important;
+    top: 0;
+}
+
+/* Brand Name Styling */
+.brand-name {
+    font-weight: bold;
+    color: #FFA003;
+    font-size: 1.6rem;
+    font-family: 'Poppins', sans-serif;
+   
+    
+}
+
+.flash {
+    color: #3B3B3B;
+}
+
+/* Navbar Link Styles */
+.navbar-nav .nav-link {
+    color: #ffffff !important; /* White text */
+    font-weight: 500;
+    font-size: 1.1rem;
+    margin-left: 20px;
+    transition: color 0.3s, transform 0.3s;
+}
+
+.navbar-nav .nav-link:hover {
+    color: #f8c146 !important; /* Light gold hover effect */
+    transform: scale(1.05);
+}
+
+/* Navbar Dropdown Styles */
+.navbar-nav .nav-item .dropdown-menu {
+    background-color: rgba(255, 255, 255, 0.95);
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-nav .nav-item .dropdown-item {
+    font-size: 1rem;
+    color: #00454f !important; /* Original color for dropdown */
+}
+
+.navbar-nav .nav-item .dropdown-item:hover {
+    background-color: #f8f9fa;
+    color: #000 !important;
+}
+
+/* Get Started Button */
+.get-started-btn {
+    background-color: #B8860B !important;
+    color: #fff !important;
+    border-radius: 30px;
+    padding: 8px 16px;
+    font-size: 14px;
+    text-transform: uppercase;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    border: none !important;
+}
+
+.get-started-btn:hover {
+    background-color: #8B6914 !important;
+    transform: scale(1.05);
+}
+
+.get-started-btn:active {
+    transform: scale(0.98);
+    box-shadow: none;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+    .custom-navbar {
+        padding: 10px;
+        border-radius: 30px;
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+    }
+
+    .brand-name {
+        font-size: 1.4rem;
+    }
+
+    .logo {
+        height: 50px;
+    }
+
+    .navbar-nav .nav-link {
+        font-size: 1rem;
+    }
+
+    .acc-creation .nav-link {
+        font-size: 1.1rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .custom-navbar {
+        padding: 5px;
+        border-radius: 30;
+        background: rgba(255, 255, 255, 0.15);
+    }
+
+    .brand-name {
+        font-size: 1.2rem;
+        text-align: center;
+    }
+
+    .logo {
+        height: 40px;
+    }
+
+    .navbar-nav .nav-link {
+        font-size: 0.9rem;
+        margin-left: 10px;
+    }
+
+    .acc-creation .nav-link {
+        font-size: 1rem;
+    }
+
+    .profile-icon {
+        width: 25px;
+        height: 25px;
+    }
+
+    .get-started-btn {
+        padding: 6px 12px;
+        font-size: 12px;
+    }
+}
+/* Profile Icon */
+.profile-icon {
+    width: 30px;  /* Reduced size */
+    height: 30px; /* Reduced size */
+}
+
+@media (max-width: 768px) {
+    .profile-icon {
+        width: 25px;  /* Further reduced for smaller screens */
+        height: 25px;
+    }
+}
+
+@media (max-width: 576px) {
+    .profile-icon {
+        width: 20px;  /* Even smaller for mobile screens */
+        height: 20px;
+    }
+}
+.progress-circle-outline {
+    --size: 45px;
+    --stroke-width: 5px;
+    --progress-color: #67c75c;
+    --background-color: #ddd;
+    
+    width: var(--size);
+    height: var(--size);
+    border-radius: 50%;
+    background: conic-gradient(
+        var(--progress-color) calc(var(--progress) * 1%), 
+        var(--background-color) 0
+    );
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-weight: bold;
+    color: #333;
+    position: relative;
+}
+
+.progress-circle-outline::before {
+    content: "";
+    position: absolute;
+    width: calc(var(--size) - 2 * var(--stroke-width));
+    height: calc(var(--size) - 2 * var(--stroke-width));
+    background-color: white;
+    border-radius: 50%;
+    z-index: 1;
+}
+
+.progress-text {
+    position: relative;
+    z-index: 2;
+}

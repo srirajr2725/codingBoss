@@ -1,0 +1,32 @@
+# Node.js dependencies
+node_modules
+npm-debug.log
+
+# Build artifacts
+build
+dist
+*.log
+
+# Dockerfile and other Docker-related files (optional)
+Dockerfile*
+docker-compose.yml
+
+# Operating system files
+.DS_Store
+Thumbs.db
+
+# IDE/editor config
+.vscode
+.idea
+*.swp
+*.swo
+
+# Environment files (optional)
+.env
+.env.local
+.env.production
+.env.development
+
+#ignore deployment folders 
+deployment/k8s
+deployment/pipelines

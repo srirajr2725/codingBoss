@@ -1,0 +1,247 @@
+/* =====================================
+   GLOBAL
+===================================== */
+
+.results-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f4f7fb, #e9eff6);
+  padding: 20px 10px;
+}
+
+.results-wrapper {
+  max-width: 1100px;
+  margin: auto;
+}
+
+/* =====================================
+   SCORE CARD
+===================================== */
+
+.score-card {
+  border-radius: 16px;
+  border: none;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  margin-bottom: 24px;
+}
+
+.score-card.success {
+  border-top: 6px solid #4caf50;
+}
+
+.score-card.warning {
+  border-top: 6px solid #ff9800;
+}
+
+.score-circle {
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  background: #f5f6fa;
+  margin: 0 auto 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.score-value {
+  font-size: 2.6rem;
+  font-weight: 700;
+  color: #333;
+}
+
+.score-percentage {
+  font-size: 1.3rem;
+  color: #555;
+}
+
+.result-status {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+/* =====================================
+   DETAILS CARD
+===================================== */
+
+.details-card {
+  border-radius: 14px;
+  border: none;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.06);
+  margin-bottom: 24px;
+}
+
+.details-card p {
+  font-size: 0.95rem;
+  margin-bottom: 8px;
+}
+
+/* =====================================
+   ANALYSIS CARD
+===================================== */
+
+.analysis-card {
+  border-radius: 14px;
+  border: none;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.06);
+  margin-bottom: 24px;
+}
+
+.stat-item {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.05);
+  text-align: center;
+  height: 100%;
+}
+
+.stat-item.correct {
+  border-left: 5px solid #4caf50;
+}
+
+.stat-item.incorrect {
+  border-left: 5px solid #f44336;
+}
+
+.stat-item.unattempted {
+  border-left: 5px solid #9e9e9e;
+}
+
+.stat-value {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin-top: 8px;
+}
+
+.stat-label {
+  font-size: 0.85rem;
+  color: #666;
+}
+
+/* =====================================
+   PROGRESS BAR
+===================================== */
+
+.progress {
+  height: 14px;
+  border-radius: 10px;
+}
+
+.progress-bar {
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+/* =====================================
+   TEST CASE LIST
+===================================== */
+
+.testcase-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.testcase-item {
+  background: #ffffff;
+  padding: 14px;
+  border-radius: 12px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.05);
+}
+
+.testcase-item.passed {
+  border-left: 5px solid #4caf50;
+}
+
+.testcase-item.failed {
+  border-left: 5px solid #f44336;
+}
+
+.testcase-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.testcase-details p {
+  font-size: 0.85rem;
+  margin-bottom: 4px;
+}
+
+/* =====================================
+   ACTION BUTTONS
+===================================== */
+
+.action-buttons {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.action-buttons .btn {
+  padding: 10px 20px;
+  font-weight: 600;
+  border-radius: 10px;
+  min-width: 160px;
+}
+
+/* =====================================
+   NO RESULTS CARD
+===================================== */
+
+.no-results-card {
+  max-width: 480px;
+  margin: auto;
+  border-radius: 16px;
+  border: none;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+}
+
+/* =====================================
+   MOBILE (≤ 576px)
+===================================== */
+
+@media (max-width: 576px) {
+  .score-circle {
+    width: 85px;
+    height: 85px;
+  }
+
+  .score-value {
+    font-size: 2rem;
+  }
+
+  .score-percentage {
+    font-size: 1.1rem;
+  }
+
+  .result-status {
+    font-size: 1rem;
+  }
+
+  .details-card p {
+    font-size: 0.9rem;
+  }
+
+  .stat-value {
+    font-size: 1.5rem;
+  }
+
+  .action-buttons .btn {
+    width: 100%;
+  }
+}
+
+/* =====================================
+   TABLET (577px – 991px)
+===================================== */
+
+@media (max-width: 991px) {
+  .results-wrapper {
+    padding: 0 10px;
+  }
+}

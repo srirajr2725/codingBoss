@@ -1,0 +1,158 @@
+.offerings-container {
+  text-align: center;
+  padding: 50px 20px;
+  background: #f8f9fa;
+  position: relative;
+}
+
+/* Large faded title */
+.offerings-title {
+  font-size: 4.5rem;
+  font-weight: bold;
+  color: rgba(0, 0, 0, 0.1);
+  text-transform: uppercase;
+  margin-bottom: 30px;
+}
+
+/* Grid layout for two cards per row */
+.offerings-list {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 30px;
+  justify-content: center;
+  align-items: center;
+  max-width: 1000px;
+  margin: auto;
+}
+
+/* Card styling */
+.project-card {
+  width: 100%;
+  height: 200px; /* Decreased height */
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-around;
+  padding: 20px;
+  border-radius: 15px;
+  text-align: center;
+  opacity: 0;
+  transition: opacity 0.8s ease, transform 0.8s ease;
+  cursor: pointer;
+
+  /* Glassmorphism Effect */
+  background: linear-gradient(135deg, rgba(200, 200, 200, 0.4), rgba(230, 230, 230, 0.4));
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0px 5px 20px rgba(0, 0, 0, 0.2);
+  position: relative; /* Added for left border effect */
+}
+
+/* Left-side animated border */
+.project-card::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 10%;
+  width: 3px;
+  height: 80%;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 1));
+  transform: scaleY(0);
+  transform-origin: top;
+  transition: transform 0.8s ease-in-out;
+}
+
+.project-card.visible::before {
+  transform: scaleY(1);
+}
+
+/* Animations for appearing from different directions */
+.project-card:nth-child(4n+1) {
+  transform: translateX(-50px);
+}
+.project-card:nth-child(4n+2) {
+  transform: translateX(50px);
+}
+.project-card:nth-child(4n+3) {
+  transform: translateY(-50px);
+}
+.project-card:nth-child(4n+4) {
+  transform: translateY(50px);
+}
+
+.project-card.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Image inside the card */
+.project-image {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+}
+/* Scroll Progress Line - Fix */
+.scroll-line {
+  position: fixed; /* Fix it to the screen */
+  left: 5%; /* Adjust position */
+  top: 10%; /* Start from top */
+  width: 4px;
+  height: 80vh; /* Cover 80% of viewport */
+  background: rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  z-index: 10;
+}
+
+.scroll-line-fill {
+  width: 100%;
+  height: 0%;
+  background: black;
+  transition: height 0.3s ease-out;
+}
+.category-header {
+  display: flex;
+  align-items: center;
+  margin-top: 20px; /* Reduced further to move it up */
+  font-size: 24px;
+  font-weight: bold;
+  margin-left: 100px; /* Keeps it towards the right */
+}
+
+.category-title {
+  color: black;
+  font-size: 22px;
+  font-weight: bold;
+}
+
+.category-tag {
+  margin-left: 10px;
+  font-size: 14px;
+  padding: 5px 10px;
+  border-radius: 10px;
+}
+
+.for-students {
+  background-color: #cce5ff;
+  color: #004085;
+}
+
+/* Media query for larger mobile screens */
+@media (max-width: 768px) {
+  .offerings-list {
+    grid-template-columns: 1fr; /* Single column for mobile */
+  }
+  .offerings-title {
+    font-size: 3rem; /* Slightly larger title */
+  }
+  .category-header {
+    font-size: 22px; /* Adjusted size for better readability */
+  }
+  .project-card {
+    height: 160px; /* Adjusted card height */
+  }
+  .project-image {
+    width: 50px; /* Smaller image size */
+    height: 50px;
+  }
+}

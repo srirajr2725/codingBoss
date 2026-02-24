@@ -1,0 +1,109 @@
+.mcq-test-page {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start; /* Align top to avoid center alignment */
+  min-height: 100vh;
+  background: url('https://source.unsplash.com/random/1920x1080') no-repeat center center fixed;
+  background-size: cover;
+  padding: 20px;
+}
+
+.main-container {
+  width: 100%;
+  max-width: 1200px;
+  display: flex;
+  justify-content: space-between; /* Space between left and right sections */
+  flex-direction: row;
+  background: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  border-radius: 16px;
+  padding: 30px;
+  overflow: hidden;
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.question-section {
+  flex: 0.7; /* Left section for questions */
+  display: flex;
+  flex-direction: column;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  padding: 20px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.right-card {
+  flex: 0.3; /* Right section for the card with timer, palette, etc. */
+  display: flex;
+  flex-direction: column;
+  background: rgba(255, 255, 255, 0.15);
+  padding: 20px;
+  border-radius: 16px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.timer-container {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.timer-text {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #333;
+}
+
+.timer-text.red {
+  color: #f44336;
+}
+
+.question-palette {
+  margin-top: 30px;
+}
+
+.palette-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+}
+
+.palette-item {
+  width: 35px;
+  height: 35px;
+  background-color: rgba(230, 230, 230, 0.7);
+  border-radius: 50%;
+  text-align: center;
+  line-height: 35px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.palette-item.answered {
+  background-color: rgba(76, 175, 80, 0.8);
+  color: white;
+}
+
+.palette-item.marked {
+  background-color: rgba(255, 152, 0, 0.8);
+  color: white;
+}
+
+.palette-item.current {
+  border: 2px solid #000;
+  background-color: rgba(255, 255, 255, 0.8);
+}
+
+.palette-item:hover {
+  background-color: rgba(214, 214, 214, 0.7);
+}
+
+.attempt-info {
+  margin-top: 30px;
+  text-align: center;
+  font-size: 1rem;
+}
+

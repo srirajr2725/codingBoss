@@ -1,0 +1,55 @@
+.logo-section {
+  text-align: center;
+  overflow: hidden;
+  background: #fff;
+  padding: 20px 0;
+}
+
+h2 {
+  margin-bottom: 20px;
+  font-size: 24px;
+  color: #333;
+}
+
+.logos-wrapper {
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+  white-space: nowrap;
+}
+
+.logos {
+  display: flex;
+  align-items: center;
+  gap: 40px; /* Adjust spacing between logos */
+  animation: infiniteScroll 20s linear infinite;
+}
+
+.logo-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 150px; /* Adjust card size */
+}
+
+.company-logo img {
+  width: 100px; /* Adjust logo size */
+  height: auto;
+}
+
+.company-category {
+  font-size: 14px;
+  margin-top: 5px;
+  color: #666;
+}
+
+/* Infinite scrolling animation */
+@keyframes infiniteScroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-100%);
+  }
+}

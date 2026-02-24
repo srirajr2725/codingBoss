@@ -1,0 +1,100 @@
+pipeline {
+    agent { label 'build-agent' }
+
+    environment {
+        REGISTRY = "registry.codingboss.in"
+        IMAGE_TAG = "v-0.${BUILD_NUMBER}"
+        CREDENTIALS_ID = "Registry-Auth"
+        DEPLOYMENT = "app-codingboss"
+    }
+
+    stages {
+        
+        stage("Set Build Env Variables") {
+            steps {
+                script {
+                    env.REACT_APP_API_URL = 'https://api.codingboss.in/'
+                    env.IMAGE_REPO = "codingboss-prod/app-codingboss"
+                    env.REPO_URL = "https://${env.REGISTRY}/v2/${env.IMAGE_REPO}"
+                    env.IMAGE_NAME = "${env.REGISTRY}/${env.IMAGE_REPO}:${env.IMAGE_TAG}"
+                }
+            }
+        }
+
+        stage("Build & Push App Image") {
+            steps {
+                script {
+                    // Build the Docker image
+                    echo "Build Docker Images"
+                    sh """
+                        docker build --build-arg BUILD_TIMESTAMP=\$(date +%s) --build-arg REACT_APP_API_URL=${env.REACT_APP_API_URL} --no-cache -t ${env.IMAGE_NAME} -f dockerFile-codingboss-app .
+                    """
+
+                    // Login to registry and push the images
+                    withCredentials([usernamePassword(credentialsId: CREDENTIALS_ID, usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+                        echo "Login to Docker Registry"
+                        sh """docker login ${REGISTRY} -u ${USERNAME} -p ${PASSWORD}"""
+
+                        echo "Push the app image to registry"
+                        sh """docker push ${env.IMAGE_NAME}"""
+                    }
+                }
+            }
+        }
+
+        stage("Deploy App to k8s") {
+            steps {
+                script {
+                
+                    echo "Deploying to Kubernetes"
+
+                    // Switch context and deploy
+                    sh """
+                        export IMAGE_NAME=${env.IMAGE_NAME}
+                        envsubst < ./deployment/k8s/prod/app-deployment.yml | kubectl apply -f -
+                    """
+
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            script {
+                withCredentials([usernamePassword(credentialsId: CREDENTIALS_ID, usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+                    sh """docker login ${REGISTRY} -u ${USERNAME} -p ${PASSWORD}"""
+
+                    // Get All Tags
+                    def tags = sh(script: "curl -u ${USERNAME}:${PASSWORD} ${env.REPO_URL}/tags/list | jq -r '.tags[]?'", returnStdout: true).trim()
+                    echo tags
+
+                    if (tags) {
+                        tags.split("\n").each { tag ->
+                            if (tag != env.IMAGE_TAG) {
+                                echo "Deleting Tag: $tag"
+                                def digest = sh(script: "curl -u ${USERNAME}:${PASSWORD} -sS -H 'Accept: application/vnd.docker.distribution.manifest.v2+json' -o /dev/null -w '%header{Docker-Content-Digest}' ${env.REPO_URL}/manifests/$tag", returnStdout: true).trim()
+
+                                if (digest) {
+                                    sh """curl -u ${USERNAME}:${PASSWORD} -X DELETE ${env.REPO_URL}/manifests/$digest"""
+                                } else {
+                                    echo "Failed to get digest for tag: $tag"
+                                }
+                            }
+                        }
+                    } else {
+                        echo "No tags found in the repository. Exiting."
+                    }
+                    echo "Retained tag: ${env.IMAGE_TAG}"
+                }
+            }
+        }
+
+        always {
+            script {
+                echo "Pruning App Docker Images"
+                sh """docker images --filter=reference=${REGISTRY}/${env.IMAGE_REPO}:* -q | xargs -r docker rmi -f || true"""
+            }
+        }
+    }
+}

@@ -1,0 +1,202 @@
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import apiClient from "./utils/apiClient";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
+import Select from "react-select";
+import Spline from "@splinetool/react-spline";
+import "./SignUp.css";
+
+const SignUp = () => {
+  const navigate = useNavigate();
+
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+    mobile: null,
+    organization: null,
+  });
+
+  const [organizations, setOrganizations] = useState([]);
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+
+  // 🔹 Fetch organizations
+  useEffect(() => {
+    const fetchOrganizations = async () => {
+      try {
+        const response = await apiClient(
+          "trainer/organizations/",
+          "GET"
+        );
+
+        if (Array.isArray(response)) {
+          setOrganizations(
+            response.map((org) => ({
+              value: org.id,
+              label: org.name,
+            }))
+          );
+        }
+        
+      } catch {
+        setError("Unable to load organizations. Try again later.");
+      }
+    };
+
+    fetchOrganizations();
+  }, []);
+
+  // 🔹 Auto-clear messages
+  useEffect(() => {
+    if (error || success) {
+      const timer = setTimeout(() => {
+        setError("");
+        setSuccess("");
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [error, success]);
+
+  // 🔹 Input change
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  // 🔹 Organization select
+  const handleOrganizationChange = (selectedOption) => {
+    setFormData({
+      ...formData,
+      organization: selectedOption ? selectedOption.value : null,
+    });
+  };
+
+ const handleSubmit = async (e) => {
+  e.preventDefault();
+  setLoading(true);
+  setError("");
+  setSuccess("");
+
+  try {
+    const payload = {
+      email: formData.email,
+      password: formData.password,
+    };
+
+    // Optional fields (send only if filled)
+    if (formData.mobile?.trim()) {
+      payload.mobile = formData.mobile;
+    }
+
+    if (formData.organization) {
+      payload.organization = formData.organization;
+    }
+
+    const response = await apiClient(
+      "quiz/create-user/",
+      "POST",
+      payload
+    );
+
+    if (response?.success) {
+      
+      setSuccess(response.message || "Signup successful!");
+      setTimeout(() => navigate("/LoginPage"), 2000);
+    } else {
+      setError(response?.message || "Signup failed.");
+    }
+  } catch (err) {
+    setError(err.message || "Signup failed.");
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+  return (
+    <div className="signup-container">
+      {/* LEFT SIDE */}
+      <div className="left-content">
+        <h1>
+          Join Us & Unlock <span className="highlight">Exclusive Features!</span>
+        </h1>
+
+        <div className="spline-wrapper">
+          <Spline scene="https://prod.spline.design/dpkpao3qhr3jJYMz/scene.splinecode" />
+        </div>
+      </div>
+
+      {/* RIGHT SIDE FORM */}
+      <div className="signup-form">
+        <h2>
+          <span style={{ color: "#FFA003" }}>Sign</span>{" "}
+          <span style={{ color: "#004d30" }}>Up</span>
+        </h2>
+
+        {error && <div className="error-msg">{error}</div>}
+        {success && <div className="success-msg">{success}</div>}
+
+        <form onSubmit={handleSubmit}>
+          <label>Email Address</label>
+          <input
+            type="email"
+            name="email"
+            placeholder="Enter your email"
+            value={formData.email}
+            onChange={handleChange}
+            required
+          />
+
+          <label>Mobile Number</label>
+          <input
+            type="tel"
+            name="mobile"
+            placeholder="Enter mobile number"
+            pattern="[0-9]{10}"
+            value={formData.mobile}
+            onChange={handleChange}
+            required
+          />
+
+          <label>Password</label>
+          <div className="password-container">
+            <input
+              type={showPassword ? "text" : "password"}
+              name="password"
+              placeholder="Enter password"
+              value={formData.password}
+              onChange={handleChange}
+              required
+            />
+            <span
+              className="password-toggle"
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              {showPassword ? <FaEyeSlash /> : <FaEye />}
+            </span>
+          </div>
+
+          <label>Organization</label>
+          <Select
+            options={organizations}
+            onChange={handleOrganizationChange}
+            placeholder="Select organization"
+            isSearchable
+            className="organization-dropdown"
+          />
+
+          <button type="submit" disabled={loading} className="signup-btn">
+            {loading ? "Signing Up..." : "Create Account"}
+          </button>
+        </form>
+
+        <p className="login-text">
+          Already have an account? <a href="/LoginPage">Login</a>
+        </p>
+      </div>
+    </div>
+  );
+};
+
+export default SignUp;
