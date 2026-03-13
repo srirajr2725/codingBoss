@@ -43,6 +43,7 @@ import NavbarComponent from "./NavbarComponent.js";
 import InstructionPage from './InstructionPage.jsx';
 import CourseCard from "./CourseCard.js";
 import ResultsPage from "./ResultsPage.js";
+import CourseDjango from "./django.js";
 
 function AppWrapper() {
   const location = useLocation();
@@ -178,6 +179,7 @@ function AppWrapper() {
       <Route path="/AdminPanel" element={<AdminPanel {...{ isLoggedIn, username, handleLogout }} />} />
       <Route path="/projects/:projectName" element={<ProjectForm />} />
       <Route path="*" element={<Navigate to="/" replace />} />
+      <Route path="/CourseDjango" element={<CourseDjango {...{ isLoggedIn, username, access, handleLogout }} />} />
            <Route
         path="/QuestionPage"
         element={

@@ -259,71 +259,127 @@ const handleTabSwitch = useCallback(() => {
     };
   }, [handleTabSwitch, isTestSubmitted]);
 
-  // Clipboard restrictions
-  useEffect(() => {
-    const handleCopy = (e) => {
-      if (!isTestSubmitted) {
-        e.preventDefault();
-        trackActivity('copy_attempt');
-        toast.error('❌ Copy is disabled during the test!');
-      }
-    };
+// ============================================================
+// STRONG COPY / PASTE / CUT / RIGHT CLICK BLOCK
+// ============================================================
 
-    const handlePaste = (e) => {
-      if (!isTestSubmitted) {
-        e.preventDefault();
-        setPasteAttemptCount(prev => prev + 1);
-        trackActivity('paste_attempt');
-        toast.error('❌ Paste is disabled during the test!');
-      }
-    };
+useEffect(() => {
 
-    document.addEventListener('copy', handleCopy);
-    document.addEventListener('cut', handleCopy);
-    document.addEventListener('paste', handlePaste);
+  const preventClipboard = (e) => {
+    if (!isTestSubmitted) {
+      e.preventDefault();
+      e.stopPropagation();
+      toast.error("❌ Copy / Paste / Cut is disabled during the test!");
+      return false;
+    }
+  };
 
-    return () => {
-      document.removeEventListener('copy', handleCopy);
-      document.removeEventListener('cut', handleCopy);
-      document.removeEventListener('paste', handlePaste);
-    };
-  }, [isTestSubmitted]);
+  const preventRightClick = (e) => {
+    if (!isTestSubmitted) {
+      e.preventDefault();
+      toast.error("❌ Right click is disabled during the test!");
+      return false;
+    }
+  };
+
+  const preventKeyboardShortcuts = (e) => {
+    if (isTestSubmitted) return;
+
+    // Ctrl / Cmd based shortcuts
+    if (
+      (e.ctrlKey || e.metaKey) &&
+      (
+        e.key.toLowerCase() === "c" ||   // Copy
+        e.key.toLowerCase() === "v" ||   // Paste
+        e.key.toLowerCase() === "x" ||   // Cut
+        e.key.toLowerCase() === "a" ||   // Select All
+        e.key.toLowerCase() === "s" ||   // Save
+        e.key.toLowerCase() === "u"      // View Source
+      )
+    ) {
+      e.preventDefault();
+      e.stopPropagation();
+      toast.error("❌ Shortcut disabled during the test!");
+      return false;
+    }
+
+    // F12 (DevTools)
+    if (e.key === "F12") {
+      e.preventDefault();
+      toast.error("❌ Developer tools disabled during test!");
+      return false;
+    }
+  };
+
+  // Disable selection
+  const disableSelection = () => {
+    if (!isTestSubmitted) {
+      document.body.style.userSelect = "none";
+    }
+  };
+
+  const enableSelection = () => {
+    document.body.style.userSelect = "auto";
+  };
+
+  disableSelection();
+
+  // Add listeners at window level (stronger than document)
+  window.addEventListener("keydown", preventKeyboardShortcuts, true);
+  window.addEventListener("copy", preventClipboard, true);
+  window.addEventListener("cut", preventClipboard, true);
+  window.addEventListener("paste", preventClipboard, true);
+  window.addEventListener("contextmenu", preventRightClick, true);
+
+  return () => {
+    enableSelection();
+    window.removeEventListener("keydown", preventKeyboardShortcuts, true);
+    window.removeEventListener("copy", preventClipboard, true);
+    window.removeEventListener("cut", preventClipboard, true);
+    window.removeEventListener("paste", preventClipboard, true);
+    window.removeEventListener("contextmenu", preventRightClick, true);
+  };
+
+}, [isTestSubmitted]);
 
 
 const handleCompile = async () => {
-
-  if (!sourceCode.trim()) {
+  // 1. Initial Validation
+  if (!sourceCode?.trim()) {
     toast.error("⚠️ Please enter your code");
     return;
   }
   if (!selectedLanguage) {
-  toast.error("⚠️ Please select a language first");
-  return;
-}
+    toast.error("⚠️ Please select a language first");
+    return;
+  }
 
+  // 2. UI Loading State
   setIsCompiling(true);
   setError(null);
   setOutput("");
   setActiveTab("output");
   setIsConsoleExpanded(true);
 
-const requestData = {
-  source_code: sourceCode,
-  language: selectedLanguage,
-  stdin: input || ""
-};
-
+  // 3. Prepare Payload
+  // We send 'input' as it's the most common key for this specific error.
+  const requestData = {
+    source_code: sourceCode,
+    language: selectedLanguage,
+    input: input || "",  // Most APIs use 'input'
+    stdin: input || ""   // Some APIs use 'stdin'
+  };
 
   try {
-
+    // 4. API Request
     const response = await apiClient(
       "compiler/compile/",
       "POST",
-      requestData   // ✅ NO stringify
+      requestData 
     );
 
+    // 5. Handle Logical Errors (Status 200 but Code Crashed)
     if (response?.error) {
-
       setError({
         title: "Execution Error",
         message: response.error,
@@ -332,17 +388,18 @@ const requestData = {
         column: response.column_number
       });
 
+      // Show whatever output was captured before the crash
+      setOutput(response.output || "");
       toast.error("❌ Execution failed");
 
     } else {
-
+      // 6. Handle Success
       setOutput(response?.output || "No Output");
       toast.success("✅ Code Executed");
-
     }
 
   } catch (err) {
-
+    // 7. Handle Network/Server Errors (404, 500, etc.)
     toast.error("❌ Compiler Server Error");
 
     setError({
@@ -352,9 +409,8 @@ const requestData = {
     });
 
   } finally {
-
+    // 8. Stop Loader
     setIsCompiling(false);
-
   }
 };
 

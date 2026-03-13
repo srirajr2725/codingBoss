@@ -10,10 +10,8 @@ const NavbarComponent = ({ isLoggedIn, setIsLoggedIn, userRole, handleLogout, pr
     const navigate = useNavigate();
     const [storedUsername, setStoredUsername] = useState('');
     const [userid, setUserid] = useState('');
-    // Ensure progress is properly initialized if not passed as prop
     const [localProgress, setLocalProgress] = useState(progress || 0);
 
-    // Use either the prop function or a local no-op function to prevent errors
     const updateProgress = typeof setProgress === 'function' ? setProgress : (val) => setLocalProgress(val);
 
     useEffect(() => {
@@ -29,16 +27,12 @@ const NavbarComponent = ({ isLoggedIn, setIsLoggedIn, userRole, handleLogout, pr
     }, []);
 
     useEffect(() => {
-        // Event listener to refresh profile completion when profile is updated
         const handleProfileUpdate = () => {
             if (isLoggedIn && userRole === 'company') {
                 fetchProfileCompletion();
             }
         };
-
         window.addEventListener('profile-updated', handleProfileUpdate);
-
-        // Clean up the event listener when component unmounts
         return () => {
             window.removeEventListener('profile-updated', handleProfileUpdate);
         };
@@ -63,17 +57,11 @@ const NavbarComponent = ({ isLoggedIn, setIsLoggedIn, userRole, handleLogout, pr
                         navigate('/UserDashboard');
                     } else if (response.role === "company") {
                         navigate('/TrainerDashboard');
-                    } else {
-                        navigate('/');
                     }
-                } else {
-                    navigate('/LoginPage');
                 }
             } catch (error) {
-                navigate('/LoginPage');
+                console.error("Auto-login failed");
             }
-        } else {
-            navigate('/LoginPage');
         }
     };
 
@@ -88,66 +76,25 @@ const NavbarComponent = ({ isLoggedIn, setIsLoggedIn, userRole, handleLogout, pr
 
             if (response && response[0]) {
                 const profile = response[0];
-                // These are the required fields for completion percentage
-                const requiredFields = [
-                    "name",
-                    "education",
-                    "resume",
-                    "current_location",
-                    "native_location",
-                ];
+                const requiredFields = ["name", "education", "resume", "current_location", "native_location"];
                 let filledCount = 0;
-                const totalFields = requiredFields.length; // Always 5 fields
-
                 requiredFields.forEach((field) => {
                     if (field === "education") {
-                        // For education array, check if it exists and has at least one entry with required data
-                        if (
-                            Array.isArray(profile[field]) &&
-                            profile[field].length > 0 &&
-                            profile[field].some(
-                                (edu) => edu.degree && edu.year && edu.institution
-                            )
-                        ) {
+                        if (Array.isArray(profile[field]) && profile[field].length > 0 &&
+                            profile[field].some((edu) => edu.degree && edu.year && edu.institution)) {
                             filledCount++;
                         }
                     } else {
-                        // For other fields, check if they have a non-empty value
                         if (profile[field] && profile[field].toString().trim() !== "") {
                             filledCount++;
                         }
                     }
                 });
-
-                const completionPercent = (filledCount / totalFields) * 100;
-                updateProgress(Math.floor(completionPercent)); // Use the safe function
-
-                const event = new CustomEvent("profile-completion-updated", {
-                    detail: { completion: Math.floor(completionPercent) },
-                });
-                window.dispatchEvent(event);
-
-                // Console log for debugging
-                console.log("Profile completion fields:", {
-                    name: !!profile.name,
-                    education: !!(
-                        Array.isArray(profile.education) &&
-                        profile.education.length > 0 &&
-                        profile.education.some(
-                            (edu) => edu.degree && edu.year && edu.institution
-                        )
-                    ),
-                    resume: !!profile.resume,
-                    current_location: !!profile.current_location,
-                    native_location: !!profile.native_location,
-                    completionPercent,
-                });
-            } else {
-                updateProgress(0); // Use the safe function
+                const completionPercent = (filledCount / requiredFields.length) * 100;
+                updateProgress(Math.floor(completionPercent));
             }
         } catch (error) {
             console.error("Error fetching profile completion:", error);
-            updateProgress(0); // Use the safe function
         }
     };
 
@@ -157,15 +104,23 @@ const NavbarComponent = ({ isLoggedIn, setIsLoggedIn, userRole, handleLogout, pr
         }
     }, [isLoggedIn, userRole, userid]);
 
+    // --- PERFECT LOGIC ---
     const handleLogoClick = () => {
-        if (!userRole) {
-            autoLogin();
-        } else if (userRole === 'college') {
-            navigate('/UserDashboard');
+        // Use props first, fallback to storage.
+        const currentRole = userRole || localStorage.getItem('userRole');
+        const checkLogin = isLoggedIn || !!localStorage.getItem('username');
+
+        if (checkLogin) {
+            if (currentRole === 'college') {
+                navigate('/UserDashboard');
+            } else if (currentRole === 'company') {
+                navigate('/TrainerDashboard');
+            } else {
+                navigate('/UserDashboard');
+            }
+        } else {
+            navigate('/UserDashboard'); // If not logged in, just go to Landing Page
         }
-        // else if (userRole === 'company') {
-        //     navigate('/TrainerDashboard');
-        // }
     };
 
     const handleProfileClick = () => {
@@ -176,14 +131,19 @@ const NavbarComponent = ({ isLoggedIn, setIsLoggedIn, userRole, handleLogout, pr
         }
     };
 
-    // Use either the prop value or the local state value
     const displayProgress = typeof progress === 'number' ? progress : localProgress;
 
     return (
         <div className="navigation-container">
             <Navbar expand="lg" className="custom-navbar">
                 <Navbar.Brand className="brand-name">
-                    <img src={logo} alt="Logo" className="logo" onClick={handleLogoClick} />
+                    <img 
+                        src={logo} 
+                        alt="Logo" 
+                        className="logo" 
+                        onClick={handleLogoClick} 
+                        style={{ cursor: 'pointer' }} 
+                    />
                     <b onClick={handleLogoClick} style={{ cursor: 'pointer' }}>
                         Coding<span className="flash">boss</span>
                     </b>
@@ -199,10 +159,13 @@ const NavbarComponent = ({ isLoggedIn, setIsLoggedIn, userRole, handleLogout, pr
                                 <Dropdown align="end">
                                     <Dropdown.Toggle variant="unlink" className="profile-dropdown" style={{ display: 'flex', alignItems: 'center' }}>
                                         <div className="progress-circle-outline" style={{ '--progress': `${displayProgress}` }}>
-                                            <span className="progress-text">{progress}%</span>
+                                            <span className="progress-text">{displayProgress}%</span>
                                         </div>
                                     </Dropdown.Toggle>
                                     <Dropdown.Menu>
+                                        <Dropdown.Item onClick={handleProfileClick}>
+                                            <b>Dashboard</b>
+                                        </Dropdown.Item>
                                         <Dropdown.Item as={Link} to="/" onClick={handleLogout}>
                                             <b>Logout</b>
                                         </Dropdown.Item>
@@ -216,19 +179,9 @@ const NavbarComponent = ({ isLoggedIn, setIsLoggedIn, userRole, handleLogout, pr
                                         <b>Login</b>
                                     </Button>
                                 </Link>
-                                <Link to="/SignUp">
-                                    {/* <Button variant="warning" className="get-started-btn my-3 mt-3 mt-lg-0 my-lg-0">
-                                        <b>Sign Up</b>
-                                    </Button> */}
-                                </Link>
                             </div>
                         )}
                     </Nav>
-
-                    {isLoggedIn && userRole === 'company' && typeof displayProgress === 'number' && (
-                        <div className={`profile-progress-text ${displayProgress === 100 ? 'complete' : ''}`} style={{ marginLeft: '20px', fontWeight: 'bold' }}>
-                        </div>
-                    )}
                 </Navbar.Collapse>
             </Navbar>
         </div>

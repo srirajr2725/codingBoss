@@ -48,6 +48,12 @@ const LoginPage = ({ setIsLoggedIn, setUsername, setUserRole }) => {
       // Store email
       localStorage.setItem("username", email);
 
+      // ✅ NEW: Store the User Token based on Login Response
+      // This ensures the Status page can find it immediately after login
+      if (response.user_token) {
+        localStorage.setItem(`user_token_${email.toLowerCase()}`, response.user_token);
+      }
+
       // Clear old session
       localStorage.removeItem("unlock_toast_pending");
 

@@ -5,7 +5,8 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import CryptoJS from 'crypto-js';
 import { Alert, Spinner, Container } from 'react-bootstrap';
 
-const McqTestPage = ({ isLoggedIn, setIsLoggedIn, userRole, handleLogout, username }) => {
+const McqTestPage = ({ isLoggedIn, setIsLoggedIn }) => {
+
   const { state } = useLocation();
   const { subtype, filterCategory } = state || {};
   const navigate = useNavigate();
@@ -24,15 +25,23 @@ const McqTestPage = ({ isLoggedIn, setIsLoggedIn, userRole, handleLogout, userna
     }));
   };
 
-
-
+  // ================= AUTO LOGIN =================
   useEffect(() => {
+
     if (!isLoggedIn) {
+
       if (localStorage.getItem("username") && localStorage.getItem("password")) {
+
         const email = localStorage.getItem("username");
         const EncryptPassword = localStorage.getItem("password");
-        const bytes = CryptoJS.AES.decrypt(EncryptPassword, 'thirancoding360mgai');
+
+        const bytes = CryptoJS.AES.decrypt(
+          EncryptPassword,
+          'thirancoding360mgai'
+        );
+
         const password = bytes.toString(CryptoJS.enc.Utf8);
+
         const Login = async () => {
           try {
             const response = await apiClient(
@@ -41,130 +50,146 @@ const McqTestPage = ({ isLoggedIn, setIsLoggedIn, userRole, handleLogout, userna
               JSON.stringify({ email, password }),
               { "Content-Type": "application/json" }
             );
+
             if (!response.status === "success") {
               navigate('/LoginPage');
             }
+
             setIsLoggedIn(true);
+
           } catch (error) {
             navigate('/LoginPage');
           }
-        }
-        Login();
-      }
-      else {
+        };
 
+        Login();
+
+      } else {
         navigate('/LoginPage');
       }
     }
-  }, [isLoggedIn, navigate])
+
+  }, [isLoggedIn, navigate, setIsLoggedIn]);
 
 
-
-
+  // ================= FETCH QUESTIONS =================
   useEffect(() => {
+
     const fetchQuestions = async () => {
+
       try {
+
         const storedEncryptedUserID = localStorage.getItem('userID');
+
         if (storedEncryptedUserID) {
-          const bytes = CryptoJS.AES.decrypt(storedEncryptedUserID, 'thirancoding360mgai');
+
+          const bytes = CryptoJS.AES.decrypt(
+            storedEncryptedUserID,
+            'thirancoding360mgai'
+          );
+
           const decryptedUserid = bytes.toString(CryptoJS.enc.Utf8);
           setUserid(decryptedUserid);
 
-          // Check if test is already completed
+          // 🔥 LOCAL STORAGE LOCK CHECK
+          const localTestKey = `mcq_completed_${decryptedUserid}_${subtype}_${filterCategory || 'Technical'}`;
+
+          if (localStorage.getItem(localTestKey)) {
+            setIsTestCompleted(true);
+            return;
+          }
+
+          // 🔥 BACKEND CHECK
           try {
             const checkResponse = await apiClient(
               `compiler/check-test-completed/?user_id=${decryptedUserid}&subtype=${subtype}&type=${filterCategory || 'Technical'}`,
               'GET'
             );
+
             if (checkResponse.is_completed || checkResponse.completed) {
               setIsTestCompleted(true);
+              localStorage.setItem(localTestKey, "true"); // save locally too
+              return;
             }
+
           } catch (err) {
             console.log('Could not check completion status:', err);
           }
         }
 
-        const data = await apiClient(`compiler/filter-by-subtype/?subtype=${subtype}`, 'GET');
+        const data = await apiClient(
+          `compiler/filter-by-subtype/?subtype=${subtype}`,
+          'GET'
+        );
+
         if (Array.isArray(data)) {
           setQuestions(data);
           setTestStartTime(Date.now());
-        } else {
-          console.error('Unexpected data format:', data);
         }
+
       } catch (error) {
         console.error('Error fetching MCQ data:', error);
       }
     };
 
     fetchQuestions();
+
   }, [subtype, filterCategory]);
 
-  useEffect(() => {
-  const startTime = Date.now();
-  localStorage.setItem("testStartTime", startTime);
-}, []);
 
-const startTime = Number(localStorage.getItem("testStartTime"));
-const endTime = Date.now();
-
-// minutes (rounded)
-const timeTaken = startTime
-  ? Math.max(1, Math.round((endTime - startTime) / 60000))
-  : 0;
-
-
+  // ================= SUBMIT TEST =================
   const submitTest = async (answers) => {
+
     setCompletionLoading(true);
 
     const payloadMcqEvaluate = {
-    user_id: Number(userid),  
-    type: filterCategory || 'Technical',
-    subtype: subtype,
-    answers: answers,          
-  };
-
-
-    console.log("Sending payload:", payloadMcqEvaluate);
+      user_id: Number(userid),
+      type: filterCategory || 'Technical',
+      subtype: subtype,
+      answers: answers,
+    };
 
     try {
-    const response = await apiClient(
-      'compiler/evaluate/',
-      'POST',
-      payloadMcqEvaluate,   
-      {
-        'Content-Type': 'application/json',
-      }
-    );
+
+      const response = await apiClient(
+        'compiler/evaluate/',
+        'POST',
+        payloadMcqEvaluate,
+        { 'Content-Type': 'application/json' }
+      );
 
       if (response.user_id || response.score !== undefined) {
-        // Calculate score from correct answers
+
         const correctAnswers = response.correct_answers || response.score || 0;
         const totalQuestions = questions.length;
-        const scorePercentage = (correctAnswers / totalQuestions) * 100;
-        const timeTaken = testStartTime ? Math.round((Date.now() - testStartTime) / 60000) : 0;
 
-        // Store results
-     const results = {
-  testType: 'MCQ',
-  score: correctAnswers,
-  maxScore: totalQuestions,
-  percentage: Math.round((correctAnswers / totalQuestions) * 100),
-  totalQuestions,
-  correctAnswers,
-  incorrectAnswers: totalQuestions - correctAnswers,
-  unattempted: 0,
-  timeTaken,                // 🔥 IMPORTANT
-  category,
-  subtype,
-  completedAt: new Date().toISOString(),
-};
+        const timeTaken = testStartTime
+          ? Math.round((Date.now() - testStartTime) / 60000)
+          : 0;
 
-
+        const results = {
+          testType: 'MCQ',
+          score: correctAnswers,
+          maxScore: totalQuestions,
+          percentage: Math.round((correctAnswers / totalQuestions) * 100),
+          totalQuestions,
+          correctAnswers,
+          incorrectAnswers: totalQuestions - correctAnswers,
+          unattempted: 0,
+          timeTaken,
+          category: filterCategory,
+          subtype,
+          completedAt: new Date().toISOString(),
+        };
 
         localStorage.setItem('testResults', JSON.stringify(results));
         localStorage.setItem('submitMessage', 'Test Submitted Successfully!');
 
-        // Mark test as completed
+        // 🔥 SAVE LOCAL LOCK
+        const localTestKey = `mcq_completed_${userid}_${subtype}_${filterCategory || 'Technical'}`;
+        localStorage.setItem(localTestKey, "true");
+
+        // 🔥 MARK IN BACKEND
         try {
           await apiClient(
             `compiler/mark-test-completed/`,
@@ -182,26 +207,27 @@ const timeTaken = startTime
           console.log('Could not mark test as completed:', err);
         }
 
-        // Navigate to results page
         navigate('/TestResults', { state: { results } });
       }
+
     } catch (error) {
       console.error('Error submitting MCQ data:', error);
-      localStorage.setItem('submitMessage', 'Test Submitted Successfully!');
       navigate(-1);
     } finally {
       setCompletionLoading(false);
     }
   };
 
-  // If test is already completed, show message
+
+  // ================= ALREADY COMPLETED UI =================
   if (isTestCompleted) {
     return (
       <Container className="mt-5">
-        <Alert variant="warning">
-          <Alert.Heading>Test Already Completed</Alert.Heading>
+        <Alert variant="danger">
+          <Alert.Heading>⚠ Test Already Attended</Alert.Heading>
           <p>
-            You have already completed this test ({subtype}). You cannot retake it.
+            You have already attended this test ({subtype}).  
+            You cannot retake it.
           </p>
           <button
             className="btn btn-primary"
@@ -214,18 +240,23 @@ const timeTaken = startTime
     );
   }
 
+
   if (completionLoading) {
     return (
       <Container className="text-center mt-5">
-        <Spinner animation="border" role="status">
-          <span className="visually-hidden">Processing results...</span>
-        </Spinner>
+        <Spinner animation="border" />
         <p>Processing your test results...</p>
       </Container>
     );
   }
 
-  return <MCQQuiz questions={questions} updateQuestionStatus={updateQuestionStatus} submitTest={submitTest} />;
+  return (
+    <MCQQuiz
+      questions={questions}
+      updateQuestionStatus={updateQuestionStatus}
+      submitTest={submitTest}
+    />
+  );
 };
 
 export default McqTestPage;
