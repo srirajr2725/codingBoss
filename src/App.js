@@ -54,19 +54,30 @@ function AppWrapper() {
       const email = localStorage.getItem("username");
       const token = localStorage.getItem("token");
 
-      if (email && !token) {
+      const encPwd = localStorage.getItem("password");
+
+      if (email && encPwd && !token) {
         try {
-          const response = await fetch("https://api.codingboss.in/quiz/generate-token/", {
-            headers: { "ngrok-skip-browser-warning": "true" }
-          });
-          const data = await response.json();
-          if (data?.access_token) {
-            localStorage.setItem("token", data.access_token);
-            localStorage.setItem("user_token", data.access_token);
-            console.log("Access token fetched and stored permanently.");
+          const bytes = CryptoJS.AES.decrypt(encPwd, 'thirancoding360mgai');
+          const password = bytes.toString(CryptoJS.enc.Utf8);
+
+          // Perform background re-auth to get the fresh tokens
+          const res = await apiClient("quiz/users/login/", "POST", { email, password });
+
+          const authToken = res?.access || res?.token;
+          const displayToken = res?.user_token || res?.data?.user_token;
+
+          if (displayToken) {
+            localStorage.setItem("user_token", displayToken);
+            localStorage.setItem(`user_token_${email.toLowerCase()}`, displayToken);
+            console.log("Permanent User Token recovered.");
+          }
+
+          if (authToken) {
+            localStorage.setItem("token", authToken);
           }
         } catch (err) {
-          console.error("Auto-token fetch failed:", err);
+          console.error("Auto-token recovery failed:", err);
         }
       }
     };
@@ -105,7 +116,7 @@ function AppWrapper() {
       <Route path="/LoginPage" element={<LoginPage {...{ setIsLoggedIn, setUsername, setUserRole }} />} />
       <Route path="/" element={renderHome()} />
       <Route path="/SignUp" element={<Navigate to="/signup" replace />} />
-      
+
       <Route path="/Status" element={<Status {...{ isLoggedIn, username, userRole, handleLogout, setAccess }} />} />
       <Route path="/CourseCard" element={<CourseCard {...{ isLoggedIn, username, access, handleLogout }} />} />
       <Route path="/McqTestPage" element={<McqTestPage {...{ isLoggedIn, username, access, handleLogout }} />} />
@@ -114,11 +125,11 @@ function AppWrapper() {
       <Route path="/CoursePython" element={<CoursePython {...{ isLoggedIn, username, access, handleLogout }} />} />
       <Route path="/CourseC" element={<CourseC {...{ isLoggedIn, username, access, handleLogout }} />} />
       <Route path="/CourseDjango" element={<CourseDjango {...{ isLoggedIn, username, access, handleLogout }} />} />
-      
+
       <Route path="/Dashboard" element={<Dashboard {...{ isLoggedIn, setIsLoggedIn, setUserRole, username, handleLogout }} />} />
       <Route path="/adminDashboard" element={<Userdashboard {...{ isLoggedIn, setIsLoggedIn, setUserRole, username, handleLogout, userRole }} />} />
       <Route path="/UserDashboard" element={<Admindashboardg {...{ isLoggedIn, setIsLoggedIn, setUserRole, username, handleLogout, userRole }} />} />
-      
+
       <Route path="/TestPage" element={<TestPage {...{ isLoggedIn, setIsLoggedIn, setUserRole, username, handleLogout }} />} />
       <Route path="/Uploadquestions" element={<UploadQuestions {...{ isLoggedIn, setIsLoggedIn, setUserRole, username, handleLogout }} />} />
       <Route path="/Company" element={<Company {...{ isLoggedIn, setIsLoggedIn, setUserRole, username, handleLogout }} />} />
@@ -129,7 +140,7 @@ function AppWrapper() {
       <Route path="/AdminPanel" element={<AdminPanel {...{ isLoggedIn, setIsLoggedIn, setUserRole, username, handleLogout, userRole }} />} />
       <Route path="/projects/:projectName" element={<ProjectForm />} />
       <Route path="/QuestionPage" element={<QuestionPage {...{ isLoggedIn, setIsLoggedIn, username, userRole, handleLogout }} />} />
-      
+
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

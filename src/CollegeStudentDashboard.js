@@ -94,7 +94,6 @@ const Dashboard = ({
 
   const fetchAccess = useCallback(async (email) => {
     try {
-
       const isTaskUnlocked =
         localStorage.getItem(`task_unlocked_${email}`) === "true";
 
@@ -187,40 +186,67 @@ const Dashboard = ({
     }
 
     const email = localStorage.getItem("username");
+    
+    // Check all possible token keys
+    const tokenKey = email ? `user_token_${email.toLowerCase()}` : "user_token";
+    const existingToken = 
+      localStorage.getItem("token") || 
+      localStorage.getItem("access_token") || 
+      localStorage.getItem("user_token") ||
+      localStorage.getItem(tokenKey);
 
-    if (isLoggedIn && email) {
+    // Scenario 1: User is logged in, has email, and already has token
+    if (isLoggedIn && email && existingToken) {
       fetchAccess(email);
     }
 
+    // Scenario 2: Need to re-authenticate (auto-login via saved password) to get token
     else if (!isLoggedIn && email) {
 
       const encPwd = localStorage.getItem("password");
 
       if (encPwd) {
-
         const bytes = CryptoJS.AES.decrypt(
           encPwd,
           'thirancoding360mgai'
         );
-
         const password = bytes.toString(CryptoJS.enc.Utf8);
 
+        // Fetch token directly
         apiClient(
           "quiz/users/login/",
           "POST",
-          JSON.stringify({ email, password }),
-          { "Content-Type": "application/json" }
+          { email, password }
         )
           .then(res => {
-            if (res.role !== "company") {
-              setIsLoggedIn(true);
-              fetchAccess(email);
+            
+            // 🔥 CRITICAL FIX: Extract user_token explicitly from the API's 'data' object
+            const authToken = res?.access || res?.token;
+            const displayToken = res?.user_token || res?.data?.user_token;
+
+            if (authToken) {
+              localStorage.setItem("token", authToken);
+            }
+            if (displayToken) {
+              localStorage.setItem("user_token", displayToken);
+              localStorage.setItem(`user_token_${email.toLowerCase()}`, displayToken);
+            }
+
+            if (res.role === "company") {
+               navigate('/TrainerDashboard');
+            } else {
+               setIsLoggedIn(true);
+               // Now call fetchAccess, apiClient will automatically use the new token
+               fetchAccess(email);
             }
           })
           .catch(() => navigate('/LoginPage'));
+      } else {
+        navigate('/LoginPage');
       }
     }
 
+    // Scenario 3: Missing credentials
     else {
       setLoading(false);
     }

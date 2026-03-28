@@ -50,11 +50,17 @@ const LoginPage = ({ setIsLoggedIn, setUsername, setUserRole }) => {
       localStorage.setItem("username", email);
       localStorage.setItem("role", response.role);
 
-      // ✅ NEW: Store the User Token based on Login Response
-      // This ensures the Status page can find it immediately after login
-      if (response.user_token) {
-        localStorage.setItem(`user_token_${email.toLowerCase()}`, response.user_token);
+      // ✅ NEW: Store both the JWT (for API) and the Short User Token (for UI)
+      // This ensures the Status page can find the short code immediately.
+      const userCode = response?.user_token || response?.data?.user_token;
+      if (userCode) {
+        localStorage.setItem("user_token", userCode);
+        localStorage.setItem(`user_token_${email.toLowerCase()}`, userCode);
       }
+
+      // ✅ FIX: Save the encrypted password so Status.js can perform background recovery!
+      const encryptedPwd = CryptoJS.AES.encrypt(password, "thirancoding360mgai").toString();
+      localStorage.setItem("password", encryptedPwd);
 
       // Clear old session
       localStorage.removeItem("unlock_toast_pending");
@@ -74,13 +80,13 @@ const LoginPage = ({ setIsLoggedIn, setUsername, setUserRole }) => {
 
       if (response.role === "member") {
         navigate("/UserDashboard");
-      } 
+      }
       else if (response.role === "company") {
         navigate("/trainerDashboard");
-      } 
+      }
       else if (response.role === "edutech") {
         navigate("/adminPanel");
-      } 
+      }
       else {
         navigate("/");
       }

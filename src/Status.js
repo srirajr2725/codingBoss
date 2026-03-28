@@ -9,33 +9,12 @@ const Status = ({ isLoggedIn, setAccess }) => {
   const [userEmail, setUserEmail] = useState("");
   const [mcqResults, setMcqResults] = useState([]);
   const [dailyStats, setDailyStats] = useState([]);
-  const [userSpecificToken, setUserSpecificToken] = useState("");
+  const [userSpecificToken, setUserSpecificToken] = useState(
+    () => localStorage.getItem("user_token") || ""
+  );
   const [programStats, setProgramStats] = useState({ totalTests: 0, averageMarks: 0 });
   const [programTotal, setProgramTotal] = useState("0 / 0");
   const [performanceData, setPerformanceData] = useState({ totalAttempts: 0, averageScore: 0, totalMarks: 0, maxMarks: 0 });
-
-  useEffect(() => {
-    const fetchToken = async () => {
-      try {
-        const response = await apiClient("quiz/generate-token/", "GET");
-        if (response?.access_token) {
-          localStorage.setItem("user_token", response.access_token);
-          localStorage.setItem("token", response.access_token); // ✅ KEY: Store for permanent API access
-          if (typeof setAccess === 'function') {
-            setAccess((prev) => prev.map(item => ({ ...item, locked: false })));
-          }
-          setUserSpecificToken(response.access_token);
-        }
-      } catch (err) {
-        console.error("Token fetch failed:", err);
-      }
-    };
-
-    if (isLoggedIn) {
-      fetchToken();
-    }
-  }, [isLoggedIn, setAccess]);
-
   const [isTaskUnlocked, setIsTaskUnlocked] = useState(false);
   const [couponCode, setCouponCode] = useState("");
   const [toast, setToast] = useState({ show: false, message: "", type: "success" });
@@ -54,14 +33,69 @@ const Status = ({ isLoggedIn, setAccess }) => {
     } catch { return null; }
   };
 
+  // ================= 1. FETCH & MANAGE TOKEN =================
+  useEffect(() => {
+    const email = localStorage.getItem("username") || "";
+    if (email) setUserEmail(email);
+
+    const tokenKey = `user_token_${email.toLowerCase()}`;
+
+    // ✅ Always try to read from localStorage first (set at login)
+    const storedToken =
+      localStorage.getItem("user_token") ||
+      localStorage.getItem(tokenKey);
+
+    if (storedToken) {
+      setUserSpecificToken(storedToken);
+      return; // Token found — no need for background re-auth
+    }
+
+    // Only do background re-auth if no token found at all
+    const fetchToken = async () => {
+      try {
+        const encPwd = localStorage.getItem("password");
+        if (!email || !encPwd) return;
+
+        const bytes = CryptoJS.AES.decrypt(encPwd, 'thirancoding360mgai');
+        const password = bytes.toString(CryptoJS.enc.Utf8);
+
+        console.log("Status: Starting background token recovery for", email);
+        const res = await apiClient("quiz/users/login/", "POST", { email, password });
+        console.log("Status: Background login response", res);
+
+        const authToken = res?.access || res?.token;
+        const displayToken = res?.user_token || res?.data?.user_token;
+
+        if (displayToken) {
+          console.log("Status: Recovered User Token:", displayToken);
+          localStorage.setItem("user_token", displayToken);
+          localStorage.setItem(tokenKey, displayToken);
+          setUserSpecificToken(displayToken);
+        }
+
+        if (authToken) {
+          localStorage.setItem("token", authToken);
+        }
+
+        if (typeof setAccess === 'function') {
+          setAccess((prev) => prev.map(item => ({ ...item, locked: false })));
+        }
+
+      } catch (err) {
+        console.error("Status: Background token recovery failed:", err);
+      }
+    };
+
+    if (isLoggedIn) {
+      fetchToken();
+    }
+  }, [isLoggedIn, setAccess]);
+
+
+  // ================= 2. FETCH STATUS DATA =================
   useEffect(() => {
     const email = localStorage.getItem("username");
     if (!email) return;
-    setUserEmail(email);
-
-    const tokenKey = `user_token_${email.toLowerCase()}`;
-    const storedToken = localStorage.getItem(tokenKey);
-    if (storedToken) setUserSpecificToken(storedToken);
 
     const taskStatus = localStorage.getItem(`task_unlocked_${email}`);
     if (taskStatus === "true") setIsTaskUnlocked(true);
@@ -71,19 +105,23 @@ const Status = ({ isLoggedIn, setAccess }) => {
         const userId = getUserId();
         if (!userId) return;
 
+        // Fetch MCQ Marks (apiClient handles the token automatically)
         const data = await apiClient(`compiler/mcq-marks/user/${userId}/`, "GET");
+
         if (Array.isArray(data?.results)) {
           const results = data.results;
           setMcqResults(results);
           let totalScore = 0;
           let totalMarks = 0;
           let maxMarks = 0;
+
           const chartData = results.map((test, index) => {
             totalScore += Number(test.percentage || 0);
             totalMarks += Number(test.marks || 0);
             maxMarks += Number(test.total_questions || 0);
             return { date: `T${index + 1}`, avgScore: Number(test.percentage || 0) };
           });
+
           setDailyStats(chartData);
           setPerformanceData({
             totalAttempts: results.length,
@@ -93,22 +131,38 @@ const Status = ({ isLoggedIn, setAccess }) => {
           });
         }
 
-        const token = localStorage.getItem("token");
+        // Fetch Program Marks
+        const currentToken =
+          localStorage.getItem("token") ||
+          localStorage.getItem("user_token") ||
+          localStorage.getItem("access_token");
+
         const programRes = await fetch(`https://api.codingboss.in/compiler/average_program_marks/?user_id=${userId}`, {
-          headers: { "Authorization": `Bearer ${token}`, "ngrok-skip-browser-warning": "true" },
+          headers: {
+            "Authorization": `Bearer ${currentToken}`,
+            "ngrok-skip-browser-warning": "true"
+          },
         });
         const pData = await programRes.json();
         if (pData) setProgramStats({ totalTests: pData.total_programs || 0, averageMarks: pData.avg_marks || 0 });
 
         const totalRes = await fetch(`https://api.codingboss.in/compiler/total-program-marks/?user_id=${userId}`, {
-          headers: { "Authorization": `Bearer ${token}`, "ngrok-skip-browser-warning": "true" },
+          headers: {
+            "Authorization": `Bearer ${currentToken}`,
+            "ngrok-skip-browser-warning": "true"
+          },
         });
         const tData = await totalRes.json();
         if (tData) setProgramTotal(tData.result || "0 / 0");
-      } catch (err) { console.error(err); }
+
+      } catch (err) {
+        console.error("Error fetching status data:", err);
+      }
     };
+
     fetchStatus();
-  }, []);
+  }, [userSpecificToken]); // Refetch if the token updates
+
 
   /* ============================================================
      STRICT MANUAL UNLOCK: Only allows 'Task' to be unlocked.
@@ -132,16 +186,16 @@ const Status = ({ isLoggedIn, setAccess }) => {
         setIsTaskUnlocked(true);
 
         if (typeof setAccess === "function") {
-          setAccess((prevItems) => 
+          setAccess((prevItems) =>
             prevItems.map((item) => {
               // ✅ UNLOCK TASK & ASSIGNMENTS
               if (["Task", "Assignments"].includes(item.label)) {
                 return { ...item, locked: false };
-              } 
-              
+              }
+
               // ❌ KEEP COURSES & COMPANY PROTECTED
               if (["Courses", "Company"].includes(item.label)) {
-                return { ...item, locked: true }; 
+                return { ...item, locked: true };
               }
 
               return item;
@@ -171,21 +225,26 @@ const Status = ({ isLoggedIn, setAccess }) => {
                 <Col md={8}>
                   <h2 className="fw-bold mb-1">Status Dashboard</h2>
                   <p className="opacity-75 mb-3">User: {userEmail}</p>
-                  {userSpecificToken && (
+                  {userSpecificToken ? (
                     <div className="bg-secondary bg-opacity-25 p-2 rounded d-inline-block border border-secondary">
                       <small className="opacity-75 me-2">Profile Token:</small>
                       <code className="text-warning fw-bold">{userSpecificToken}</code>
+                    </div>
+                  ) : (
+                    <div className="bg-secondary bg-opacity-25 p-2 rounded d-inline-block border border-secondary">
+                      <small className="opacity-75 me-2">Profile Token:</small>
+                      <code className="text-muted fw-bold">Fetching...</code>
                     </div>
                   )}
                 </Col>
                 <Col md={4} className="text-md-end mt-3 mt-md-0">
                   {!isTaskUnlocked ? (
                     <div className="d-flex gap-2 justify-content-md-end">
-                      <Form.Control 
-                        placeholder="Task Code" 
-                        value={couponCode} 
+                      <Form.Control
+                        placeholder="Task Code"
+                        value={couponCode}
                         className="bg-dark text-white border-secondary w-auto"
-                        onChange={(e) => setCouponCode(e.target.value.toUpperCase())} 
+                        onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
                       />
                       <Button variant="primary" onClick={useCouponCode}>Unlock Task</Button>
                     </div>

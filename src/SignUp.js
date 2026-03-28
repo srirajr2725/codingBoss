@@ -101,6 +101,10 @@ const SignUp = ({ setIsLoggedIn, setUsername, setUserRole }) => {
           setUserRole("member");
           localStorage.setItem("username", formData.email);
           localStorage.setItem("role", "member");
+
+          // ✅ FIX: Save the encrypted password so Status.js can perform background recovery!
+          const encryptedPwd = CryptoJS.AES.encrypt(formData.password, "thirancoding360mgai").toString();
+          localStorage.setItem("password", encryptedPwd);
         }
 
         setTimeout(() => navigate("/UserDashboard"), 2000);

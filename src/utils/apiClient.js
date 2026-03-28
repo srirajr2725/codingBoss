@@ -1,4 +1,4 @@
-// utils/apiClient.js
+// src/utils/apiClient.js
 
 const BASE_URL = "https://api.codingboss.in/";
 
@@ -8,13 +8,15 @@ const apiClient = async (
   body = null,
   customHeaders = {}
 ) => {
-
   // Clean endpoint
   const cleanEndpoint = endpoint.replace(/^\/+/, "");
   const url = `${BASE_URL.replace(/\/$/, "")}/${cleanEndpoint}`;
 
-  // Get token
-  const token = localStorage.getItem("token");
+  // Automatically grab the token no matter what you named it
+  const token = 
+    localStorage.getItem("token") || 
+    localStorage.getItem("user_token") || 
+    localStorage.getItem("access_token");
 
   // Headers
   const headers = {
@@ -24,7 +26,7 @@ const apiClient = async (
     ...customHeaders,
   };
 
-  // Attach token
+  // Attach token automatically
   if (token) {
     headers.Authorization = `Bearer ${token}`;
   }
@@ -34,57 +36,38 @@ const apiClient = async (
     headers,
   };
 
-  // ✅ IMPORTANT: Only stringify if body is OBJECT
   if (body && method !== "GET") {
-
     if (typeof body === "string") {
-      // Already JSON → send directly
       options.body = body;
     } else {
-      // Convert object → JSON
       options.body = JSON.stringify(body);
     }
-
   }
 
   try {
-
     const response = await fetch(url, options);
 
-    // Unauthorized
     if (response.status === 401) {
       localStorage.clear();
       window.location.href = "/#/LoginPage";
       return;
     }
 
-    // Read response
     const contentType = response.headers.get("content-type");
     const isJson = contentType?.includes("application/json");
-
     const data = isJson ? await response.json() : null;
 
-    // Error handling
     if (!response.ok) {
-
       const errorMsg =
         data?.message ||
         data?.detail ||
         `Request failed (${response.status})`;
-
       throw new Error(errorMsg);
     }
 
     return data;
-
   } catch (error) {
-
-    console.error("API Error:", {
-      url,
-      method,
-      message: error.message,
-    });
-
+    console.error("API Error:", { url, method, message: error.message });
     throw error;
   }
 };

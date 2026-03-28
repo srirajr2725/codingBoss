@@ -326,7 +326,7 @@ const handleProgrammingStartClick = (question) => {
       style={{ fontSize: '1.2em', color: 'gray' }}
     />
   ) : isQuestionCompleted(question.id) ? (
-    'Completed'
+    'Already Attended'
   ) : (
     'Start'
   )}
@@ -355,48 +355,55 @@ const handleProgrammingStartClick = (question) => {
 
         <Card.Title>MCQ Questions</Card.Title>
         <Row>
-          {visibleMcqQuestions.map((question, index) => (
-            <Col key={index} md={12} className="mb-4">
-              <Card className="question-card">
-                <Card.Body className="d-flex justify-content-between align-items-center">
-                  <span
-                    style={{
-                      filter: index >= 2 && !showAll ? 'blur(3.5px)' : 'none',
-                    }}
-                    title={
-                      index >= 2 && !showAll
-                        ? 'Unlock by completing previous levels'
-                        : ''
-                    }
-                  >
-                    {question}
-                  </span>
-                 <Button
-  variant="primary"
-  size="sm"
-  onClick={() => index >= 2 && !showAll ? null : handleNavigateToMcqTestPage(question)}
-  disabled={index >= 2 && !showAll}
-  className="d-flex flex-column align-items-center justify-content-center"
-  style={{
-    minWidth: '80px',
-    height: '30px',
-    backgroundColor:
-      index >= 2 && !showAll ? '#cccccc' : '#017a8c',
-    borderColor:
-      index >= 2 && !showAll ? '#999999' : '#017a8c',
-  }}
->
-  {index >= 2 && !showAll ? (
-    <FaLock style={{ fontSize: '1.2em', color: 'gray' }} />
-  ) : (
-    'Start'
-  )}
-</Button>
+          {visibleMcqQuestions.map((question, index) => {
+            const isMcqTestCompleted = !!localStorage.getItem(`mcq_completed_${userId}_${question}_Technical`);
 
-                </Card.Body>
-              </Card>
-            </Col>
-          ))}
+            return (
+              <Col key={index} md={12} className="mb-4">
+                <Card className="question-card">
+                  <Card.Body className="d-flex justify-content-between align-items-center">
+                    <span
+                      style={{
+                        filter: index >= 2 && !showAll ? 'blur(3.5px)' : 'none',
+                      }}
+                      title={
+                        index >= 2 && !showAll
+                          ? 'Unlock by completing previous levels'
+                          : ''
+                      }
+                    >
+                      {question}
+                    </span>
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      onClick={() => (index >= 2 && !showAll || isMcqTestCompleted) ? null : handleNavigateToMcqTestPage(question)}
+                      disabled={index >= 2 && !showAll || isMcqTestCompleted}
+                      className="d-flex flex-column align-items-center justify-content-center"
+                      style={{
+                        minWidth: '80px',
+                        height: '30px',
+                        backgroundColor: isMcqTestCompleted 
+                          ? '#28a745' 
+                          : (index >= 2 && !showAll ? '#cccccc' : '#017a8c'),
+                        borderColor: isMcqTestCompleted 
+                          ? '#28a745' 
+                          : (index >= 2 && !showAll ? '#999999' : '#017a8c'),
+                      }}
+                    >
+                      {index >= 2 && !showAll ? (
+                        <FaLock style={{ fontSize: '1.2em', color: 'gray' }} />
+                      ) : isMcqTestCompleted ? (
+                        'Already Attended'
+                      ) : (
+                        'Start'
+                      )}
+                    </Button>
+                  </Card.Body>
+                </Card>
+              </Col>
+            );
+          })}
         </Row>
       </Container>
     </>
