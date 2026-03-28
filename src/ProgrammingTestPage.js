@@ -79,17 +79,7 @@ const ProgrammingTestPage = ({
 
   const [submissionMessage, setSubmissionMessage] = useState("");
 
-  /* ================= AUTH CHECK ================= */
-
-  useEffect(() => {
-
-    const token = localStorage.getItem("token");
-
-    if (!token) {
-      navigate("/LoginPage");
-    }
-
-  }, [navigate]);
+  // Auth is handled by App.js
 
   /* ================= FETCH QUESTIONS ================= */
 
@@ -103,9 +93,9 @@ const ProgrammingTestPage = ({
         setError("");
 
         const token = localStorage.getItem("token");
-
         if (!token) {
-          navigate("/LoginPage");
+          setError("Session invalid. Please login again.");
+          setLoading(false);
           return;
         }
 
@@ -142,17 +132,39 @@ const ProgrammingTestPage = ({
           throw new Error("Not JSON (Ngrok HTML page)");
         }
 
-        if (!Array.isArray(data)) {
+        let questionsArray = data;
+
+        // Handle object wrapper and merge parallel base_tests array into questions array
+        if (data && !Array.isArray(data)) {
+          if (Array.isArray(data.questions)) {
+            questionsArray = data.questions.map((q, idx) => {
+              // Attach the corresponding base_test to the question based on array index
+              if (data.base_tests && data.base_tests[idx]) {
+                return { ...q, base_tests: [data.base_tests[idx]] };
+              }
+              return q;
+            });
+          } else if (Array.isArray(data.base_tests)) {
+            questionsArray = data.base_tests;
+          } else if (Array.isArray(data.data)) {
+            questionsArray = data.data;
+          }
+        }
+
+        if (!Array.isArray(questionsArray)) {
           throw new Error("Invalid API format");
         }
 
-        setQuestions(data);
+        setQuestions(questionsArray);
 
         // Default LOW
-        const low = data
-          .filter((q) => q.level === "Low")
-          .sort(() => 0.5 - Math.random())
-          .slice(0, 5);
+        const low = questionsArray
+          .filter((q) => {
+            const diff = q.level || q.difficulty || "Low";
+            return diff.toLowerCase() === "low";
+          })
+          .sort(() => 0.5 - Math.random());
+          // .slice(0, 5); // Show all by default or at least more than 5? User said they are not fetched.
 
         setFilteredQuestions(low);
 
@@ -184,9 +196,12 @@ const ProgrammingTestPage = ({
     if (level === "High") setNeedleLevel(2);
 
     const filtered = questions
-      .filter((q) => q.level === level)
-      .sort(() => 0.5 - Math.random())
-      .slice(0, level === "Low" ? 5 : 2);
+      .filter((q) => {
+        const diff = q.level || q.difficulty || "Low";
+        return diff.toLowerCase() === level.toLowerCase();
+      })
+      .sort(() => 0.5 - Math.random());
+      // .slice(0, level === "Low" ? 5 : 2); // Removed slice to show all questions
 
     setFilteredQuestions(filtered);
   };
@@ -270,7 +285,7 @@ const ProgrammingTestPage = ({
         <div className="level-buttons-container">
 
           <button
-            className={`level-button Low ${
+            className={`level-button low ${
               filterLevel === "Low" ? "selected" : ""
             }`}
             onClick={() => handleFilter("Low")}
@@ -279,7 +294,7 @@ const ProgrammingTestPage = ({
           </button>
 
           <button
-            className={`level-button Medium ${
+            className={`level-button medium ${
               filterLevel === "Medium" ? "selected" : ""
             }`}
             onClick={() => handleFilter("Medium")}
@@ -288,7 +303,7 @@ const ProgrammingTestPage = ({
           </button>
 
           <button
-            className={`level-button High ${
+            className={`level-button high ${
               filterLevel === "High" ? "selected" : ""
             }`}
             onClick={() => handleFilter("High")}

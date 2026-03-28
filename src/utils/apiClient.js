@@ -54,7 +54,7 @@ const apiClient = async (
     // Unauthorized
     if (response.status === 401) {
       localStorage.clear();
-      window.location.href = "/LoginPage";
+      window.location.href = "/#/LoginPage";
       return;
     }
 

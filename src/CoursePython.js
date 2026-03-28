@@ -13,7 +13,7 @@ import {
   Spinner,
   Alert,
 } from 'react-bootstrap'
-const CourseJava = ({ isLoggedIn,setIsLoggedIn, userRole, handleLogout, username }) => {
+const CoursePython = ({ isLoggedIn, setIsLoggedIn, userRole, handleLogout, username }) => {
   const [topics, setTopics] = useState([]);
   const [languages, setLanguages] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -23,36 +23,10 @@ const CourseJava = ({ isLoggedIn,setIsLoggedIn, userRole, handleLogout, username
 
 
   useEffect(() => {
-        if (!isLoggedIn) {
-          if(localStorage.getItem("username") && localStorage.getItem("password")){
-            const email = localStorage.getItem("username");
-            const EncryptPassword = localStorage.getItem("password");
-            const bytes = CryptoJS.AES.decrypt(EncryptPassword, 'thirancoding360mgai');
-            const password = bytes.toString(CryptoJS.enc.Utf8);
-            const Login = async () => {
-              try {
-                const response = await apiClient(
-                  "quiz/users/login/",
-                  "POST",
-                  JSON.stringify({ email, password }),
-                  { "Content-Type": "application/json" }
-                );
-                if (!response.status === "success") {
-                  navigate('/LoginPage');
-                }
-                setIsLoggedIn(true);
-              } catch (error) {
-                navigate('/LoginPage');
-              }
-            }
-            Login();
-          }
-          else {
-            
-            navigate('/LoginPage');
-          }
-        } 
-      }, [isLoggedIn, navigate])
+    if (!isLoggedIn) {
+      navigate('/LoginPage');
+    }
+  }, [isLoggedIn, navigate]);
 
 
   useEffect(() => {
@@ -139,55 +113,55 @@ const CourseJava = ({ isLoggedIn,setIsLoggedIn, userRole, handleLogout, username
           <div className="content-body">
             {topics.length > 0 ? (
               <>
-              <div>{topics[currentIndex].content || 'No content available.'}</div>
-              <br />
+                <div>{topics[currentIndex].content || 'No content available.'}</div>
+                <br />
 
-              {topics[currentIndex].expected_output && (
-  <a href={topics[currentIndex].expected_output} target="_blank" rel="noopener noreferrer">
-    <button style={{
-      padding: '10px 20px',
-      fontSize: '16px',
-      backgroundColor: '#007bff',
-      color: '#fff',
-      border: 'none',
-      borderRadius: '5px',
-      cursor: 'pointer',
-      transition: 'background 0.3s',
-    }}
-    onMouseOver={(e) => e.target.style.backgroundColor = '#0056b3'}
-    onMouseOut={(e) => e.target.style.backgroundColor = '#007bff'}
-    >
-     {topics[currentIndex].expected_output}
-    </button>
-  </a>
-)}
+                {topics[currentIndex].expected_output && (
+                  <a href={topics[currentIndex].expected_output} target="_blank" rel="noopener noreferrer">
+                    <button style={{
+                      padding: '10px 20px',
+                      fontSize: '16px',
+                      backgroundColor: '#007bff',
+                      color: '#fff',
+                      border: 'none',
+                      borderRadius: '5px',
+                      cursor: 'pointer',
+                      transition: 'background 0.3s',
+                    }}
+                      onMouseOver={(e) => e.target.style.backgroundColor = '#0056b3'}
+                      onMouseOut={(e) => e.target.style.backgroundColor = '#007bff'}
+                    >
+                      {topics[currentIndex].expected_output}
+                    </button>
+                  </a>
+                )}
 
 
-            {topics[currentIndex].question  &&  <Card className="question-card">
+                {topics[currentIndex].question && <Card className="question-card">
                   <Card.Body className="d-flex justify-content-between align-items-center">
-                    <span style={{textAlign:'left'}}>
+                    <span style={{ textAlign: 'left' }}>
                       {topics[currentIndex].question}
                     </span>
 
                     <Button
-                    variant="primary"
-                    size="sm"
-                    onClick={() => handleStart(topics[currentIndex].position)} // Pass the question object including ID
-                    className="d-flex flex-column align-items-center justify-content-center"
-                    style={{
-                      minWidth: '80px',
-                      height: '30px',
-                      backgroundColor: '#017a8c', // Button background color
-                      borderColor: '#017a8c', // Button border color
-                    }} // Consistent button size
-                  >
-                    Start
-                  </Button>
+                      variant="primary"
+                      size="sm"
+                      onClick={() => handleStart(topics[currentIndex].position)} // Pass the question object including ID
+                      className="d-flex flex-column align-items-center justify-content-center"
+                      style={{
+                        minWidth: '80px',
+                        height: '30px',
+                        backgroundColor: '#017a8c', // Button background color
+                        borderColor: '#017a8c', // Button border color
+                      }} // Consistent button size
+                    >
+                      Start
+                    </Button>
 
                   </Card.Body>
                 </Card>}
 
-              </> 
+              </>
             ) : (
               <p>Select a topic to see its content.</p>
             )}
@@ -203,4 +177,4 @@ const CourseJava = ({ isLoggedIn,setIsLoggedIn, userRole, handleLogout, username
   );
 };
 
-export default CourseJava;
+export default CoursePython;

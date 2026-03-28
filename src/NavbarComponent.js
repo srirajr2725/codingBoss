@@ -94,12 +94,15 @@ const NavbarComponent = ({ isLoggedIn, setIsLoggedIn, userRole, handleLogout, pr
                 updateProgress(Math.floor(completionPercent));
             }
         } catch (error) {
-            console.error("Error fetching profile completion:", error);
+            // Silence 404 as it is expected for new users/non-trainers
+            if (!error.message.includes('404')) {
+                console.error("Error fetching profile completion:", error);
+            }
         }
     };
 
     useEffect(() => {
-        if (isLoggedIn && userid) {
+        if (isLoggedIn && userid && userRole === 'company') {
             fetchProfileCompletion();
         }
     }, [isLoggedIn, userRole, userid]);
@@ -173,9 +176,14 @@ const NavbarComponent = ({ isLoggedIn, setIsLoggedIn, userRole, handleLogout, pr
                                 </Dropdown>
                             </Nav>
                         ) : (
-                            <div className="d-flex justify-content-center">
+                            <div className="d-flex justify-content-center align-items-center">
+                                <Link to="/signup" className="me-2">
+                                    <Button variant="outline-warning" className="get-started-btn my-3 mt-lg-0 my-lg-0">
+                                        <b>Sign Up</b>
+                                    </Button>
+                                </Link>
                                 <Link to="/LoginPage">
-                                    <Button variant="warning" className="get-started-btn my-3 me-3 mt-3 mt-lg-0 my-lg-0">
+                                    <Button variant="warning" className="get-started-btn my-3 mt-lg-0 my-lg-0">
                                         <b>Login</b>
                                     </Button>
                                 </Link>

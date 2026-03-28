@@ -5,14 +5,36 @@ import CryptoJS from "crypto-js";
 import apiClient from "./utils/apiClient";
 import "./Status.css";
 
-const Status = ({ setAccess }) => {
+const Status = ({ isLoggedIn, setAccess }) => {
   const [userEmail, setUserEmail] = useState("");
   const [mcqResults, setMcqResults] = useState([]);
   const [dailyStats, setDailyStats] = useState([]);
   const [userSpecificToken, setUserSpecificToken] = useState("");
   const [programStats, setProgramStats] = useState({ totalTests: 0, averageMarks: 0 });
   const [programTotal, setProgramTotal] = useState("0 / 0");
-  const [performanceData, setPerformanceData] = useState({ totalAttempts: 0, averageScore: 0 });
+  const [performanceData, setPerformanceData] = useState({ totalAttempts: 0, averageScore: 0, totalMarks: 0, maxMarks: 0 });
+
+  useEffect(() => {
+    const fetchToken = async () => {
+      try {
+        const response = await apiClient("quiz/generate-token/", "GET");
+        if (response?.access_token) {
+          localStorage.setItem("user_token", response.access_token);
+          localStorage.setItem("token", response.access_token); // ✅ KEY: Store for permanent API access
+          if (typeof setAccess === 'function') {
+            setAccess((prev) => prev.map(item => ({ ...item, locked: false })));
+          }
+          setUserSpecificToken(response.access_token);
+        }
+      } catch (err) {
+        console.error("Token fetch failed:", err);
+      }
+    };
+
+    if (isLoggedIn) {
+      fetchToken();
+    }
+  }, [isLoggedIn, setAccess]);
 
   const [isTaskUnlocked, setIsTaskUnlocked] = useState(false);
   const [couponCode, setCouponCode] = useState("");
@@ -54,14 +76,20 @@ const Status = ({ setAccess }) => {
           const results = data.results;
           setMcqResults(results);
           let totalScore = 0;
+          let totalMarks = 0;
+          let maxMarks = 0;
           const chartData = results.map((test, index) => {
             totalScore += Number(test.percentage || 0);
+            totalMarks += Number(test.marks || 0);
+            maxMarks += Number(test.total_questions || 0);
             return { date: `T${index + 1}`, avgScore: Number(test.percentage || 0) };
           });
           setDailyStats(chartData);
           setPerformanceData({
             totalAttempts: results.length,
             averageScore: results.length > 0 ? (totalScore / results.length).toFixed(1) : 0,
+            totalMarks,
+            maxMarks
           });
         }
 
@@ -106,16 +134,17 @@ const Status = ({ setAccess }) => {
         if (typeof setAccess === "function") {
           setAccess((prevItems) => 
             prevItems.map((item) => {
-              if (item.label === "Task") {
-                return { ...item, locked: false }; // ✅ UNLOCK ONLY TASK
+              // ✅ UNLOCK TASK & ASSIGNMENTS
+              if (["Task", "Assignments"].includes(item.label)) {
+                return { ...item, locked: false };
               } 
               
-              // ❌ MANUALLY BLOCK EVERYTHING ELSE
-              if (["Courses", "Assignments", "Company"].includes(item.label)) {
+              // ❌ KEEP COURSES & COMPANY PROTECTED
+              if (["Courses", "Company"].includes(item.label)) {
                 return { ...item, locked: true }; 
               }
 
-              return item; // Keep Home/Status/Profile as they are
+              return item;
             })
           );
         }
@@ -180,8 +209,10 @@ const Status = ({ setAccess }) => {
         </Col>
         <Col md={3} sm={6} className="mb-3">
           <Card className="p-3 border-0 shadow-sm">
-            <small className="text-muted">MCQ Avg</small>
-            <h4 className="fw-bold text-success">{performanceData.averageScore}%</h4>
+            <small className="text-muted">MCQ Score</small>
+            <h4 className="fw-bold text-success">
+              {performanceData.totalMarks} / {performanceData.maxMarks}
+            </h4>
           </Card>
         </Col>
         <Col md={3} sm={6} className="mb-3">
@@ -231,6 +262,9 @@ const Status = ({ setAccess }) => {
                     <small className="text-muted">{test.subtype}</small>
                   </div>
                   <div className="text-end">
+                    <span className="d-block text-muted small">
+                      Marks: {test.marks} / {test.total_questions}
+                    </span>
                     <span className={`fw-bold ${test.percentage >= 60 ? "text-success" : "text-danger"}`}>
                       {test.percentage}%
                     </span>

@@ -1,10 +1,11 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import CryptoJS from "crypto-js";
 import apiClient from "./utils/apiClient";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import "./LoginPage.css";
 import Spline from "@splinetool/react-spline";
+import ErrorBoundary from "./Components/ErrorBoundary.js";
 
 const LoginPage = ({ setIsLoggedIn, setUsername, setUserRole }) => {
   const [email, setEmail] = useState("");
@@ -45,8 +46,9 @@ const LoginPage = ({ setIsLoggedIn, setUsername, setUserRole }) => {
       setUsername(email);
       setUserRole(response.role);
 
-      // Store email
+      // Store email and role
       localStorage.setItem("username", email);
+      localStorage.setItem("role", response.role);
 
       // ✅ NEW: Store the User Token based on Login Response
       // This ensures the Status page can find it immediately after login
@@ -109,7 +111,9 @@ const LoginPage = ({ setIsLoggedIn, setUsername, setUserRole }) => {
         </h1>
 
         <div className="spline-wrappers">
-          <Spline scene="https://prod.spline.design/dpkpao3qhr3jJYMz/scene.splinecode" />
+          <ErrorBoundary>
+            <Spline scene="https://prod.spline.design/dpkpao3qhr3jJYMz/scene.splinecode" />
+          </ErrorBoundary>
         </div>
       </div>
 
@@ -172,7 +176,7 @@ const LoginPage = ({ setIsLoggedIn, setUsername, setUserRole }) => {
         {/* SIGNUP */}
         <p className="signup-text">
           Don't have an account?{" "}
-          <a href="/SignUp">Create Account</a>
+          <Link to="/signup">Create Account</Link>
         </p>
 
       </div>

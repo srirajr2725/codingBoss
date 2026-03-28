@@ -1,204 +1,143 @@
 import React, { useState, useEffect } from "react";
-import {
-  BrowserRouter as Router,
-  Route,
-  Routes,
-  Navigate,
-  useLocation,
-} from "react-router-dom";
+import { HashRouter as Router, Route, Routes, Navigate } from "react-router-dom";
 import "./index.css";
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 // Components
 import Preloader from "./Preloader.js";
-import Banner from "./Banner.js";
-import LogoSection from "./LogoSection.js";
-import Footer from "./Footer.js";
 import SignUp from "./SignUp.js";
 import LoginPage from "./LoginPage.js";
-import Test from "./Test.js";
+import NavbarComponent from "./NavbarComponent.js";
+import Banner from "./Banner.js";
+import Footer from "./Footer.js";
+import Status from "./Status.js";
+import CourseCard from "./CourseCard.js";
 import McqTestPage from "./McqTestPage.js";
-import QuestionPage from "./QuestionPage";
 import ProgrammingTestPage from "./ProgrammingTestPage.js";
 import CourseJava from "./CourseJava.js";
 import CoursePython from "./CoursePython.js";
 import CourseC from "./CourseC.js";
 import Dashboard from "./Dashboard.js";
-import CoursesSection from "./CoursesSection.js";
 import Userdashboard from "./CollegeAdminDashboard.js";
 import Admindashboardg from "./CollegeStudentDashboard.js";
 import UploadQuestions from "./Uploadquestions.js";
 import TestPage from "./Testpage.js";
 import Company from "./Company.js";
-import OurOfferings from "./OurOfferings.js";
-import WhyUs from "./WhyUs.js";
-import TrainerDashboard from "./TrainingComponent/TrainerDashboard.js";
 import Assignments from "./Assignments.js";
-import Status from "./Status.js";
-import AdminPanel from "./TrainingComponent/AdminPanel";
-import ProjectForm from "./ProjectForm.js";
-import QueriesPage from "./QueriesPage.js";
-import CounterSection from "./CounterSection.js";
-import NavbarComponent from "./NavbarComponent.js";
 import InstructionPage from './InstructionPage.jsx';
-import CourseCard from "./CourseCard.js";
 import ResultsPage from "./ResultsPage.js";
 import CourseDjango from "./django.js";
+import QuestionPage from "./QuestionPage.js";
+import ProjectForm from "./ProjectForm.js";
+import AdminPanel from "./TrainingComponent/AdminPanel.js";
+import TrainerDashboard from "./TrainingComponent/TrainerDashboard.js";
 
 function AppWrapper() {
-  const location = useLocation();
-
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [username, setUsername] = useState("");
-  const [userRole, setUserRole] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [password, setPassword] = useState("");
-
-  // ✅ 1. New Access State
+  const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem("username"));
+  const [username, setUsername] = useState(localStorage.getItem("username") || "");
+  const [userRole, setUserRole] = useState(localStorage.getItem("role") || "");
+  const [loading, setLoading] = useState(false);
   const [access, setAccess] = useState([
     { id: 1, name: "MCQ Test", locked: true },
     { id: 2, name: "Programming", locked: true },
   ]);
 
-  // ✅ 2. Persistence: Restore access if user_token exists in localStorage
   useEffect(() => {
+    // Check access
     const unlocked = localStorage.getItem("user_token");
     if (unlocked) {
       setAccess((prev) => prev.map(item => ({ ...item, locked: false })));
     }
-  }, [username]); // Re-check whenever user changes
 
-  useEffect(() => {
-    const hasVisited = localStorage.getItem("hasVisited");
-    if (!hasVisited) {
-      setLoading(true);
-      setTimeout(() => {
-        setLoading(false);
-        localStorage.setItem("hasVisited", "true");
-      }, 3000);
-    } else {
-      setLoading(false);
-    }
-  }, []);
+    // 🔥 AUTO-FETCH ACCESS TOKEN IF MISSING
+    const fetchPermToken = async () => {
+      const email = localStorage.getItem("username");
+      const token = localStorage.getItem("token");
 
-  useEffect(() => {
-    if (location.pathname === "/") {
-      handleLogout();
+      if (email && !token) {
+        try {
+          const response = await fetch("https://api.codingboss.in/quiz/generate-token/", {
+            headers: { "ngrok-skip-browser-warning": "true" }
+          });
+          const data = await response.json();
+          if (data?.access_token) {
+            localStorage.setItem("token", data.access_token);
+            localStorage.setItem("user_token", data.access_token);
+            console.log("Access token fetched and stored permanently.");
+          }
+        } catch (err) {
+          console.error("Auto-token fetch failed:", err);
+        }
+      }
+    };
+
+    if (isLoggedIn) {
+      fetchPermToken();
     }
-  }, [location]);
+  }, [isLoggedIn]);
 
   const handleLogout = () => {
     setIsLoggedIn(false);
     setUsername("");
     setUserRole("");
-    setPassword("");
     localStorage.removeItem("username");
-    localStorage.removeItem("password");
     localStorage.removeItem("role");
     localStorage.removeItem("userID");
-    localStorage.removeItem("sessionUnlockedKeys");
-    
-    // ✅ 3. Clear access on logout
-    localStorage.removeItem("user_token");
-    localStorage.removeItem("unlock_toast_pending");
-    setAccess((prev) => prev.map(item => ({ ...item, locked: true })));
+    localStorage.removeItem("token");
   };
 
-  const renderHome = () => (
-    <>
-      <NavbarComponent
-        isLoggedIn={isLoggedIn}
-        setIsLoggedIn={setIsLoggedIn}
-        username={username}
-        userRole={userRole}
-        handleLogout={handleLogout}
-      />
-      <Banner isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} />
-      <CoursesSection />
-      <OurOfferings />
-      <WhyUs />
-      <LogoSection />
-      <CounterSection />
-      <QueriesPage />
-      <Footer />
-    </>
-  );
+  const renderHome = () => {
+    if (isLoggedIn) {
+      return <Navigate to="/UserDashboard" replace />;
+    }
+    return (
+      <>
+        <NavbarComponent {...{ isLoggedIn, username, userRole, handleLogout, setAccess }} />
+        <Banner isLoggedIn={isLoggedIn} />
+        <Footer />
+      </>
+    );
+  };
 
-  return loading ? (
-    <Preloader />
-  ) : (
+  return (
     <Routes>
+      <Route path="/signup" element={<SignUp {...{ setIsLoggedIn, setUsername, setUserRole }} />} />
+      <Route path="/LoginPage" element={<LoginPage {...{ setIsLoggedIn, setUsername, setUserRole }} />} />
       <Route path="/" element={renderHome()} />
-      <Route path="/LoginPage" element={
-        <LoginPage
-          setIsLoggedIn={setIsLoggedIn}
-          setUsername={setUsername}
-          setUserRole={setUserRole}
-        />
-      } />
-      <Route path="/SignUp" element={
-        <SignUp
-          setIsLoggedIn={setIsLoggedIn}
-          setUsername={setUsername}
-          setUserRole={setUserRole}
-        />
-      } />
+      <Route path="/SignUp" element={<Navigate to="/signup" replace />} />
       
-      {/* ✅ 4. Pass access state to all relevant routes */}
-      <Route path="/Status" element={
-        <Status {...{ isLoggedIn, username, userRole, handleLogout, setAccess }} />
-      } />
-      
-      <Route path="/CourseCard" element={
-        <CourseCard {...{ isLoggedIn, username, access, handleLogout }} />
-      } />
-
-      <Route path="/McqTestPage" element={
-        <McqTestPage {...{ isLoggedIn, username, access, handleLogout }} />
-      } />
-
-      <Route path="/ProgrammingTestPage" element={
-        <ProgrammingTestPage {...{ isLoggedIn, username, access, handleLogout }} />
-      } />
-
+      <Route path="/Status" element={<Status {...{ isLoggedIn, username, userRole, handleLogout, setAccess }} />} />
+      <Route path="/CourseCard" element={<CourseCard {...{ isLoggedIn, username, access, handleLogout }} />} />
+      <Route path="/McqTestPage" element={<McqTestPage {...{ isLoggedIn, username, access, handleLogout }} />} />
+      <Route path="/ProgrammingTestPage" element={<ProgrammingTestPage {...{ isLoggedIn, username, access, handleLogout }} />} />
       <Route path="/CourseJava" element={<CourseJava {...{ isLoggedIn, username, access, handleLogout }} />} />
       <Route path="/CoursePython" element={<CoursePython {...{ isLoggedIn, username, access, handleLogout }} />} />
       <Route path="/CourseC" element={<CourseC {...{ isLoggedIn, username, access, handleLogout }} />} />
-
-      {/* Other components remain unchanged */}
-      <Route path="/Dashboard" element={<Dashboard {...{ isLoggedIn, username, handleLogout }} />} />
-      <Route path="/adminDashboard" element={<Userdashboard {...{ isLoggedIn, username, handleLogout }} />} />
-      <Route path="/Userdashboard" element={<Admindashboardg {...{ isLoggedIn, username, handleLogout }} />} />
-      <Route path="/TestPage" element={<TestPage {...{ isLoggedIn, username, handleLogout }} />} />
-      <Route path="/Uploadquestions" element={<UploadQuestions {...{ isLoggedIn, username, handleLogout }} />} />
-      <Route path="/Company" element={<Company {...{ isLoggedIn, username, handleLogout }} />} />
-      <Route path="/assignments" element={<Assignments {...{ isLoggedIn, username, handleLogout }} />} />
-      <Route path="/instructions" element={<InstructionPage {...{ isLoggedIn, username, handleLogout }} />} />
-      <Route path="/TestResults" element={<ResultsPage {...{ isLoggedIn, username, handleLogout }} />} />
-      <Route path="/TrainerDashboard" element={<TrainerDashboard {...{ isLoggedIn, username, handleLogout }} />} />
-      <Route path="/AdminPanel" element={<AdminPanel {...{ isLoggedIn, username, handleLogout }} />} />
-      <Route path="/projects/:projectName" element={<ProjectForm />} />
-      <Route path="*" element={<Navigate to="/" replace />} />
       <Route path="/CourseDjango" element={<CourseDjango {...{ isLoggedIn, username, access, handleLogout }} />} />
-           <Route
-        path="/QuestionPage"
-        element={
-          <QuestionPage
-            isLoggedIn={isLoggedIn}
-            setIsLoggedIn={setIsLoggedIn}
-            username={username}
-            userRole={userRole}
-            handleLogout={handleLogout}
-          />
-        }
-      />
+      
+      <Route path="/Dashboard" element={<Dashboard {...{ isLoggedIn, setIsLoggedIn, setUserRole, username, handleLogout }} />} />
+      <Route path="/adminDashboard" element={<Userdashboard {...{ isLoggedIn, setIsLoggedIn, setUserRole, username, handleLogout, userRole }} />} />
+      <Route path="/UserDashboard" element={<Admindashboardg {...{ isLoggedIn, setIsLoggedIn, setUserRole, username, handleLogout, userRole }} />} />
+      
+      <Route path="/TestPage" element={<TestPage {...{ isLoggedIn, setIsLoggedIn, setUserRole, username, handleLogout }} />} />
+      <Route path="/Uploadquestions" element={<UploadQuestions {...{ isLoggedIn, setIsLoggedIn, setUserRole, username, handleLogout }} />} />
+      <Route path="/Company" element={<Company {...{ isLoggedIn, setIsLoggedIn, setUserRole, username, handleLogout }} />} />
+      <Route path="/assignments" element={<Assignments {...{ isLoggedIn, setIsLoggedIn, setUserRole, username, handleLogout }} />} />
+      <Route path="/instructions" element={<InstructionPage {...{ isLoggedIn, setIsLoggedIn, setUserRole, username, handleLogout }} />} />
+      <Route path="/TestResults" element={<ResultsPage {...{ isLoggedIn, setIsLoggedIn, setUserRole, username, handleLogout }} />} />
+      <Route path="/TrainerDashboard" element={<TrainerDashboard {...{ isLoggedIn, setIsLoggedIn, setUserRole, username, handleLogout, userRole }} />} />
+      <Route path="/AdminPanel" element={<AdminPanel {...{ isLoggedIn, setIsLoggedIn, setUserRole, username, handleLogout, userRole }} />} />
+      <Route path="/projects/:projectName" element={<ProjectForm />} />
+      <Route path="/QuestionPage" element={<QuestionPage {...{ isLoggedIn, setIsLoggedIn, username, userRole, handleLogout }} />} />
+      
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }
 
 function App() {
   return (
-    <Router>
+    <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <AppWrapper />
     </Router>
   );

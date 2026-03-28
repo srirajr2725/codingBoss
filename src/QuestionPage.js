@@ -49,7 +49,6 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
   // Test/Security States
   const [isTestSubmitted, setIsTestSubmitted] = useState(false);
   const [tabSwitchCount, setTabSwitchCount] = useState(0);
-  const [pasteAttemptCount, setPasteAttemptCount] = useState(0);
   const [showConfirmation, setShowConfirmation] = useState(false);
   
   // User States
@@ -123,20 +122,33 @@ useEffect(() => {
     const fetchQuestionData = async () => {
       try {
         const data = await apiClient(`compiler/question/?question_id=${questionId}`, 'GET');
-        setQuestionData(data[0]);
-        if (data[0]?.test_cases_count) {
-          setTotalCases(data[0].test_cases_count);
+        const activeData = Array.isArray(data) ? data[0] : data;
+        setQuestionData(activeData);
+        if (activeData?.test_cases_count) {
+          setTotalCases(activeData.test_cases_count);
         }
       } catch (err) {
         toast.error('Error fetching question details');
       }
     };
 
+    // 🔥 ALREADY COMPLETED CHECK
+    try {
+      const completedIds = JSON.parse(localStorage.getItem('completedQuestions') || '[]');
+      if (questionId && completedIds.includes(questionId)) {
+        toast.info("You have already completed this question.");
+        setTimeout(() => navigate('/UserDashboard'), 1500);
+        return;
+      }
+    } catch (e) {
+      console.error("Error checking completed questions", e);
+    }
+
     fetchLanguages();
     if (questionId) {
       fetchQuestionData();
     }
-  }, [questionId]);
+  }, [questionId, navigate]);
 
   // ============================================================
   // ANTI-CHEAT MEASURES
@@ -185,7 +197,7 @@ useEffect(() => {
       language: selectedLanguage,
       time_taken: timeTaken,
       tab_switches: tabSwitchCount,
-      paste_attempts: pasteAttemptCount,
+      paste_attempts: 0,
       terminated: true, // flag
     };
 
@@ -195,7 +207,7 @@ useEffect(() => {
     console.error("Force close error:", err);
   }
   setTimeout(() => {
-    navigate("/Userdashboard");
+    navigate("/UserDashboard");
   }, 2000);
 };
 
@@ -258,6 +270,10 @@ const handleTabSwitch = useCallback(() => {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, [handleTabSwitch, isTestSubmitted]);
+
+// ============================================================
+// STRONG COPY / PASTE / CUT / RIGHT CLICK BLOCK
+// ============================================================
 
 // ============================================================
 // STRONG COPY / PASTE / CUT / RIGHT CLICK BLOCK
@@ -448,11 +464,11 @@ const handleRunTestCases = async () => {
 
     console.log("Run Test Response:", response); 
     if (
-      typeof response?.passed_cases === "number" &&
+      typeof response?.passed === "number" &&
       typeof response?.total_cases === "number"
     ) {
 
-      setPassedCases(response.passed_cases);
+      setPassedCases(response.passed);
       setTotalCases(response.total_cases);
 
       // store full response
@@ -505,9 +521,9 @@ const handleRunTestCases = async () => {
         question_id: questionId,
         source_code: sourceCode,
         language: selectedLanguage,
-        time_taken: timeTaken,
-        tab_switches: tabSwitchCount,
-        paste_attempts: pasteAttemptCount
+        // time_taken: timeTaken,
+        // tab_switches: tabSwitchCount,
+        // paste_attempts: 0
       };
 
       // Submit to backend
@@ -535,7 +551,7 @@ const handleRunTestCases = async () => {
         submissionId: response?.submission_id,
         grade: response?.grade,
         feedback: response?.feedback,
-        testcases: testCaseResults?.test_results || []
+        testcases: testCaseResults?.results || []
       };
 
       // Store results
@@ -558,7 +574,7 @@ const handleRunTestCases = async () => {
       
       // Navigate to results
       setTimeout(() => {
-        navigate('/TestResults', { state: { results } });
+        navigate('/UserDashboard');
       }, 1000);
 
     } catch (error) {
@@ -672,6 +688,15 @@ int main() {
   // RENDER
   // ============================================================
   
+  const baseTest = questionData?.base_tests?.[0] || question?.base_tests?.[0] || {};
+  const displayTitle = questionData?.title || question?.title || baseTest?.title || 'Coding Challenge';
+  const displayLevel = questionData?.difficulty || questionData?.level || question?.level || 'Medium';
+  const displayContent = questionData?.content || question?.content || baseTest?.content;
+  const displayQuestion = questionData?.question || question?.question || baseTest?.question || 'No question available';
+  const displayDescription = questionData?.description || question?.description || baseTest?.description || 'No description available';
+  const displayInput = questionData?.input_data || question?.input_data || baseTest?.input_data;
+  const displayOutput = questionData?.expected_output || question?.expected_output || baseTest?.expected_output;
+
   return (
        <div className="coding-scope">
          <div className="coding-scroll">
@@ -701,21 +726,48 @@ int main() {
               </div>
               <div className="question-details">
                 <div className="question-title">
-                  <h4>{questionData?.title || question?.title || 'Coding Challenge'}</h4>
-                  <span className={`difficulty-badge ${questionData?.difficulty?.toLowerCase()}`}>
-                    {questionData?.difficulty || 'Medium'}
+                  <h4>{displayTitle}</h4>
+                  <span className={`difficulty-badge ${displayLevel.toLowerCase()}`}>
+                    {displayLevel}
                   </span>
                 </div>
                 
+                {displayContent && (
+                  <div className="question-description">
+                    <h5>Content</h5>
+                    <p>{displayContent}</p>
+                  </div>
+                )}
+                
                 <div className="question-description">
                   <h5>Problem Statement</h5>
-                  <p>{questionData?.question || 'No question available'}</p>
+                  <p>{displayQuestion}</p>
                 </div>
                 
                 <div className="question-description">
                   <h5>Description</h5>
-                  <p>{questionData?.description || 'No description available'}</p>
+                  <p>{displayDescription}</p>
                 </div>
+                
+                {(displayInput || displayOutput) && (
+                  <div className="question-examples">
+                    <h5>Sample Input & Output</h5>
+                    <div className="example-block">
+                      {displayInput && (
+                        <div style={{ marginBottom: displayOutput ? '10px' : '0' }}>
+                          <strong>Input:</strong>
+                          <pre style={{ margin: '5px 0 0 0', padding: '10px', background: 'var(--primary-bg)', borderRadius: '4px', color: '#ce9178', whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontSize: '13px', fontFamily: "'Consolas', 'Monaco', monospace" }}>{displayInput}</pre>
+                        </div>
+                      )}
+                      {displayOutput && (
+                        <div>
+                          <strong>Output:</strong>
+                          <pre style={{ margin: '5px 0 0 0', padding: '10px', background: 'var(--primary-bg)', borderRadius: '4px', color: '#ce9178', whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontSize: '13px', fontFamily: "'Consolas', 'Monaco', monospace" }}>{displayOutput}</pre>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
                 
                 {questionData?.constraints && (
                   <div className="question-constraints">
@@ -726,7 +778,7 @@ int main() {
                 
                 {questionData?.examples && questionData.examples.length > 0 && (
                   <div className="question-examples">
-                    <h5>Examples</h5>
+                    <h5>Additional Examples</h5>
                     {questionData.examples.map((example, idx) => (
                       <div key={idx} className="example-block">
                         <p><strong>Input:</strong> <code>{example.input}</code></p>
@@ -829,7 +881,7 @@ int main() {
               <button 
                 className="btn-test" 
                 onClick={handleRunTestCases}
-                disabled={isRunningTests || tabSwitchCount >= 5}
+                disabled={isRunningTests || tabSwitchCount >= 10}
               >
                 {isRunningTests ? (
                   <>
@@ -1048,19 +1100,21 @@ int main() {
                       </div>
 
                       <div className="test-cases-list">
-                        {testCaseResults.test_results?.map((test, idx) => (
+                        {testCaseResults.results?.map((test, idx) => {
+                          const statusStr = test.passed ? 'passed' : 'failed';
+                          return (
                           <div 
                             key={idx} 
-                            className={`test-case-card ${test.status}`}
+                            className={`test-case-card ${statusStr}`}
                           >
                             <div className="test-case-header">
                               <span className="test-number">Test Case #{idx + 1}</span>
-                              <span className={`status-badge ${test.status}`}>
-                                {test.status === 'passed' ? '✓ Passed' : '✗ Failed'}
+                              <span className={`status-badge ${statusStr}`}>
+                                {test.passed ? '✓ Passed' : '✗ Failed'}
                               </span>
                             </div>
                             
-                            {test.status === 'failed' && (
+                            {!test.passed && (
                               <div className="test-case-details">
                                 <div className="detail-row">
                                   <span className="detail-label">Input:</span>
@@ -1072,7 +1126,7 @@ int main() {
                                 </div>
                                 <div className="detail-row">
                                   <span className="detail-label">Got:</span>
-                                  <code className="detail-value actual">{test.actual_output}</code>
+                                  <code className="detail-value actual">{test.output || test.actual_output}</code>
                                 </div>
                                 {test.error && (
                                   <div className="detail-row error">
@@ -1094,7 +1148,7 @@ int main() {
                               </span>
                             </div>
                           </div>
-                        ))}
+                        )})}
                       </div>
                     </div>
                   ) : (

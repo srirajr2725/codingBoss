@@ -22,53 +22,7 @@ const CategoryList = ({ isLoggedIn, setIsLoggedIn, userRole, handleLogout, usern
   const [showWarning, setShowWarning] = useState(false);
   const [selectedSubtype, setSelectedSubtype] = useState(null);
 
-  // ================= AUTO LOGIN =================
-  useEffect(() => {
-
-    if (!isLoggedIn) {
-
-      if (localStorage.getItem("username") && localStorage.getItem("password")) {
-
-        const email = localStorage.getItem("username");
-        const EncryptPassword = localStorage.getItem("password");
-
-        const bytes = CryptoJS.AES.decrypt(
-          EncryptPassword,
-          'thirancoding360mgai'
-        );
-
-        const password = bytes.toString(CryptoJS.enc.Utf8);
-
-        const Login = async () => {
-
-          try {
-
-            const response = await apiClient(
-              "quiz/users/login/",
-              "POST",
-              JSON.stringify({ email, password }),
-              { "Content-Type": "application/json" }
-            );
-
-            if (!response.status === "success") {
-              navigate('/LoginPage');
-            }
-
-            setIsLoggedIn(true);
-
-          } catch (error) {
-            navigate('/LoginPage');
-          }
-        };
-
-        Login();
-
-      } else {
-        navigate('/LoginPage');
-      }
-    }
-
-  }, [isLoggedIn, navigate, setIsLoggedIn]);
+  // Session is handled by App.js
 
 
   // ================= FETCH CATEGORY =================

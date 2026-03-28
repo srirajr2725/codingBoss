@@ -24,7 +24,7 @@ import CryptoJS from 'crypto-js';
 
 
 
-const AdminPanel = () => {
+const AdminPanel = ({ isLoggedIn, setIsLoggedIn, setUserRole, username, handleLogout, userRole }) => {
   const [selectedTab, setSelectedTab] = useState('dashboard');
   const [searchTerm, setSearchTerm] = useState("");
   const [openBookingModal, setOpenBookingModal] = useState(false);

@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import apiClient from "./utils/apiClient";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import Select from "react-select";
 import Spline from "@splinetool/react-spline";
+import ErrorBoundary from "./Components/ErrorBoundary.js";
 import "./SignUp.css";
 
-const SignUp = () => {
+const SignUp = ({ setIsLoggedIn, setUsername, setUserRole }) => {
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
@@ -79,18 +80,30 @@ const SignUp = () => {
 
       const response = await apiClient("quiz/create-user/", "POST", payload);
 
-      if (response?.success) {
-        // ✅ CRITICAL: Store token using the email as a unique key
-        // This makes it user-specific even if multiple users use the same PC
-        const userToken = response.data?.user_token;
-        const userEmail = response.data?.email || formData.email;
+      if (response?.success && response.data) {
+        setSuccess(response.message || "Signup successful!");
         
-        if (userToken && userEmail) {
-          localStorage.setItem(`user_token_${userEmail.toLowerCase()}`, userToken);
+        const userToken = response.data.user_token;
+        const accessToken = response.data.access || response.data.token || response.data.access_token;
+        
+        if (userToken) {
+          localStorage.setItem("user_token", userToken);
+          localStorage.setItem(`user_token_${formData.email.toLowerCase()}`, userToken);
         }
 
-        setSuccess(response.message || "Signup successful!");
-        setTimeout(() => navigate("/LoginPage"), 2000);
+        if (accessToken) {
+          localStorage.setItem("token", accessToken);
+        }
+
+        if (typeof setIsLoggedIn === 'function') {
+          setIsLoggedIn(true);
+          setUsername(formData.email);
+          setUserRole("member");
+          localStorage.setItem("username", formData.email);
+          localStorage.setItem("role", "member");
+        }
+
+        setTimeout(() => navigate("/UserDashboard"), 2000);
       } else {
         setError(response?.message || "Signup failed.");
       }
@@ -105,12 +118,17 @@ const SignUp = () => {
     <div className="signup-container">
       <div className="left-content">
         <h1>Join Us & Unlock <span className="highlight">Exclusive Features!</span></h1>
-        <div className="spline-wrapper">
-          <Spline scene="https://prod.spline.design/dpkpao3qhr3jJYMz/scene.splinecode" />
+        <div className="spline-wrappers">
+          <ErrorBoundary>
+            <Spline 
+              scene="https://prod.spline.design/dpkpao3qhr3jJYMz/scene.splinecode" 
+              onLoad={() => console.log("Spline loaded")}
+            />
+          </ErrorBoundary>
         </div>
       </div>
       <div className="signup-form">
-        <h2><span style={{ color: "#FFA003" }}>Sign</span> <span style={{ color: "#004d30" }}>Up</span></h2>
+        <h2 style={{ fontSize: "2.5rem", textAlign: "center" }}><span style={{ color: "#FFA003" }}>Sign</span> <span style={{ color: "black" }}>Up</span></h2>
         {error && <div className="error-msg">{error}</div>}
         {success && <div className="success-msg">{success}</div>}
         <form onSubmit={handleSubmit}>
@@ -131,7 +149,7 @@ const SignUp = () => {
             {loading ? "Signing Up..." : "Create Account"}
           </button>
         </form>
-        <p className="login-text">Already have an account? <a href="/LoginPage">Login</a></p>
+        <p className="login-text">Already have an account? <Link to="/LoginPage">Login</Link></p>
       </div>
     </div>
   );

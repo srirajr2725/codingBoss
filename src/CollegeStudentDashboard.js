@@ -57,12 +57,12 @@ const Dashboard = ({
   const navigate = useNavigate();
   const isMobile = useMediaQuery('(max-width:600px)');
 
-  // ✅ Courses unlocked here
+  // ✅ Courses locked statically initially
   const defaultAccess = [
     { label: 'Start Learn', locked: false, key: 'startlearn' },
     { label: 'Your Status', locked: false, key: 'yourstatus' },
     { label: 'Task', locked: true, key: 'thirantask' },
-    { label: 'Courses', locked: false, key: 'thirancourses' }, // 🔓 UNLOCKED
+    { label: 'Courses', locked: true, key: 'thirancourses' }, // 🔒 LOCKED
     { label: 'Assignments', locked: true, key: 'thiranassignments' },
     { label: 'Company', locked: true, key: 'thirancompany' },
     { label: 'Profile', locked: false, key: 'profile' },
@@ -76,7 +76,8 @@ const Dashboard = ({
       localStorage.getItem(`task_unlocked_${email}`) === "true";
 
     return defaultAccess.map(item => {
-      if (item.label === 'Task' && isTaskUnlocked) {
+      // ✅ Only Task and Assignments unlock when Task is unlocked
+      if (['Task', 'Assignments'].includes(item.label) && isTaskUnlocked) {
         return { ...item, locked: false };
       }
       return item;
@@ -97,50 +98,59 @@ const Dashboard = ({
       const isTaskUnlocked =
         localStorage.getItem(`task_unlocked_${email}`) === "true";
 
-      const [accessResponse, tokenListResponse] = await Promise.all([
+      const [accessResponse, tokenListResponse, assignmentsResponse] = await Promise.all([
         apiClient(`trainer/api/unlock-token/by-email/${email}/`, "GET")
           .catch(() => []),
         apiClient('trainer/api/unlock-token/list/', 'GET')
+          .catch(() => []),
+        apiClient('compiler/get-assignments/', 'GET')
           .catch(() => [])
       ]);
 
-      let finalAccess = defaultAccess.map(item => {
+      const assignments = assignmentsResponse || [];
+      const isAssignmentExpired = assignments.length > 0 && 
+        new Date(`${assignments[0].date_of_expiry}T${assignments[0].time}`) < new Date();
 
-        // 🔒 Only Assignments & Company always locked
-        if (['Assignments', 'Company'].includes(item.label)) {
-          return { ...item, locked: true };
-        }
+      let finalAccess = defaultAccess.map(item => {
 
         let apiMatch = false;
 
-        if (item.label === 'Task') {
+        // Auto-unlock Assignments synced with Task (if not expired)
+        if (['Task', 'Assignments'].includes(item.label) && isTaskUnlocked) {
+          // If assignments are expired, keep them locked
+          if (item.label === 'Assignments' && isAssignmentExpired) {
+            apiMatch = false;
+          } else {
+            apiMatch = true;
+          }
+        }
 
-          if (isTaskUnlocked) apiMatch = true;
+        // Generic check for this specific item in json_data from accessResponse
+        if (accessResponse && accessResponse[0]?.json_data) {
+          const match = accessResponse[0].json_data.find(
+            j => labelToKey(j.label) === item.key
+          );
+          if (match && match.locked === false) {
+            apiMatch = true;
+          }
+        }
 
-          if (accessResponse && accessResponse[0]?.json_data) {
-            const match = accessResponse[0].json_data.find(
-              j => labelToKey(j.label) === item.key
-            );
-            if (match && match.locked === false) {
+        // Check backend token definitions
+        if (Array.isArray(tokenListResponse)) {
+          tokenListResponse.forEach(token => {
+            const allowed = [
+              ...(token.users_email || []),
+              ...(token.json_data || [])
+            ];
+
+            if (
+              allowed.includes(email) &&
+              token.unlock_token === 'THIRANTASK' &&
+              ['Task', 'Courses', 'Assignments'].includes(item.label)
+            ) {
               apiMatch = true;
             }
-          }
-
-          if (Array.isArray(tokenListResponse)) {
-            tokenListResponse.forEach(token => {
-              const allowed = [
-                ...(token.users_email || []),
-                ...(token.json_data || [])
-              ];
-
-              if (
-                allowed.includes(email) &&
-                token.unlock_token === 'THIRANTASK'
-              ) {
-                apiMatch = true;
-              }
-            });
-          }
+          });
         }
 
         return apiMatch

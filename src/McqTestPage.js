@@ -25,51 +25,7 @@ const McqTestPage = ({ isLoggedIn, setIsLoggedIn }) => {
     }));
   };
 
-  // ================= AUTO LOGIN =================
-  useEffect(() => {
-
-    if (!isLoggedIn) {
-
-      if (localStorage.getItem("username") && localStorage.getItem("password")) {
-
-        const email = localStorage.getItem("username");
-        const EncryptPassword = localStorage.getItem("password");
-
-        const bytes = CryptoJS.AES.decrypt(
-          EncryptPassword,
-          'thirancoding360mgai'
-        );
-
-        const password = bytes.toString(CryptoJS.enc.Utf8);
-
-        const Login = async () => {
-          try {
-            const response = await apiClient(
-              "quiz/users/login/",
-              "POST",
-              JSON.stringify({ email, password }),
-              { "Content-Type": "application/json" }
-            );
-
-            if (!response.status === "success") {
-              navigate('/LoginPage');
-            }
-
-            setIsLoggedIn(true);
-
-          } catch (error) {
-            navigate('/LoginPage');
-          }
-        };
-
-        Login();
-
-      } else {
-        navigate('/LoginPage');
-      }
-    }
-
-  }, [isLoggedIn, navigate, setIsLoggedIn]);
+  // Session is handled by App.js
 
 
   // ================= FETCH QUESTIONS =================
@@ -108,12 +64,11 @@ const McqTestPage = ({ isLoggedIn, setIsLoggedIn }) => {
 
             if (checkResponse.is_completed || checkResponse.completed) {
               setIsTestCompleted(true);
-              localStorage.setItem(localTestKey, "true"); // save locally too
+              localStorage.setItem(localTestKey, "true"); 
               return;
             }
-
           } catch (err) {
-            console.log('Could not check completion status:', err);
+            console.error("Completion check failed:", err);
           }
         }
 
@@ -207,7 +162,7 @@ const McqTestPage = ({ isLoggedIn, setIsLoggedIn }) => {
           console.log('Could not mark test as completed:', err);
         }
 
-        navigate('/TestResults', { state: { results } });
+        navigate("/UserDashboard");
       }
 
     } catch (error) {
@@ -222,19 +177,25 @@ const McqTestPage = ({ isLoggedIn, setIsLoggedIn }) => {
   // ================= ALREADY COMPLETED UI =================
   if (isTestCompleted) {
     return (
-      <Container className="mt-5">
-        <Alert variant="danger">
-          <Alert.Heading>⚠ Test Already Attended</Alert.Heading>
-          <p>
-            You have already attended this test ({subtype}).  
-            You cannot retake it.
+      <Container className="mt-5 p-4" style={{ backgroundColor: '#fff5f5', borderRadius: '12px', border: '1px solid #feb2b2' }}>
+        <Alert variant="danger" style={{ border: 'none', background: 'transparent' }}>
+          <Alert.Heading className="d-flex align-items-center gap-2">
+            <span style={{ fontSize: '1.5rem' }}>🚫</span> Already Attended
+          </Alert.Heading>
+          <hr />
+          <p className="mb-4">
+            It looks like you have already completed this <strong>{subtype}</strong> test. 
+            Multiple attempts are not allowed for this evaluation.
           </p>
-          <button
-            className="btn btn-primary"
-            onClick={() => navigate('/Testpage')}
-          >
-            Go Back to Tests
-          </button>
+          <div className="d-flex justify-content-end">
+            <button
+              className="btn btn-danger px-4"
+              style={{ borderRadius: '8px', fontWeight: 'bold' }}
+              onClick={() => navigate('/UserDashboard')}
+            >
+              Return to Dashboard
+            </button>
+          </div>
         </Alert>
       </Container>
     );

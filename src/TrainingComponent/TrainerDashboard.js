@@ -117,58 +117,7 @@ const TrainerDashboard = ({ isLoggedIn,setIsLoggedIn, username, userRole, handle
   const isMobile = useMediaQuery('(max-width: 600px)') // Check if the screen is mobile
 
   
-   useEffect(() => {
-      const autoLogin = async () => {
-        if (!isLoggedIn) {
-          if (localStorage.getItem("username") && localStorage.getItem("password")) {
-            const email = localStorage.getItem("username");
-            const EncryptPassword = localStorage.getItem("password");
-            const bytes = CryptoJS.AES.decrypt(EncryptPassword, 'thirancoding360mgai');
-            const password = bytes.toString(CryptoJS.enc.Utf8);
-            try {
-              const response = await apiClient(
-                "quiz/users/login/",
-                "POST",
-                JSON.stringify({ email, password }),
-                { "Content-Type": "application/json" }
-              );
-              if (!response.status === "success") {
-                navigate('/LoginPage');
-                return; 
-              } else {
-                setIsLoggedIn(true);
-                if (response.role !== "company") {
-                  if (response.role === "college") {
-                    navigate('/UserDashboard');
-                    return; 
-                  } else {
-                    navigate('/');
-                    return; 
-                  }
-                }
-              }
-            } catch (error) {
-              navigate('/LoginPage');
-              return; 
-            }
-          } else {
-            navigate('/LoginPage');
-            return; 
-          }
-        } else if (userRole !== "company") {
-          if (userRole === "college") {
-            navigate('/UserDashboard');
-            return; 
-          } else {
-            navigate('/');
-            return; 
-          }
-        }
-        setLoading(false);
-      };
-    
-      autoLogin();
-    }, []);
+    // Redundant auto-login removed (handled by App.js)
     
   
 

@@ -12,7 +12,7 @@ const courses = [
     description: 'Learn Java programming and build powerful applications.',
     imageUrl: 'https://w7.pngwing.com/pngs/578/816/png-transparent-java-class-file-java-platform-standard-edition-java-development-kit-java-runtime-environment-coffee-jar-text-class-orange-thumbnail.png',
     link: '/CourseJava',
-    disabled: false
+    disabled: true
   },
   {
     id: 2,
@@ -20,7 +20,7 @@ const courses = [
     description: 'Master Python and create data-driven applications and scripts.',
     imageUrl: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTA7KKo6TGOgs4XsvyKPfpGcfpaPv1Y44_kZQ&s',
     link: '/CoursePython',
-    disabled: false
+    disabled: true
   },
   {
     id: 3,
@@ -28,7 +28,7 @@ const courses = [
     description: 'Build robust and scalable web backends with the "framework for perfectionists".',
     imageUrl: 'https://static.djangoproject.com/img/logos/django-logo-negative.png', // Using a standard Django logo
     link: '/CourseDjango',
-    disabled: false
+    disabled: true
   },
 ];
 

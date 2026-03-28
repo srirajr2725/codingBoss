@@ -193,7 +193,7 @@ export const handleSessionError = (error) => {
     localStorage.removeItem('userID');
 
     // Redirect to login
-    window.location.href = '/LoginPage';
+    window.location.href = '/#/LoginPage';
 
     return {
       message: 'Your session has expired. Please login again.',

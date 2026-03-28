@@ -230,9 +230,15 @@ const Banner = ({ isLoggedIn }) => {
 
           <div className="cta-buttons">
             <Link to="/LoginPage" className="primary-btn1">
-              <span>Start Learning Today</span>
+              <span>Login</span>
               <svg className="btn-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                 <path d="M5 12h14M12 5l7 7-7 7" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </Link>
+            <Link to="/signup" className="secondary-btn" style={{ textDecoration: 'none', color: 'white' }}>
+              <span>Sign Up</span>
+              <svg className="play-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path d="M12 5v14M5 12h14" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </Link>
             <button className="secondary-btn">

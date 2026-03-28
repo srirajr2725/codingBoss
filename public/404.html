@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>CodingBoss - Redirecting...</title>
+    <script type="text/javascript">
+      // GitHub Pages and other static hosts don't support SPA routing out of the box.
+      // This script takes the intended path and converts it into a hash-based route.
+      // Example: https://codingboss.in/LoginPage  -->  https://codingboss.in/#/LoginPage
+      
+      var segmentCount = 0; // Set this to the number of segments in your project path if not at root
+      
+      var l = window.location;
+      var path = l.pathname.split('/').slice(segmentCount + 1).join('/');
+      
+      l.replace(
+        l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
+        l.pathname.split('/').slice(0, segmentCount + 1).join('/') + '/#' + '/' + path +
+        l.search + l.hash
+      );
+    </script>
+  </head>
+  <body>
+    <p>Redirecting to requested page...</p>
+  </body>
+</html>
