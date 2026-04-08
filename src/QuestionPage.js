@@ -50,6 +50,7 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
   const [isTestSubmitted, setIsTestSubmitted] = useState(false);
   const [tabSwitchCount, setTabSwitchCount] = useState(0);
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [isTestStarted, setIsTestStarted] = useState(false);
 
   // User States
   const [userId, setUserId] = useState("");
@@ -73,9 +74,6 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
       const decryptedUserId = bytes.toString(CryptoJS.enc.Utf8);
       setUserId(decryptedUserId);
     }
-
-    // Start timer
-    setStartTime(Date.now());
   }, []);
 
   // ================= SIMPLE AUTH CHECK =================
@@ -137,7 +135,15 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
       const completedIds = JSON.parse(localStorage.getItem('completedQuestions') || '[]');
       if (questionId && completedIds.includes(questionId)) {
         toast.info("You are already attended");
-        setTimeout(() => navigate('/UserDashboard'), 1500);
+        setTimeout(() => {
+          if (navigator.keyboard && navigator.keyboard.unlock) {
+            navigator.keyboard.unlock();
+          }
+          if (document.fullscreenElement) {
+            document.exitFullscreen().catch(err => console.log(err));
+          }
+          navigate('/UserDashboard');
+        }, 1500);
         return;
       }
     } catch (e) {
@@ -207,6 +213,12 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
       console.error("Force close error:", err);
     }
     setTimeout(() => {
+      if (navigator.keyboard && navigator.keyboard.unlock) {
+        navigator.keyboard.unlock();
+      }
+      if (document.fullscreenElement) {
+        document.exitFullscreen().catch(err => console.log(err));
+      }
       navigate("/UserDashboard");
     }, 2000);
   };
@@ -221,25 +233,16 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
 
       trackActivity("tab_switch");
 
-      // 🚨 If limit reached
-      if (newCount >= 3) {
+      // 🚨 ZERO TOLERANCE: Instant termination on first violation
+      if (newCount >= 1) {
 
-        toast.error("🚫 Maximum tab switches reached. Test terminated!", {
+        toast.error("🚫 Security Vault Triggered! You left the test environment. Test terminated immediately.", {
           position: "top-center",
-          autoClose: 4000,
+          autoClose: 5000,
         });
 
         // Auto close test
-        setTimeout(() => {
-          forceCloseTest();
-        }, 1500);
-
-      } else {
-
-        toast.warning(`⚠️ Tab switch detected (${newCount}/2 warnings)`, {
-          position: "top-center",
-          autoClose: 2000,
-        });
+        forceCloseTest();
 
       }
 
@@ -251,13 +254,13 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
 
   useEffect(() => {
     const handleVisibilityChange = () => {
-      if (document.hidden && !isTestSubmitted) {
+      if (document.hidden && !isTestSubmitted && isTestStarted) {
         handleTabSwitch();
       }
     };
 
     const handleFocusLost = () => {
-      if (!isTestSubmitted) {
+      if (!isTestSubmitted && isTestStarted) {
         handleTabSwitch();
       }
     };
@@ -269,7 +272,55 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
       window.removeEventListener("blur", handleFocusLost);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, [handleTabSwitch, isTestSubmitted]);
+  }, [handleTabSwitch, isTestSubmitted, isTestStarted]);
+
+  // ============================================================
+  // FULLSCREEN LOCK
+  // ============================================================
+  
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      if (!document.fullscreenElement && !isTestSubmitted && isTestStarted) {
+        handleTabSwitch();
+      }
+    };
+
+    const enforceFullscreen = () => {
+      if (!document.fullscreenElement && !isTestSubmitted && isTestStarted) {
+        document.documentElement.requestFullscreen().catch((err) => {
+          console.warn("Fullscreen request failed:", err);
+        });
+      }
+    };
+
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    document.addEventListener("click", enforceFullscreen);
+
+    return () => {
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+      document.removeEventListener("click", enforceFullscreen);
+    };
+  }, [handleTabSwitch, isTestSubmitted, isTestStarted]);
+
+  const startTestAndLock = () => {
+    document.documentElement.requestFullscreen().then(() => {
+      setIsTestStarted(true);
+      if (!startTime) setStartTime(Date.now());
+      
+      // Advanced Keyboard Lock to block Windows Key, Alt+Tab, Esc, etc. explicitly
+      if (navigator.keyboard && navigator.keyboard.lock) {
+        navigator.keyboard.lock([
+          "Escape",
+          "MetaLeft", "MetaRight", // Windows Keys
+          "AltLeft", "AltRight",
+          "Tab"
+        ]).catch(err => console.warn("Keyboard lock failed:", err));
+      }
+    }).catch((err) => {
+      console.warn("Fullscreen request failed:", err);
+      toast.error("Please allow full screen to start the test.");
+    });
+  };
 
   // ============================================================
   // STRONG COPY / PASTE / CUT / RIGHT CLICK BLOCK
@@ -574,6 +625,12 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
 
       // Navigate to results
       setTimeout(() => {
+        if (navigator.keyboard && navigator.keyboard.unlock) {
+          navigator.keyboard.unlock();
+        }
+        if (document.fullscreenElement) {
+          document.exitFullscreen().catch(err => console.log(err));
+        }
         navigate('/UserDashboard');
       }, 1000);
 
@@ -710,6 +767,42 @@ int main() {
 
   return (
     <div className="coding-scope">
+      {!isTestStarted && !isTestSubmitted && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.9)', zIndex: 9999,
+          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+          color: 'white', backdropFilter: 'blur(10px)'
+        }}>
+          <div style={{
+            background: '#1e1e2f', padding: '40px', borderRadius: '12px',
+            maxWidth: '500px', textAlign: 'center',
+            boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
+            border: '1px solid #ff4d4d'
+          }}>
+            <h2 style={{ color: '#ff4d4d', marginBottom: '20px' }}>⚠️ Security Check</h2>
+            <p style={{ fontSize: '16px', lineHeight: '1.6', marginBottom: '30px', color: '#ccc' }}>
+              This test requires a strict fullscreen environment. 
+              <br/><br/>
+              <b>Do not switch tabs, minimize, or open other applications.</b> 
+              Doing so will be detected and may immediately terminate your test.
+            </p>
+            <button 
+              onClick={startTestAndLock}
+              style={{
+                background: '#ff4d4d', color: 'white', border: 'none',
+                padding: '12px 30px', fontSize: '18px', fontWeight: 'bold',
+                borderRadius: '8px', cursor: 'pointer', transition: 'all 0.3s'
+              }}
+              onMouseOver={(e) => e.target.style.background = '#ff3333'}
+              onMouseOut={(e) => e.target.style.background = '#ff4d4d'}
+            >
+              Lock Screen & Start Test
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="coding-scroll">
         <ToastContainer
           position="top-right"
