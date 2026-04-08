@@ -16,7 +16,9 @@ const Status = ({ isLoggedIn, setAccess }) => {
   const [programTotal, setProgramTotal] = useState("0 / 0");
   const [performanceData, setPerformanceData] = useState({ totalAttempts: 0, averageScore: 0, totalMarks: 0, maxMarks: 0 });
   const [isTaskUnlocked, setIsTaskUnlocked] = useState(false);
+  const [isCourseUnlocked, setIsCourseUnlocked] = useState(false);
   const [couponCode, setCouponCode] = useState("");
+  const [courseCouponCode, setCourseCouponCode] = useState("");
   const [toast, setToast] = useState({ show: false, message: "", type: "success" });
 
   const showToast = (msg, type = "success") => {
@@ -99,6 +101,9 @@ const Status = ({ isLoggedIn, setAccess }) => {
 
     const taskStatus = localStorage.getItem(`task_unlocked_${email}`);
     if (taskStatus === "true") setIsTaskUnlocked(true);
+
+    const courseStatus = localStorage.getItem(`course_unlocked_${email}`);
+    if (courseStatus === "true") setIsCourseUnlocked(true);
 
     const fetchStatus = async () => {
       try {
@@ -213,6 +218,45 @@ const Status = ({ isLoggedIn, setAccess }) => {
     }
   };
 
+  // ================= UNLOCK COURSE HANDLER =================
+  const useCourseCouponCode = async () => {
+    if (!courseCouponCode) return showToast("Please enter course access code", "error");
+
+    try {
+      const email = localStorage.getItem("username");
+      const response = await fetch(`https://api.codingboss.in/quiz/verify-token/?email=${encodeURIComponent(email)}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ user_token: courseCouponCode.trim() }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        localStorage.setItem(`course_unlocked_${email}`, "true");
+        setIsCourseUnlocked(true);
+
+        if (typeof setAccess === "function") {
+          setAccess((prevItems) =>
+            prevItems.map((item) => {
+              if (["Courses", "Company"].includes(item.label)) {
+                return { ...item, locked: false };
+              }
+              return item;
+            })
+          );
+        }
+
+        showToast("🎓 Courses Unlocked!");
+        setCourseCouponCode("");
+      } else {
+        showToast("❌ Invalid Course Code", "error");
+      }
+    } catch (err) {
+      showToast("⚠ Connection Error", "error");
+    }
+  };
+
   return (
     <Container fluid className="py-4 px-3">
       {toast.show && <div className={`status-toast ${toast.type}`}>{toast.message}</div>}
@@ -238,19 +282,37 @@ const Status = ({ isLoggedIn, setAccess }) => {
                   )}
                 </Col>
                 <Col md={4} className="text-md-end mt-3 mt-md-0">
-                  {!isTaskUnlocked ? (
-                    <div className="d-flex gap-2 justify-content-md-end">
-                      <Form.Control
-                        placeholder="Task Code"
-                        value={couponCode}
-                        className="bg-dark text-white border-secondary w-auto"
-                        onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-                      />
-                      <Button variant="primary" onClick={useCouponCode}>Unlock Task</Button>
-                    </div>
-                  ) : (
-                    <Badge bg="success" className="p-3 fs-6">✅ TASK UNLOCKED</Badge>
-                  )}
+                  <div className="d-flex flex-column gap-2 align-items-md-end">
+                    {/* Task Unlock */}
+                    {!isTaskUnlocked ? (
+                      <div className="d-flex gap-2 justify-content-md-end">
+                        <Form.Control
+                          placeholder="Task Code"
+                          value={couponCode}
+                          className="bg-dark text-white border-secondary w-auto"
+                          onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                        />
+                        <Button variant="primary" onClick={useCouponCode}>Unlock Task</Button>
+                      </div>
+                    ) : (
+                      <Badge bg="success" className="p-3 fs-6">✅ TASK UNLOCKED</Badge>
+                    )}
+
+                    {/* Course Unlock */}
+                    {!isCourseUnlocked ? (
+                      <div className="d-flex gap-2 justify-content-md-end">
+                        <Form.Control
+                          placeholder="Course Code"
+                          value={courseCouponCode}
+                          className="bg-dark text-white border-secondary w-auto"
+                          onChange={(e) => setCourseCouponCode(e.target.value.toUpperCase())}
+                        />
+                        <Button variant="warning" onClick={useCourseCouponCode}>Unlock Course</Button>
+                      </div>
+                    ) : (
+                      <Badge bg="warning" text="dark" className="p-3 fs-6">🎓 COURSES UNLOCKED</Badge>
+                    )}
+                  </div>
                 </Col>
               </Row>
             </Card.Body>

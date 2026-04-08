@@ -222,7 +222,7 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
       trackActivity("tab_switch");
 
       // 🚨 If limit reached
-      if (newCount >= 5) {
+      if (newCount >= 3) {
 
         toast.error("🚫 Maximum tab switches reached. Test terminated!", {
           position: "top-center",
@@ -236,7 +236,7 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
 
       } else {
 
-        toast.warning(`⚠️ Tab switch detected (${newCount}/5)`, {
+        toast.warning(`⚠️ Tab switch detected (${newCount}/2 warnings)`, {
           position: "top-center",
           autoClose: 2000,
         });
@@ -652,6 +652,17 @@ int main() {
     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyT, () => {
       handleRunTestCases();
     });
+
+    // Anti-cheat: Block Paste from keyboard
+    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyV, () => {
+      toast.error("❌ Paste is strongly locked out!");
+    });
+    
+    // Anti-cheat: Undo any paste (e.g. from browser Edit menu)
+    editor.onDidPaste(() => {
+      toast.error("❌ Paste is strongly locked out!");
+      editor.trigger('keyboard', 'undo', null);
+    });
   };
 
   const handleInputEditorDidMount = (editor, monaco) => {
@@ -863,7 +874,7 @@ int main() {
                 <button
                   className="btn-run"
                   onClick={handleCompile}
-                  disabled={isCompiling || tabSwitchCount >= 5}
+                  disabled={isCompiling || tabSwitchCount >= 3}
                 >
                   {isCompiling ? (
                     <>
@@ -881,7 +892,7 @@ int main() {
                 <button
                   className="btn-test"
                   onClick={handleRunTestCases}
-                  disabled={isRunningTests || tabSwitchCount >= 10}
+                  disabled={isRunningTests || tabSwitchCount >= 3}
                 >
                   {isRunningTests ? (
                     <>
@@ -899,7 +910,7 @@ int main() {
                 <button
                   className="btn-submit"
                   onClick={handleSubmit}
-                  disabled={isSubmitting || isTestSubmitted || tabSwitchCount >= 5}
+                  disabled={isSubmitting || isTestSubmitted || tabSwitchCount >= 3}
                 >
                   {isSubmitting ? (
                     <>
@@ -930,12 +941,13 @@ int main() {
                   minimap: { enabled: true },
                   scrollBeyondLastLine: false,
                   automaticLayout: true,
-                  formatOnPaste: true,
+                  formatOnPaste: false,
                   formatOnType: true,
                   tabSize: 4,
                   wordWrap: 'on',
                   lineNumbers: 'on',
                   renderWhitespace: 'selection',
+                  contextmenu: false,
                   bracketPairColorization: {
                     enabled: true
                   }

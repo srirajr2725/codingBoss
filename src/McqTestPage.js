@@ -1,6 +1,6 @@
 // src/McqTestPage.js
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import CryptoJS from 'crypto-js';
 import { Alert, Spinner, Container } from 'react-bootstrap';
@@ -32,6 +32,7 @@ const McqTestPage = () => {
   const [testStartTime, setTestStartTime] = useState(null);
   const [isTestCompleted, setIsTestCompleted] = useState(false);
   const [completionLoading, setCompletionLoading] = useState(false);
+  const [tabSwitchCount, setTabSwitchCount] = useState(0);
 
   // Required by your MCQQuiz component
   const updateQuestionStatus = (questionId, status) => {
@@ -170,6 +171,121 @@ const McqTestPage = () => {
       setCompletionLoading(false);
     }
   };
+
+  const handleTabSwitch = useCallback(() => {
+    if (isTestCompleted) return;
+
+    setTabSwitchCount((prev) => {
+      const newCount = prev + 1;
+      if (newCount >= 3) {
+        toast.error("🚫 Maximum tab switches reached. Test terminated!", {
+          position: "top-center",
+          autoClose: 4000,
+        });
+        setTimeout(() => {
+          submitTest({});
+        }, 1500);
+      } else {
+        toast.warning(`⚠️ Tab switch detected (${newCount}/2 warnings)`, {
+          position: "top-center",
+          autoClose: 2000,
+        });
+      }
+      return newCount;
+    });
+  }, [isTestCompleted]);
+
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.hidden && !isTestCompleted) {
+        handleTabSwitch();
+      }
+    };
+
+    const handleFocusLost = () => {
+      if (!isTestCompleted) {
+        handleTabSwitch();
+      }
+    };
+
+    window.addEventListener("blur", handleFocusLost);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener("blur", handleFocusLost);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [handleTabSwitch, isTestCompleted]);
+
+  useEffect(() => {
+    const preventClipboard = (e) => {
+      if (!isTestCompleted) {
+        e.preventDefault();
+        e.stopPropagation();
+        toast.error("❌ Copy / Paste / Cut is disabled during the test!");
+        return false;
+      }
+    };
+
+    const preventRightClick = (e) => {
+      if (!isTestCompleted) {
+        e.preventDefault();
+        toast.error("❌ Right click is disabled during the test!");
+        return false;
+      }
+    };
+
+    const preventKeyboardShortcuts = (e) => {
+      if (isTestCompleted) return;
+      if (
+        (e.ctrlKey || e.metaKey) &&
+        (
+          e.key.toLowerCase() === "c" ||
+          e.key.toLowerCase() === "v" ||
+          e.key.toLowerCase() === "x" ||
+          e.key.toLowerCase() === "a" ||
+          e.key.toLowerCase() === "s" ||
+          e.key.toLowerCase() === "u"
+        )
+      ) {
+        e.preventDefault();
+        e.stopPropagation();
+        toast.error("❌ Shortcut disabled during the test!");
+        return false;
+      }
+      if (e.key === "F12") {
+        e.preventDefault();
+        toast.error("❌ Developer tools disabled during test!");
+        return false;
+      }
+    };
+
+    const disableSelection = () => {
+      if (!isTestCompleted) {
+        document.body.style.userSelect = "none";
+      }
+    };
+
+    const enableSelection = () => {
+      document.body.style.userSelect = "auto";
+    };
+
+    disableSelection();
+    window.addEventListener("keydown", preventKeyboardShortcuts, true);
+    window.addEventListener("copy", preventClipboard, true);
+    window.addEventListener("cut", preventClipboard, true);
+    window.addEventListener("paste", preventClipboard, true);
+    window.addEventListener("contextmenu", preventRightClick, true);
+
+    return () => {
+      enableSelection();
+      window.removeEventListener("keydown", preventKeyboardShortcuts, true);
+      window.removeEventListener("copy", preventClipboard, true);
+      window.removeEventListener("cut", preventClipboard, true);
+      window.removeEventListener("paste", preventClipboard, true);
+      window.removeEventListener("contextmenu", preventRightClick, true);
+    };
+  }, [isTestCompleted]);
 
   if (isTestCompleted) {
     return (

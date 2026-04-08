@@ -74,10 +74,16 @@ const Dashboard = ({
     const email = localStorage.getItem("username");
     const isTaskUnlocked =
       localStorage.getItem(`task_unlocked_${email}`) === "true";
+    const isCourseUnlocked =
+      localStorage.getItem(`course_unlocked_${email}`) === "true";
 
     return defaultAccess.map(item => {
-      // ✅ Only Task and Assignments unlock when Task is unlocked
+      // ✅ Unlock Task & Assignments when Task is unlocked
       if (['Task', 'Assignments'].includes(item.label) && isTaskUnlocked) {
+        return { ...item, locked: false };
+      }
+      // ✅ Unlock Courses & Company when Course is unlocked
+      if (['Courses', 'Company'].includes(item.label) && isCourseUnlocked) {
         return { ...item, locked: false };
       }
       return item;
@@ -96,6 +102,8 @@ const Dashboard = ({
     try {
       const isTaskUnlocked =
         localStorage.getItem(`task_unlocked_${email}`) === "true";
+      const isCourseUnlocked =
+        localStorage.getItem(`course_unlocked_${email}`) === "true";
 
       const [accessResponse, tokenListResponse, assignmentsResponse] = await Promise.all([
         apiClient(`trainer/api/unlock-token/by-email/${email}/`, "GET")
@@ -122,6 +130,11 @@ const Dashboard = ({
           } else {
             apiMatch = true;
           }
+        }
+
+        // ✅ Unlock Courses & Company from localStorage course_unlocked flag
+        if (['Courses', 'Company'].includes(item.label) && isCourseUnlocked) {
+          apiMatch = true;
         }
 
         // Generic check for this specific item in json_data from accessResponse

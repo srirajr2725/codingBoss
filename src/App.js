@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { HashRouter as Router, Route, Routes, Navigate } from "react-router-dom";
 import "./index.css";
 import 'bootstrap/dist/css/bootstrap.min.css';
+import CryptoJS from "crypto-js";
+import apiClient from "./utils/apiClient";
 
 // Components
 import Preloader from "./Preloader.js";
@@ -95,6 +97,9 @@ function AppWrapper() {
     localStorage.removeItem("role");
     localStorage.removeItem("userID");
     localStorage.removeItem("token");
+    localStorage.removeItem("user_token");
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("password");
   };
 
   const renderHome = () => {

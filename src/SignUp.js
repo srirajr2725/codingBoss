@@ -3,6 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import apiClient from "./utils/apiClient";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import Select from "react-select";
+import CryptoJS from "crypto-js";
 import Spline from "@splinetool/react-spline";
 import ErrorBoundary from "./Components/ErrorBoundary.js";
 import "./SignUp.css";

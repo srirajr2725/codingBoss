@@ -27,7 +27,7 @@ const apiClient = async (
   };
 
   // Attach token automatically
-  if (token) {
+  if (token && !endpoint.includes("login") && !endpoint.includes("create-user")) {
     headers.Authorization = `Bearer ${token}`;
   }
 
