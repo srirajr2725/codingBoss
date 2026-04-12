@@ -82,9 +82,9 @@ const Dashboard = ({
       if (['Task', 'Assignments'].includes(item.label) && isTaskUnlocked) {
         return { ...item, locked: false };
       }
-      // ✅ Unlock Courses & Company when Course is unlocked
-      if (['Courses', 'Company'].includes(item.label) && isCourseUnlocked) {
-        return { ...item, locked: false };
+      // 🔒 STATICALLY LOCKED: Courses & Company
+      if (['Courses', 'Company'].includes(item.label)) {
+        return { ...item, locked: true };
       }
       return item;
     });
@@ -132,9 +132,9 @@ const Dashboard = ({
           }
         }
 
-        // ✅ Unlock Courses & Company from localStorage course_unlocked flag
-        if (['Courses', 'Company'].includes(item.label) && isCourseUnlocked) {
-          apiMatch = true;
+        // 🔒 STATICALLY LOCKED: Bypass localStorage course_unlocked flag
+        if (['Courses', 'Company'].includes(item.label)) {
+          apiMatch = false; 
         }
 
         // Generic check for this specific item in json_data from accessResponse

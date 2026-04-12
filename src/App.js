@@ -33,6 +33,12 @@ import QuestionPage from "./QuestionPage.js";
 import ProjectForm from "./ProjectForm.js";
 import AdminPanel from "./TrainingComponent/AdminPanel.js";
 import TrainerDashboard from "./TrainingComponent/TrainerDashboard.js";
+import LogoSection from "./LogoSection.js";
+import Frontcourse from "./Frontcourse.js";
+import OurOfferings from "./OurOfferings.js";
+import CounterSection from "./CounterSection.js";
+import WhyUs from "./WhyUs.js";
+import UserReview from "./UserReview.js";
 
 function AppWrapper() {
   const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem("username"));
@@ -110,6 +116,12 @@ function AppWrapper() {
       <>
         <NavbarComponent {...{ isLoggedIn, username, userRole, handleLogout, setAccess }} />
         <Banner isLoggedIn={isLoggedIn} />
+        <LogoSection />
+        <Frontcourse />
+        <OurOfferings />
+        <CounterSection />
+        <WhyUs />
+        <UserReview />
         <Footer />
       </>
     );

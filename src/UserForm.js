@@ -23,8 +23,9 @@ import LinkedInIcon from '@mui/icons-material/LinkedIn'
 import GitHubIcon from '@mui/icons-material/GitHub'
 import LanguageIcon from '@mui/icons-material/Language'
 import axios from 'axios'
-import apiClient from '../src/utils/apiClient';
+import apiClient from './utils/apiClient';
 import CryptoJS from 'crypto-js'
+import BASE_URL from './apiConfig';
 
 const validationSchema = yup.object({
   name: yup.string().required('Full name is required'),
@@ -222,10 +223,10 @@ const steps = [
           ...data,
           dob: data.dob ? new Date(data.dob).toISOString().split('T')[0] : '',
         })
-        let image = data.image && `https://api.codingboss.in/${data.image}` || null;
+        let image = data.image && `${BASE_URL.replace(/\/$/, "")}/${data.image}` || null;
         setImagePreview(image || null)
 
-        let resumefileName = data.resume && `https://api.codingboss.in/${data.resume}` || null;
+        let resumefileName = data.resume && `${BASE_URL.replace(/\/$/, "")}/${data.resume}` || null;
         setResumeLink(resumefileName || null);
 
         const parts = data.resume && data.resume.split('/');

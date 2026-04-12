@@ -10,6 +10,7 @@ import DigitalSolutionsLogo from "./images/digital-solutions.png";
 import CloudSystemsLogo from "./images/cloud-systems.png";
 import DataAnalyticsLogo from "./images/data-analytics.png";
 import MobileSolutionsLogo from "./images/mobile-solutions.png";
+import EduDartsLogo from "./images/edu.png";
 
 const styles = {
   cardAnimations: `
@@ -134,6 +135,19 @@ const CompanyCards = ({progress, setSelectedTab}) => {
     const fetchJobs = async () => {
       try {
         const mockJobs = [
+            {
+              summerIntern: "Summer Intern",
+              id: 98,
+              companyId: 2,
+              companyName: "EduDarts",
+              companyLogo: EduDartsLogo,
+              title: "Career Development Intern",
+              description:
+                "Empower employability by assisting students in career development. Work on curriculum design and student engagement strategies to bridge the gap between education and industry.",
+              location: "Gobi Arts and Science, Gobi Techno Park",
+              registered: 5,
+              icon: faUsers,
+            },
           
             {
               summerIntern: "Summer Intern",

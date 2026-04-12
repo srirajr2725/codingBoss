@@ -10,6 +10,7 @@ import {
 } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import Navbar from "./NavbarComponent";
+import apiClient from "./utils/apiClient";
 import "./ProgrammingTestPage.css";
 
 /* ================= LEVEL INDICATOR ================= */
@@ -99,38 +100,7 @@ const ProgrammingTestPage = ({
           return;
         }
 
-        const response = await fetch(
-          "https://api.codingboss.in/compiler/questions/",
-          {
-            method: "GET",
-
-            headers: {
-              "Content-Type": "application/json",
-
-              // ✅ JWT
-              Authorization: `Bearer ${token}`,
-
-              // ✅ FIX NGROK WARNING
-              "ngrok-skip-browser-warning": "true",
-            },
-          }
-        );
-
-        const text = await response.text();
-
-        console.log("RAW RESPONSE:", text);
-
-        if (!response.ok) {
-          throw new Error(text);
-        }
-
-        let data;
-
-        try {
-          data = JSON.parse(text);
-        } catch {
-          throw new Error("Not JSON (Ngrok HTML page)");
-        }
+        const data = await apiClient("compiler/questions/", "GET");
 
         let questionsArray = data;
 

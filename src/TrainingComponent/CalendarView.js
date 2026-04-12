@@ -6,8 +6,8 @@ import styled from 'styled-components';
 import { Modal, Button, Form, ListGroup } from 'react-bootstrap';
 import TextField from '@mui/material/TextField';
 import apiClient from '../utils/apiClient';
+import BASE_URL from '../apiConfig';
 import CryptoJS from "crypto-js";
-import axios from 'axios';
 import { Box } from '@mui/material';
 import { Autocomplete} from "@mui/material";
 
@@ -81,8 +81,8 @@ useEffect(() => {
 
 const fetchCompanies = async () => {
   try {
-    const res = await axios.get("https://api.codingboss.in/trainer/companies/");
-    const companies = res.data || [];
+    const data = await apiClient("trainer/companies/", "GET");
+    const companies = data || [];
     setCompanyOptions([...companies]);
   } catch (error) {
     console.error("Error fetching companies:", error);
@@ -252,7 +252,7 @@ const parseDays = (data) => {
 
   const handleDownload = async (toc) => {
     try {
-      const response = await fetch(`https://snappier-reapply-kieth.ngrok-free.dev${toc}`);
+      const response = await fetch(`${BASE_URL.replace(/\/$/, "")}${toc}`);
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -339,15 +339,16 @@ const parseDays = (data) => {
     };
   
     try {
-      const response = await axios.put(
-        `https://api.codingboss.in/trainer/program/update/${id}`,
+      const response = await apiClient(
+        `trainer/program/update/${id}`,
+        'PUT',
         payload
       );
   
-      if (response.data.message === "update success") {
+      if (response && response.message === "update success") {
         setModel(false);
       } else {
-        console.log("Update failed:", response.data);
+        console.log("Update failed:", response);
       }
       setIsCompletedModalOpen(false)
     } catch (error) {
@@ -393,12 +394,12 @@ const parseDays = (data) => {
     // If the company was manually entered and not in the dropdown
     if (manualEntry && companyName) {
       try {
-        const response = await axios.post("https://api.codingboss.in/trainer/companies/", {
-          name: companyName, // ✅ match postman payload
+        const response = await apiClient("trainer/companies/", "POST", {
+          name: companyName,
         });
     
-        if (response.data?.name) {
-          companyName = response.data.name; // ✅ use saved company name
+        if (response && response.name) {
+          companyName = response.name;
         }
         fetchCompanies();
       } catch (err) {

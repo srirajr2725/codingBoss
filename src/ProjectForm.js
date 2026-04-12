@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
+import apiClient from "./utils/apiClient";
 import "bootstrap/dist/css/bootstrap.min.css";
-import "./ProjectForm.css";
 
 const ProjectForm = ({ closeChat }) => {
   const [step, setStep] = useState(0);
@@ -67,20 +67,15 @@ const ProjectForm = ({ closeChat }) => {
 
         // API CALL
         try {
-          const response = await fetch("https://api.codingboss.in/quiz/post-query/", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              name: updatedForm.name,
-              contact: updatedForm.phone,
-              email: JSON.stringify({
-                email: updatedForm.email,
-                techStack: updatedForm.techStack,
-                requirements: updatedForm.requirements,
-              }),
+          const result = await apiClient("quiz/post-query/", "POST", {
+            name: updatedForm.name,
+            contact: updatedForm.phone,
+            email: JSON.stringify({
+              email: updatedForm.email,
+              techStack: updatedForm.techStack,
+              requirements: updatedForm.requirements,
             }),
           });
-          const result = await response.json();
           console.log("API Response:", result);
         } catch (error) {
           console.error("Error sending data to API:", error);

@@ -18,6 +18,7 @@ import Nurture from "./images/nurture.svg";
 import Sagent from "./images/sagent.png";
 import MrCooper from "./images/mrcooper.png";
 import EPAM from "./images/epam.png";
+import EduDarts from "./images/edu.png";
 
 const companies = [
   { logo: Infosys, name: "Infosys", category: "CS/IT" },
@@ -28,6 +29,7 @@ const companies = [
   { logo: IBM, name: "IBM", category: "CS/IT" },
   { logo: Microsoft, name: "Microsoft", category: "CS/IT" },
   { logo: Amazon, name: "Amazon", category: "Service to Product" },
+  { logo: EduDarts, name: "EduDarts", category: "Education Partner" },
   { logo: Vitnezt, name: "Vitnezt", category: "Non-CS/IT" },
   { logo: S2S, name: "S2S", category: "Non-CS/IT" },
   { logo: Olir, name: "Olir", category: "Tier 2/3 college" },

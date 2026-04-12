@@ -94,10 +94,10 @@ const LoginPage = ({ setIsLoggedIn, setUsername, setUserRole }) => {
     } catch (err) {
       console.error("Login Error:", err);
 
-      if (err?.response?.status === 401) {
+      if (err?.status === 401) {
         setError("Invalid email or password");
       } else {
-        setError("Server error. Please try again later.");
+        setError(err.message || "Server error. Please try again later.");
       }
 
     } finally {

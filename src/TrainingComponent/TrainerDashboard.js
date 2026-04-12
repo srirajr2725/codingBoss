@@ -1,5 +1,6 @@
-import React, { useState,useEffect } from 'react'
-import axios from "axios";
+import React, { useState, useEffect } from 'react'
+import apiClient from '../utils/apiClient';
+import BASE_URL from '../apiConfig';
 import {
   Box,
   Typography,
@@ -26,7 +27,6 @@ import {
   Person,
 } from '@mui/icons-material'
 import { useNavigate } from 'react-router-dom'
-import apiClient from '../utils/apiClient';
 import CryptoJS from "crypto-js";
 import { IconButton, Tooltip } from "@mui/material";
 import DownloadIcon from '@mui/icons-material/Download';
@@ -142,33 +142,33 @@ const TrainerDashboard = ({ isLoggedIn,setIsLoggedIn, username, userRole, handle
     useEffect(() => {
       if (userId) {
         // Fetch Pending Requests
-        axios.get(`https://api.codingboss.in/trainer/filter_by_status/Pending/?user=${userId}`)
-          .then(response => {
-            setPendingRequests(response.data);
+        apiClient(`trainer/filter_by_status/Pending/?user=${userId}`, "GET")
+          .then(data => {
+            setPendingRequests(data);
           })
           .catch(error => {
             console.error("Error fetching pending requests:", error);
           });
     
         // Fetch Accepted Requests
-        axios.get(`https://api.codingboss.in/trainer/filter_by_status/Accepted/?user=${userId}`)
-          .then(response => {
-            setAcceptedRequests(response.data);
+        apiClient(`trainer/filter_by_status/Accepted/?user=${userId}`, "GET")
+          .then(data => {
+            setAcceptedRequests(data);
           })
           .catch(error => {
             console.error("Error fetching accepted requests:", error);
           });
     
         // Fetch Denied Requests
-        axios.get(`https://api.codingboss.in/trainer/filter_by_status/Denied/?user=${userId}`)
-          .then(response => {
-            setDeniedRequests(response.data);
+        apiClient(`trainer/filter_by_status/Denied/?user=${userId}`, "GET")
+          .then(data => {
+            setDeniedRequests(data);
           })
           .catch(error => {
             console.error("Error fetching denied requests:", error);
           });
       }
-    }, [userId,selectedTab]);
+    }, [userId, selectedTab]);
   
 
   // Handlers
@@ -216,7 +216,7 @@ const renderFile = (toc) => {
 
 // Handle the download
 const handleDownload = async (toc) => {
-  const fileUrl = `https://snappier-reapply-kieth.ngrok-free.dev${toc}`;
+  const fileUrl = `${BASE_URL.replace(/\/$/, "")}${toc}`;
   try {
     const response = await fetch(fileUrl);
     if (!response.ok) throw new Error('File not found!');
@@ -249,12 +249,12 @@ const handleAcceptRequest = async (id) => {
   };
 
   try {
-    const response = await axios.put(
-      `https://api.codingboss.in/trainer/program/update/${id}`,
+    await apiClient(
+      `trainer/program/update/${id}`,
+      'PUT',
       payload
     );
 
-  
     setSelectedTab('accepted');
   } catch (error) {
     console.error("Error updating program:", error);
@@ -270,12 +270,12 @@ const handleDenyRequest = async (id) => {
   };
 
   try {
-    const response = await axios.put(
-      `https://api.codingboss.in/trainer/program/update/${id}`,
+    await apiClient(
+      `trainer/program/update/${id}`,
+      'PUT',
       payload
     );
 
-  
     setSelectedTab('denied');
   } catch (error) {
     console.error("Error updating program:", error);
@@ -291,8 +291,9 @@ const handleDenyRequest = async (id) => {
     };
   
     try {
-      const response = await axios.put(
-        `https://api.codingboss.in/trainer/program/update/${id}`,
+      await apiClient(
+        `trainer/program/update/${id}`,
+        'PUT',
         payload
       );
   

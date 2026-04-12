@@ -1,5 +1,6 @@
-import React, { useState ,useEffect } from 'react';
-import axios from 'axios';
+import React, { useState, useEffect } from 'react';
+import apiClient from '../utils/apiClient';
+import BASE_URL from '../apiConfig';
 import {
   Box, Typography, Card,Chip,Link,CardMedia, Paper,Grid ,Divider,Checkbox, MenuItem, Pagination, Select,Modal,Avatar, CardContent, FormControl, InputLabel, Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField
  } from '@mui/material';
@@ -113,11 +114,11 @@ const [deniedRequests, setDeniedRequests] = useState([]);
       useEffect(() => {
         const fetchTrainers = async () => {
           try {
-            const res = await axios.get("https://api.codingboss.in/trainer/list_profiles/");
+            const data = await apiClient("trainer/list_profiles/", "GET");
             
             // Validate the response data
-            if (Array.isArray(res.data)) {
-              const formattedTrainers = res.data.map(trainer => ({
+            if (Array.isArray(data)) {
+              const formattedTrainers = data.map(trainer => ({
                 id: trainer.user_id, // Ensuring this matches event.user and decrypted userId
                 name: trainer.name,
                 location: trainer.location,
@@ -273,10 +274,11 @@ const [deniedRequests, setDeniedRequests] = useState([]);
       if (!selectedTrainer) return;
   
       try {
-        const response = await axios.get(
-          `https://api.codingboss.in/trainer/filter_program_by_user_id/?user_id=${selectedTrainer}`
+        const data = await apiClient(
+          `trainer/filter_program_by_user_id/?user_id=${selectedTrainer}`,
+          "GET"
         );
-        setCalendarEvents(response.data); // assuming the data is directly the event list
+        setCalendarEvents(data); // assuming the data is directly the event list
       } catch (error) {
         console.error("Error fetching events:", error);
   
@@ -485,9 +487,7 @@ const handleViewCalendar = (trainerId) => {
         formData.append("toc", newEvent.toc); // ✅ correctly append file
       }
 
-      await axios.post("https://api.codingboss.in/trainer/program/", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      await apiClient("trainer/program/", "POST", formData);
     }
 
     setOpenBookingModal(false);
@@ -555,7 +555,7 @@ const handleTocUpload = (e) => {
 
 const renderFile = (toc) => {
   if (toc) {
-    const fullURL = `https://snappier-reapply-kieth.ngrok-free.dev${toc}`;
+    const fullURL = `${BASE_URL.replace(/\/$/, "")}${toc}`;
     const fileName = toc.split('/').pop(); // optional: extract just the filename
 
     return (
@@ -575,37 +575,36 @@ const renderFile = (toc) => {
   return <Typography>No Table of Content available</Typography>;
 };
 
-  
- useEffect(() => {
+    useEffect(() => {
       if (userId) {
         // Fetch Pending Requests
-        axios.get(`https://api.codingboss.in/trainer/filter_by_status/Pending/?user=${userId}`)
-          .then(response => {
-            setPendingRequests(response.data);
+        apiClient(`trainer/filter_by_status/Pending/?user=${userId}`, "GET")
+          .then(data => {
+            setPendingRequests(data);
           })
           .catch(error => {
             console.error("Error fetching pending requests:", error);
           });
     
         // Fetch Accepted Requests
-        axios.get(`https://api.codingboss.in/trainer/filter_by_status/Accepted/?user=${userId}`)
-          .then(response => {
-            setAcceptedRequests(response.data);
+        apiClient(`trainer/filter_by_status/Accepted/?user=${userId}`, "GET")
+          .then(data => {
+            setAcceptedRequests(data);
           })
           .catch(error => {
             console.error("Error fetching accepted requests:", error);
           });
     
         // Fetch Denied Requests
-        axios.get(`https://api.codingboss.in/trainer/filter_by_status/Denied/?user=${userId}`)
-          .then(response => {
-            setDeniedRequests(response.data);
+        apiClient(`trainer/filter_by_status/Denied/?user=${userId}`, "GET")
+          .then(data => {
+            setDeniedRequests(data);
           })
           .catch(error => {
             console.error("Error fetching denied requests:", error);
           });
       }
-    }, [userId,selectedTab]);
+    }, [userId, selectedTab]);
   
   
 
@@ -618,8 +617,9 @@ const handleAcceptRequest = async (id) => {
   };
 
   try {
-    const response = await axios.put(
-      `https://api.codingboss.in/trainer/program/update/${id}`,
+    await apiClient(
+      `trainer/program/update/${id}`,
+      'PUT',
       payload
     );
 
@@ -650,32 +650,32 @@ const handleAcceptRequest = async (id) => {
   const handleDenyRequest = async (id) => {
     const payload = {
       user: userId,
-     status:"Denied"
+      status: "Denied"
     };
   
     try {
-      const response = await axios.put(
-        `https://api.codingboss.in/trainer/program/update/${id}`,
+      await apiClient(
+        `trainer/program/update/${id}`,
+        'PUT',
         payload
       );
   
-    
       setSelectedTab('denied');
     } catch (error) {
       console.error("Error updating program:", error);
     }
-  
   };
   
   const handleRestoreRequest = async (id) => {
     const payload = {
       user: userId,
-     status:"Pending"
+      status: "Pending"
     };
   
     try {
-      const response = await axios.put(
-        `https://api.codingboss.in/trainer/program/update/${id}`,
+      await apiClient(
+        `trainer/program/update/${id}`,
+        'PUT',
         payload
       );
   
@@ -683,7 +683,6 @@ const handleAcceptRequest = async (id) => {
     } catch (error) {
       console.error("Error updating program:", error);
     }
-  
   };
 
   
@@ -771,7 +770,7 @@ const handleAcceptRequest = async (id) => {
     <Grid item xs={12} sm={3}>
       <Box>
         <img
-          src={`https://snappier-reapply-kieth.ngrok-free.dev${trainer.photoUrl}`}
+          src={`${BASE_URL.replace(/\/$/, "")}${trainer.photoUrl}`}
           alt={trainer.name}
           style={{
             width: "100%",

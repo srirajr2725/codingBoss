@@ -113,7 +113,12 @@ const SignUp = ({ setIsLoggedIn, setUsername, setUserRole }) => {
         setError(response?.message || "Signup failed.");
       }
     } catch (err) {
-      setError(err.message || "Signup failed.");
+      const msg = err.message || "";
+      if (msg.toLowerCase().includes("already exists") || msg.toLowerCase().includes("already created") || msg.toLowerCase().includes("unique")) {
+        setError("Account already created");
+      } else {
+        setError(msg || "Signup failed.");
+      }
     } finally {
       setLoading(false);
     }

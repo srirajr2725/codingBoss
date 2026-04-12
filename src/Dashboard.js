@@ -148,8 +148,8 @@ const Dashboard = ({
         graphType === "percentage"
           ? test.percentage
           : graphType === "questions"
-          ? test.total_questions
-          : 1,
+            ? test.total_questions
+            : 1,
     }));
   };
 
@@ -251,8 +251,8 @@ const Dashboard = ({
             {graphType === "percentage"
               ? "Marks Percentage History"
               : graphType === "questions"
-              ? "Questions Per Test"
-              : "Completed Tests"}
+                ? "Questions Per Test"
+                : "Completed Tests"}
 
           </h4>
 

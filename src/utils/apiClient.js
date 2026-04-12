@@ -1,6 +1,5 @@
 // src/utils/apiClient.js
-
-const BASE_URL = "https://api.codingboss.in/";
+import BASE_URL from "../apiConfig";
 
 const apiClient = async (
   endpoint,
@@ -12,7 +11,7 @@ const apiClient = async (
   const cleanEndpoint = endpoint.replace(/^\/+/, "");
   const url = `${BASE_URL.replace(/\/$/, "")}/${cleanEndpoint}`;
 
-  // Automatically grab the token no matter what you named it
+  // Automatically grab the token
   const token = 
     localStorage.getItem("token") || 
     localStorage.getItem("user_token") || 
@@ -37,7 +36,10 @@ const apiClient = async (
   };
 
   if (body && method !== "GET") {
-    if (typeof body === "string") {
+    if (body instanceof FormData) {
+      delete headers["Content-Type"]; // Let browser set it with boundary
+      options.body = body;
+    } else if (typeof body === "string") {
       options.body = body;
     } else {
       options.body = JSON.stringify(body);
@@ -58,16 +60,46 @@ const apiClient = async (
     const data = isJson ? await response.json() : null;
 
     if (!response.ok) {
-      const errorMsg =
-        data?.message ||
-        data?.detail ||
-        `Request failed (${response.status})`;
-      throw new Error(errorMsg);
+      // 1. Try to find message in data
+      let errorMsg = data?.message || data?.detail || data?.error;
+
+      // 2. Handle nested objects/arrays (common in Django validation errors)
+      if (!errorMsg && data && typeof data === "object") {
+        const extractMessages = (obj) => {
+          let messages = [];
+          Object.entries(obj).forEach(([key, value]) => {
+            if (key === "success" || key === "status") return;
+            if (Array.isArray(value)) {
+              messages.push(`${key}: ${value.join(" ")}`);
+            } else if (typeof value === "object" && value !== null) {
+              messages.push(...extractMessages(value));
+            } else {
+              messages.push(`${key}: ${String(value)}`);
+            }
+          });
+          return messages;
+        };
+        const messages = extractMessages(data);
+        if (messages.length > 0) {
+          errorMsg = messages.join(" | ");
+        }
+      }
+
+      // 3. Fallback to response status text or generic
+      if (!errorMsg) {
+        errorMsg = response.statusText || `Request failed with status ${response.status}`;
+      }
+
+      // Create a custom error object that components can use
+      const error = new Error(errorMsg);
+      error.status = response.status;
+      error.data = data;
+      throw error;
     }
 
     return data;
   } catch (error) {
-    console.error("API Error:", { url, method, message: error.message });
+    console.error("API Error:", { url, method, status: error.status, message: error.message });
     throw error;
   }
 };

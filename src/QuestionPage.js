@@ -99,6 +99,7 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
     return () => clearInterval(interval);
   }, [startTime, isTestSubmitted]);
 
+
   // ============================================================
   // DATA FETCHING
   // ============================================================
@@ -251,6 +252,41 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
 
   }, [isTestSubmitted]);
 
+  // Anti-Extension / IFrame Detector
+  useEffect(() => {
+    const detectIframes = setInterval(() => {
+      if (isTestStarted && !isTestSubmitted) {
+        // If an iframe gets focus, it might be an injected extension like ChatGPT sidebar
+        if (document.activeElement && document.activeElement.tagName && document.activeElement.tagName.toLowerCase() === 'iframe') {
+           handleTabSwitch();
+        }
+      }
+    }, 1000);
+
+    // CSS to ensure coding-scope behaves correctly in fullscreen and hides other things
+    const style = document.createElement('style');
+    style.innerHTML = `
+      .coding-scope:fullscreen {
+        width: 100vw !important;
+        height: 100vh !important;
+        background-color: #1e1e2f !important;
+        overflow-y: auto !important;
+      }
+      /* Hide extension iframes that might try to position absolutely over our content */
+      iframe:not([id^="monaco"]) {
+        opacity: 0 !important;
+        pointer-events: none !important;
+        z-index: -9999 !important;
+      }
+    `;
+    document.head.appendChild(style);
+
+    return () => {
+      clearInterval(detectIframes);
+      document.head.removeChild(style);
+    };
+  }, [isTestStarted, isTestSubmitted, handleTabSwitch]);
+
 
   useEffect(() => {
     const handleVisibilityChange = () => {
@@ -265,14 +301,69 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
       }
     };
 
+    const handleMouseLeaveApp = (e) => {
+      if (!isTestSubmitted && isTestStarted) {
+        // If the mouse leaves the document in Fullscreen mode, it means
+        // they are either moving to a second monitor OR hovering over an 
+        // OS-level "Always On Top" floating window (like Notepad or PowerToys).
+        // This is a direct test violation!
+        toast.warning("⚠️ Mouse left the test area! Close any floating apps!");
+        handleTabSwitch();
+      }
+    };
+
     window.addEventListener("blur", handleFocusLost);
     document.addEventListener("visibilitychange", handleVisibilityChange);
+    
+    // Aggressive mouse tracking to defeat OS-level 'Always on Top' overlays
+    document.addEventListener("mouseleave", handleMouseLeaveApp);
+
+    // Continuous focus polling to catch sneaky focus stealing
+    const focusCheck = setInterval(() => {
+      if (isTestStarted && !isTestSubmitted && !document.hasFocus()) {
+        handleTabSwitch();
+      }
+    }, 500);
 
     return () => {
       window.removeEventListener("blur", handleFocusLost);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
+      document.removeEventListener("mouseleave", handleMouseLeaveApp);
+      clearInterval(focusCheck);
     };
   }, [handleTabSwitch, isTestSubmitted, isTestStarted]);
+
+  // Advanced OS-level Overlay & Obscuring Detection (IntersectionObserver V2)
+  useEffect(() => {
+    if (!isTestStarted || isTestSubmitted) return;
+
+    // Check if the browser supports IntersectionObserver V2 (which includes trackVisibility)
+    if (typeof IntersectionObserver === 'undefined' || !window.IntersectionObserverEntry || !('isVisible' in IntersectionObserverEntry.prototype)) {
+      return; // Browser doesn't support V2 occlusion tracking
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        // If the element is technically rendering in the viewport (isIntersecting) 
+        // BUT it is being hidden by an external OS window or overlaid extension (isVisible = false)
+        if (entry.isIntersecting && !entry.isVisible) {
+          toast.error("🚫 Floating OS application or overlay detected! Test Terminated.");
+          handleTabSwitch();
+        }
+      }
+    }, {
+      trackVisibility: true,
+      delay: 500 // 500ms is the minimum allowed by the spec for performance reasons
+    });
+
+    // Observe the main editor container. If they place a floating notepad over the editor, it instantly terminates.
+    const target = document.querySelector('.coding-scope');
+    if (target) {
+      observer.observe(target);
+    }
+
+    return () => observer.disconnect();
+  }, [isTestStarted, isTestSubmitted, handleTabSwitch]);
 
   // ============================================================
   // FULLSCREEN LOCK
@@ -287,7 +378,8 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
 
     const enforceFullscreen = () => {
       if (!document.fullscreenElement && !isTestSubmitted && isTestStarted) {
-        document.documentElement.requestFullscreen().catch((err) => {
+        const elem = document.querySelector('.coding-scope') || document.documentElement;
+        elem.requestFullscreen().catch((err) => {
           console.warn("Fullscreen request failed:", err);
         });
       }
@@ -303,18 +395,14 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
   }, [handleTabSwitch, isTestSubmitted, isTestStarted]);
 
   const startTestAndLock = () => {
-    document.documentElement.requestFullscreen().then(() => {
+    const elem = document.querySelector('.coding-scope') || document.documentElement;
+    elem.requestFullscreen().then(() => {
       setIsTestStarted(true);
       if (!startTime) setStartTime(Date.now());
       
-      // Advanced Keyboard Lock to block Windows Key, Alt+Tab, Esc, etc. explicitly
+      // Advanced Keyboard Lock to fully capture ALL OS keys and prevent switching apps
       if (navigator.keyboard && navigator.keyboard.lock) {
-        navigator.keyboard.lock([
-          "Escape",
-          "MetaLeft", "MetaRight", // Windows Keys
-          "AltLeft", "AltRight",
-          "Tab"
-        ]).catch(err => console.warn("Keyboard lock failed:", err));
+        navigator.keyboard.lock().catch(err => console.warn("Keyboard lock failed:", err));
       }
     }).catch((err) => {
       console.warn("Fullscreen request failed:", err);
@@ -323,11 +411,7 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
   };
 
   // ============================================================
-  // STRONG COPY / PASTE / CUT / RIGHT CLICK BLOCK
-  // ============================================================
-
-  // ============================================================
-  // STRONG COPY / PASTE / CUT / RIGHT CLICK BLOCK
+  // STRONG COPY / PASTE / CUT / RIGHT CLICK / SYSTEM KEYS BLOCK
   // ============================================================
 
   useEffect(() => {
@@ -352,6 +436,27 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
     const preventKeyboardShortcuts = (e) => {
       if (isTestSubmitted) return;
 
+      // Block Meta (Windows/Cmd), Alt, OS, Escape
+      if (e.key === "Meta" || e.key === "Alt" || e.key === "OS" || e.key === "Escape") {
+        e.preventDefault();
+        e.stopPropagation();
+        toast.error("❌ System keys disabled!");
+        return false;
+      }
+
+      // Block PrintScreen
+      if (e.key === "PrintScreen") {
+        e.preventDefault();
+        e.stopPropagation();
+        try {
+          navigator.clipboard.writeText(''); // Clear clipboard immediately
+        } catch (err) {
+          console.warn("Clipboard write failed");
+        }
+        toast.error("❌ Screenshots are disabled!");
+        return false;
+      }
+
       // Ctrl / Cmd based shortcuts
       if (
         (e.ctrlKey || e.metaKey) &&
@@ -361,7 +466,13 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
           e.key.toLowerCase() === "x" ||   // Cut
           e.key.toLowerCase() === "a" ||   // Select All
           e.key.toLowerCase() === "s" ||   // Save
-          e.key.toLowerCase() === "u"      // View Source
+          e.key.toLowerCase() === "u" ||   // View Source
+          e.key.toLowerCase() === "p" ||   // Print
+          e.key.toLowerCase() === "f" ||   // Find
+          e.key.toLowerCase() === "h" ||   // History
+          e.key.toLowerCase() === "j" ||   // Downloads
+          e.key.toLowerCase() === "t" ||   // New Tab
+          e.key.toLowerCase() === "w"      // Close Tab
         )
       ) {
         e.preventDefault();
@@ -370,11 +481,27 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
         return false;
       }
 
-      // F12 (DevTools)
-      if (e.key === "F12") {
+      // F-Keys Block (F11-F12, F5)
+      if (e.key === "F12" || e.key === "F11" || e.key === "F5") {
         e.preventDefault();
-        toast.error("❌ Developer tools disabled during test!");
+        e.stopPropagation();
+        toast.error("❌ Action disabled during test!");
         return false;
+      }
+      
+      // Dev Tools (Ctrl+Shift+I/J/C)
+      if (e.ctrlKey && e.shiftKey && (e.key.toLowerCase() === "i" || e.key.toLowerCase() === "j" || e.key.toLowerCase() === "c")) {
+        e.preventDefault();
+        e.stopPropagation();
+        toast.error("❌ Developer tools disabled!");
+        return false;
+      }
+    };
+
+    const preventDragAndDrop = (e) => {
+      if (!isTestSubmitted) {
+        e.preventDefault();
+        e.stopPropagation();
       }
     };
 
@@ -393,21 +520,44 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
 
     // Add listeners at window level (stronger than document)
     window.addEventListener("keydown", preventKeyboardShortcuts, true);
+    window.addEventListener("keyup", preventKeyboardShortcuts, true);
     window.addEventListener("copy", preventClipboard, true);
     window.addEventListener("cut", preventClipboard, true);
     window.addEventListener("paste", preventClipboard, true);
     window.addEventListener("contextmenu", preventRightClick, true);
+    window.addEventListener("dragstart", preventDragAndDrop, true);
+    window.addEventListener("drop", preventDragAndDrop, true);
 
     return () => {
       enableSelection();
       window.removeEventListener("keydown", preventKeyboardShortcuts, true);
+      window.removeEventListener("keyup", preventKeyboardShortcuts, true);
       window.removeEventListener("copy", preventClipboard, true);
       window.removeEventListener("cut", preventClipboard, true);
       window.removeEventListener("paste", preventClipboard, true);
       window.removeEventListener("contextmenu", preventRightClick, true);
+      window.removeEventListener("dragstart", preventDragAndDrop, true);
+      window.removeEventListener("drop", preventDragAndDrop, true);
     };
 
   }, [isTestSubmitted]);
+
+  // Prevent Browser Navigation/Close Events
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      if (isTestStarted && !isTestSubmitted) {
+        e.preventDefault();
+        e.returnValue = "Leaving this page will terminate your test. Are you sure?";
+        return e.returnValue;
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [isTestStarted, isTestSubmitted]);
 
 
   const handleCompile = async () => {

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import "./QueriesPage.css";
-import queryImage from "./images/query.png"; // Make sure path is correct!
+import queryImage from "./images/query.png";
+import apiClient from "./utils/apiClient";
 
 const QueriesPage = () => {
   const [formData, setFormData] = useState({
@@ -23,22 +23,14 @@ const QueriesPage = () => {
     setResponseMsg("");
 
     try {
-      const response = await fetch("https://api.codingboss.in/quiz/post-query/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: formData.name,
-          email: formData.email,
-          contact: parseInt(formData.phone),
-        }),
+      const data = await apiClient("quiz/post-query/", "POST", {
+        name: formData.name,
+        email: formData.email,
+        contact: parseInt(formData.phone),
       });
 
-      if (response.ok) {
-        setResponseMsg("Request sent successfully!");
-        setFormData({ name: "", email: "", phone: "" });
-      } else {
-        setResponseMsg("❌ Something went wrong! Please try again later.");
-      }
+      setResponseMsg("Request sent successfully!");
+      setFormData({ name: "", email: "", phone: "" });
     } catch (error) {
       setResponseMsg("❌ Network error! Please check your connection.");
     } finally {

@@ -140,12 +140,12 @@ const NavbarComponent = ({ isLoggedIn, setIsLoggedIn, userRole, handleLogout, pr
         <div className="navigation-container">
             <Navbar expand="lg" className="custom-navbar">
                 <Navbar.Brand className="brand-name">
-                    <img 
-                        src={logo} 
-                        alt="Logo" 
-                        className="logo" 
-                        onClick={handleLogoClick} 
-                        style={{ cursor: 'pointer' }} 
+                    <img
+                        src={logo}
+                        alt="Logo"
+                        className="logo"
+                        onClick={handleLogoClick}
+                        style={{ cursor: 'pointer' }}
                     />
                     <b onClick={handleLogoClick} style={{ cursor: 'pointer' }}>
                         Coding<span className="flash">boss</span>

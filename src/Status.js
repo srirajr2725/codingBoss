@@ -3,6 +3,7 @@ import { Card, Container, Col, Row, Form, Button, ProgressBar, Badge } from "rea
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import CryptoJS from "crypto-js";
 import apiClient from "./utils/apiClient";
+import BASE_URL from "./apiConfig";
 import "./Status.css";
 
 const Status = ({ isLoggedIn, setAccess }) => {
@@ -137,27 +138,10 @@ const Status = ({ isLoggedIn, setAccess }) => {
         }
 
         // Fetch Program Marks
-        const currentToken =
-          localStorage.getItem("token") ||
-          localStorage.getItem("user_token") ||
-          localStorage.getItem("access_token");
-
-        const programRes = await fetch(`https://api.codingboss.in/compiler/average_program_marks/?user_id=${userId}`, {
-          headers: {
-            "Authorization": `Bearer ${currentToken}`,
-            "ngrok-skip-browser-warning": "true"
-          },
-        });
-        const pData = await programRes.json();
+        const pData = await apiClient(`compiler/average_program_marks/?user_id=${userId}`, "GET");
         if (pData) setProgramStats({ totalTests: pData.total_programs || 0, averageMarks: pData.avg_marks || 0 });
 
-        const totalRes = await fetch(`https://api.codingboss.in/compiler/total-program-marks/?user_id=${userId}`, {
-          headers: {
-            "Authorization": `Bearer ${currentToken}`,
-            "ngrok-skip-browser-warning": "true"
-          },
-        });
-        const tData = await totalRes.json();
+        const tData = await apiClient(`compiler/total-program-marks/?user_id=${userId}`, "GET");
         if (tData) setProgramTotal(tData.result || "0 / 0");
 
       } catch (err) {
@@ -178,15 +162,9 @@ const Status = ({ isLoggedIn, setAccess }) => {
 
     try {
       const email = localStorage.getItem("username");
-      const response = await fetch(`https://api.codingboss.in/quiz/verify-token/?email=${encodeURIComponent(email)}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ user_token: couponCode.trim() }),
-      });
+      const result = await apiClient(`quiz/verify-token/?email=${encodeURIComponent(email)}`, "POST", { user_token: couponCode.trim() });
 
-      const result = await response.json();
-
-      if (response.ok && result.success) {
+      if (result && result.success) {
         localStorage.setItem(`task_unlocked_${email}`, "true");
         setIsTaskUnlocked(true);
 
@@ -219,42 +197,9 @@ const Status = ({ isLoggedIn, setAccess }) => {
   };
 
   // ================= UNLOCK COURSE HANDLER =================
-  const useCourseCouponCode = async () => {
-    if (!courseCouponCode) return showToast("Please enter course access code", "error");
-
-    try {
-      const email = localStorage.getItem("username");
-      const response = await fetch(`https://api.codingboss.in/quiz/verify-token/?email=${encodeURIComponent(email)}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ user_token: courseCouponCode.trim() }),
-      });
-
-      const result = await response.json();
-
-      if (response.ok && result.success) {
-        localStorage.setItem(`course_unlocked_${email}`, "true");
-        setIsCourseUnlocked(true);
-
-        if (typeof setAccess === "function") {
-          setAccess((prevItems) =>
-            prevItems.map((item) => {
-              if (["Courses", "Company"].includes(item.label)) {
-                return { ...item, locked: false };
-              }
-              return item;
-            })
-          );
-        }
-
-        showToast("🎓 Courses Unlocked!");
-        setCourseCouponCode("");
-      } else {
-        showToast("❌ Invalid Course Code", "error");
-      }
-    } catch (err) {
-      showToast("⚠ Connection Error", "error");
-    }
+  // STATICALLY LOCKED: Course unlocking functionality has been removed as per requirements.
+  const useCourseCouponCode = () => {
+    showToast("⚠ Courses are currently locked by administration.", "error");
   };
 
   return (
@@ -298,20 +243,8 @@ const Status = ({ isLoggedIn, setAccess }) => {
                       <Badge bg="success" className="p-3 fs-6">✅ TASK UNLOCKED</Badge>
                     )}
 
-                    {/* Course Unlock */}
-                    {!isCourseUnlocked ? (
-                      <div className="d-flex gap-2 justify-content-md-end">
-                        <Form.Control
-                          placeholder="Course Code"
-                          value={courseCouponCode}
-                          className="bg-dark text-white border-secondary w-auto"
-                          onChange={(e) => setCourseCouponCode(e.target.value.toUpperCase())}
-                        />
-                        <Button variant="warning" onClick={useCourseCouponCode}>Unlock Course</Button>
-                      </div>
-                    ) : (
-                      <Badge bg="warning" text="dark" className="p-3 fs-6">🎓 COURSES UNLOCKED</Badge>
-                    )}
+                    {/* Course Unlock - STATICALLY LOCKED */}
+                    <Badge bg="secondary" className="p-3 fs-6">🔒 COURSES LOCKED</Badge>
                   </div>
                 </Col>
               </Row>

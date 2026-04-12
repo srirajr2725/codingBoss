@@ -270,6 +270,7 @@ const Banner = ({ isLoggedIn }) => {
           <div className="trust-badges">
             <p className="trust-text">Trusted by professionals at</p>
             <div className="company-logos">
+              <span>EduDarts</span>
               <span>Google</span>
               <span>Microsoft</span>
               <span>Amazon</span>

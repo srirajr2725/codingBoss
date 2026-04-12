@@ -27,9 +27,8 @@ import LinkedInIcon from '@mui/icons-material/LinkedIn'
 import PreviewIcon from '@mui/icons-material/Preview';
 import GitHubIcon from '@mui/icons-material/GitHub'
 import LanguageIcon from '@mui/icons-material/Language'
-import axios from 'axios'
-import { padding } from '@mui/system'
-import apiClient from '../utils/apiClient'
+import apiClient from '../utils/apiClient';
+import BASE_URL from '../apiConfig';
 import { useNavigate } from 'react-router-dom'
 import CryptoJS from 'crypto-js'
 import { FaDownload } from 'react-icons/fa';
@@ -358,11 +357,11 @@ export default function TrainerFormFullScreen({
           ...data,
           dob: data.dob ? new Date(data.dob).toISOString().split('T')[0] : '',
         })
-        let image = data.image && `https://api.codingboss.in/${data.image}` || null;
+        let image = data.image && `${BASE_URL.replace(/\/$/, "")}/${data.image}` || null;
         setImagePreview(image || null)
 
         
-        let resumefileName = data.resume && `https://api.codingboss.in/${data.resume}` || null;
+        let resumefileName = data.resume && `${BASE_URL.replace(/\/$/, "")}/${data.resume}` || null;
         setResumeLink(resumefileName || null);
 
         const parts = data.resume && data.resume.split('/');
