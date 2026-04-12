@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Navbar, Nav, Button, Image, Dropdown } from 'react-bootstrap';
 import { Link, useNavigate } from 'react-router-dom';
-import logo from './images/Codingboss-logo-1.png';
-import CryptoJS from "crypto-js";
+import logo from './images/edulogo.png';
+import CryptoJS from "crypto-js";   
 import './Navbar.css';
 import apiClient from './utils/apiClient';
 
