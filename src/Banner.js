@@ -187,7 +187,7 @@ const Banner = ({ isLoggedIn }) => {
               transform: `translate(${mousePos.x * 0.3}px, ${mousePos.y * 0.3}px)`
             }}
           >
-            Elevate Your Skills with <span className="gradient-text1">Coding</span><span className="gradient-text2">Boss</span>
+            Elevate Your Skills with <span className="gradient-text1">Edu</span><span className="gradient-text2">Darts</span>
           </h1>
 
           <p

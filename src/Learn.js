@@ -125,7 +125,7 @@ const legalContent = {
     body: (
       <div className="lrn-legal-body">
         <p>
-          <strong>CodingBoss</strong> is a premier online coding-education platform dedicated
+          <strong>EduDarts</strong> is a premier online coding-education platform dedicated
           to equipping students and professionals with industry-relevant programming skills.
         </p>
         <p>
@@ -140,7 +140,7 @@ const legalContent = {
 
         <h6 className="lrn-legal-heading">Business Name &amp; Address (as per GST)</h6>
         <address className="lrn-address">
-          <strong>CodingBoss Private Limited</strong><br />
+          <strong>EduDarts Private Limited</strong><br />
           GSTIN: <em>33AABCC1234D1Z5</em><br />
           123, Tech Park Road, Coimbatore – 641 004<br />
           Tamil Nadu, India<br />

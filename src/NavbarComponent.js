@@ -148,7 +148,7 @@ const NavbarComponent = ({ isLoggedIn, setIsLoggedIn, userRole, handleLogout, pr
                         style={{ cursor: 'pointer' }}
                     />
                     <b onClick={handleLogoClick} style={{ cursor: 'pointer' }}>
-                        Coding<span className="flash">boss</span>
+                        Edu<span className="flash">Darts</span>
                     </b>
                 </Navbar.Brand>
                 <Navbar.Toggle aria-controls="basic-navbar-nav" />

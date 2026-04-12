@@ -741,7 +741,7 @@ export default function CourseCard() {
             }}
             viewport={{ once: true }}
           >
-            Elevate Your Skills with <span style={styles.gradientText}>CodingBoss</span>
+            Elevate Your Skills with <span style={styles.gradientText}>EduDarts</span>
           </motion.h1>
           <p style={{ ...styles.subHeading, ...parallaxTransform(0.2) }}>
             Join thousands of developers mastering cutting-edge technologies through
