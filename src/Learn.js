@@ -315,6 +315,29 @@ const Courses = () => {
   const [errText, setErrText]           = useState('');
   const [payMethod, setPayMethod]       = useState('upi');
   const [showPayOptions, setShowPayOptions] = useState(false);
+  
+  // Unlocking Logic
+  const email = localStorage.getItem("username") || "";
+  const [isAllUnlocked, setIsAllUnlocked] = useState(
+    localStorage.getItem(`course_unlocked_${email}`) === "true"
+  );
+
+  /* ── Demo Handle: Unlock all courses ── */
+  const demoUnlock = () => {
+    localStorage.setItem(`course_unlocked_${email}`, "true");
+    setIsAllUnlocked(true);
+    showMsg('success', 'Demo Mode: All courses unlocked successfully!');
+  };
+
+  const handleCourseClick = (link) => {
+    if (isAllUnlocked) {
+      navigate(link);
+    } else {
+      showMsg('info', 'Please enroll to unlock this course.');
+      // Optionally scroll to plans
+      document.querySelector('.lrn-plans')?.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
 
   /* ── Helper: Show notification and clear after 5s ── */
   const showMsg = (type, text) => {
@@ -383,6 +406,11 @@ const Courses = () => {
         <p className="lrn-hero-sub">
           One-time payment · Lifetime access · Industry-recognised certificates
         </p>
+        {!isAllUnlocked && (
+          <button className="lrn-demo-unlock" onClick={demoUnlock}>
+            <FaShieldAlt /> Demo: Unlock All Courses
+          </button>
+        )}
       </div>
 
       {/* ── PRICING PLANS ── */}
@@ -441,7 +469,12 @@ const Courses = () => {
         <h2 className="lrn-section-h2">Courses Included</h2>
         <div className="lrn-courses-grid">
           {courses.map(course => (
-            <div key={course.id} className="lrn-course-card">
+            <div 
+              key={course.id} 
+              className={`lrn-course-card ${isAllUnlocked ? 'lrn-course-card--unlocked' : ''}`}
+              onClick={() => handleCourseClick(course.link)}
+              style={{ cursor: isAllUnlocked ? 'pointer' : 'default' }}
+            >
               <div className="lrn-course-img-wrap" style={{ borderBottom: `3px solid ${course.color}` }}>
                 <img src={course.imageUrl} alt={course.title} className="lrn-course-img" />
               </div>
@@ -454,9 +487,15 @@ const Courses = () => {
                   <span>📊 {course.level}</span>
                 </div>
               </div>
-              <div className="lrn-clocked">
-                <FaLock style={{ marginRight: 8 }} /> Unlocks After Enrollment
-              </div>
+              {!isAllUnlocked ? (
+                <div className="lrn-clocked">
+                  <FaLock style={{ marginRight: 8 }} /> Unlocks After Enrollment
+                </div>
+              ) : (
+                <div className="lrn-unlocked-footer" style={{ background: course.color + '15', color: course.color }}>
+                  <FaCheckCircle style={{ marginRight: 8 }} /> Course Unlocked - Start Learning
+                </div>
+              )}
             </div>
           ))}
         </div>

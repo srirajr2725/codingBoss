@@ -62,7 +62,7 @@ const Dashboard = ({
     { label: 'Start Learn', locked: false, key: 'startlearn' },
     { label: 'Your Status', locked: false, key: 'yourstatus' },
     { label: 'Task', locked: true, key: 'thirantask' },
-    { label: 'Courses', locked: true, key: 'thirancourses' }, // 🔒 LOCKED
+    { label: 'Courses', locked: true, key: 'thirancourses' }, // Initially locked, but can be unlocked
     { label: 'Assignments', locked: true, key: 'thiranassignments' },
     { label: 'Company', locked: true, key: 'thirancompany' },
     { label: 'Profile', locked: false, key: 'profile' },
@@ -82,9 +82,13 @@ const Dashboard = ({
       if (['Task', 'Assignments'].includes(item.label) && isTaskUnlocked) {
         return { ...item, locked: false };
       }
-      // 🔒 STATICALLY LOCKED: Courses & Company
-      if (['Courses', 'Company'].includes(item.label)) {
+      // 🔒 STATICALLY LOCKED: Company
+      if (['Company'].includes(item.label)) {
         return { ...item, locked: true };
+      }
+      // Unlock Courses if flag exists
+      if (item.label === 'Courses' && isCourseUnlocked) {
+        return { ...item, locked: false };
       }
       return item;
     });
@@ -132,9 +136,13 @@ const Dashboard = ({
           }
         }
 
-        // 🔒 STATICALLY LOCKED: Bypass localStorage course_unlocked flag
-        if (['Courses', 'Company'].includes(item.label)) {
+        // 🔒 STATICALLY LOCKED: Company (Bypass localStorage for Company)
+        if (['Company'].includes(item.label)) {
           apiMatch = false; 
+        }
+        // Unlock Courses if flag exists
+        if (item.label === 'Courses' && isCourseUnlocked) {
+          apiMatch = true;
         }
 
         // Generic check for this specific item in json_data from accessResponse

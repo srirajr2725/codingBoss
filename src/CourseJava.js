@@ -18,9 +18,16 @@ const CourseJava = ({ isLoggedIn, setIsLoggedIn, userRole, handleLogout, usernam
   const [languages, setLanguages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [unlockedIndex, setUnlockedIndex] = useState(() => {
+    const saved = localStorage.getItem(`java_progress_${username.toLowerCase()}`);
+    return saved ? parseInt(saved, 10) : 0;
+  });
   const navigate = useNavigate();
   const location = useLocation();
 
+  useEffect(() => {
+    localStorage.setItem(`java_progress_${username.toLowerCase()}`, unlockedIndex.toString());
+  }, [unlockedIndex, username]);
 
   useEffect(() => {
     if (!isLoggedIn) {
@@ -54,8 +61,17 @@ const CourseJava = ({ isLoggedIn, setIsLoggedIn, userRole, handleLogout, usernam
     fetchLanguages();
   }, []);
 
-  const handleTopicClick = (index) => setCurrentIndex(index);
-  const handleNext = () => setCurrentIndex((prev) => Math.min(prev + 1, topics.length - 1));
+  const handleTopicClick = (index) => {
+    if (index <= unlockedIndex) {
+      setCurrentIndex(index);
+    }
+  };
+  const handleNext = () => {
+    const nextIdx = currentIndex + 1;
+    if (nextIdx < topics.length && nextIdx <= unlockedIndex) {
+      setCurrentIndex(nextIdx);
+    }
+  };
   const handlePrevious = () => setCurrentIndex((prev) => Math.max(prev - 1, 0));
 
   const renderContentAsList = (content) => {
@@ -69,7 +85,10 @@ const CourseJava = ({ isLoggedIn, setIsLoggedIn, userRole, handleLogout, usernam
     if (newPath && location.pathname !== newPath) navigate(newPath);
   };
 
-  const handleStart = (question) => {
+  const handleStart = (question, index) => {
+    if (index === unlockedIndex && unlockedIndex < topics.length - 1) {
+      setUnlockedIndex(unlockedIndex + 1);
+    }
     navigate('/QuestionPage', { state: { questionId: question } })
   }
 
@@ -98,8 +117,17 @@ const CourseJava = ({ isLoggedIn, setIsLoggedIn, userRole, handleLogout, usernam
               <li>Loading topics...</li>
             ) : topics.length > 0 ? (
               topics.map((topic, index) => (
-                <li key={index} onClick={() => handleTopicClick(index)} className={index === currentIndex ? 'active' : ''}>
-                  {topic.title}
+                <li 
+                  key={index} 
+                  onClick={() => handleTopicClick(index)} 
+                  className={`${index === currentIndex ? 'active' : ''} ${index > unlockedIndex ? 'locked' : ''}`}
+                  style={{ opacity: index > unlockedIndex ? 0.6 : 1, cursor: index > unlockedIndex ? 'not-allowed' : 'pointer' }}
+                >
+                  <span className="topic-title">
+                    {index > unlockedIndex && <span className="me-2">🔒</span>}
+                    {topic.title}
+                  </span>
+                  {index < unlockedIndex && <span className="ms-auto">✅</span>}
                 </li>
               ))
             ) : (
@@ -125,7 +153,7 @@ const CourseJava = ({ isLoggedIn, setIsLoggedIn, userRole, handleLogout, usernam
                     <Button
                       variant="primary"
                       size="sm"
-                      onClick={() => handleStart(topics[currentIndex].position)} // Pass the question object including ID
+                      onClick={() => handleStart(topics[currentIndex].position, currentIndex)} // Pass the question object including ID
                       className="d-flex flex-column align-items-center justify-content-center"
                       style={{
                         minWidth: '80px',

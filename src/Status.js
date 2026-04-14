@@ -198,8 +198,37 @@ const Status = ({ isLoggedIn, setAccess }) => {
 
   // ================= UNLOCK COURSE HANDLER =================
   // STATICALLY LOCKED: Course unlocking functionality has been removed as per requirements.
-  const useCourseCouponCode = () => {
-    showToast("⚠ Courses are currently locked by administration.", "error");
+  const useCourseCouponCode = async () => {
+    if (!courseCouponCode) return showToast("Please enter course code", "error");
+
+    try {
+      const email = localStorage.getItem("username");
+      // For now, using the same verification endpoint or a simulated successful one
+      const result = await apiClient(`quiz/verify-token/?email=${encodeURIComponent(email)}`, "POST", { user_token: courseCouponCode.trim() });
+
+      if (result && result.success) {
+        localStorage.setItem(`course_unlocked_${email}`, "true");
+        setIsCourseUnlocked(true);
+
+        if (typeof setAccess === "function") {
+          setAccess((prevItems) =>
+            prevItems.map((item) => {
+              if (item.label === "Courses") {
+                return { ...item, locked: false };
+              }
+              return item;
+            })
+          );
+        }
+
+        showToast("🎓 Courses Unlocked! Master your skills.");
+        setCourseCouponCode("");
+      } else {
+        showToast("❌ Invalid Course Code", "error");
+      }
+    } catch (err) {
+      showToast("⚠ Connection Error", "error");
+    }
   };
 
   return (
@@ -243,8 +272,20 @@ const Status = ({ isLoggedIn, setAccess }) => {
                       <Badge bg="success" className="p-3 fs-6">✅ TASK UNLOCKED</Badge>
                     )}
 
-                    {/* Course Unlock - STATICALLY LOCKED */}
-                    <Badge bg="secondary" className="p-3 fs-6">🔒 COURSES LOCKED</Badge>
+                    {/* Course Unlock */}
+                    {!isCourseUnlocked ? (
+                      <div className="d-flex gap-2 justify-content-md-end">
+                        <Form.Control
+                          placeholder="Course Code"
+                          value={courseCouponCode}
+                          className="bg-dark text-white border-secondary w-auto"
+                          onChange={(e) => setCourseCouponCode(e.target.value.toUpperCase())}
+                        />
+                        <Button variant="success" onClick={useCourseCouponCode}>Unlock Courses</Button>
+                      </div>
+                    ) : (
+                      <Badge bg="info" className="p-3 fs-6">✅ COURSES UNLOCKED</Badge>
+                    )}
                   </div>
                 </Col>
               </Row>

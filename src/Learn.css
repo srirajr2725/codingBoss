@@ -53,6 +53,34 @@
   margin: 0 auto;
 }
 
+.lrn-demo-unlock {
+  margin-top: 24px;
+  background: #1e293b;
+  color: white;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  transition: all 0.2s;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.lrn-demo-unlock:hover {
+  background: #334155;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+}
+
+.lrn-demo-unlock svg {
+  font-size: 0.9rem;
+  color: #fbbf24;
+}
+
 /* ─── PRICING PLANS ─────────────────────────── */
 .lrn-plans {
   display: grid;
@@ -297,6 +325,20 @@
   color: #94a3b8;
   font-size: 0.83rem;
   padding: 12px;
+}
+
+.lrn-unlocked-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-top: 1.5px solid #e2e8f0;
+  font-size: 0.83rem;
+  font-weight: 600;
+  padding: 12px;
+}
+
+.lrn-course-card--unlocked:hover {
+  border-color: #6c63ff;
 }
 
 /* ─── HELP STRIP ──────────────────────────── */
