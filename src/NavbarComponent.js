@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Navbar, Nav, Button, Image, Dropdown } from 'react-bootstrap';
 import { Link, useNavigate } from 'react-router-dom';
-import logo from './images/edulogo.png';
+import logo from './images/Codingboss-logo-1.png';
 import CryptoJS from "crypto-js";   
 import './Navbar.css';
 import apiClient from './utils/apiClient';
@@ -148,7 +148,7 @@ const NavbarComponent = ({ isLoggedIn, setIsLoggedIn, userRole, handleLogout, pr
                         style={{ cursor: 'pointer' }}
                     />
                     <b onClick={handleLogoClick} style={{ cursor: 'pointer' }}>
-                        Edu<span className="flash">Darts</span>
+                        Coding<span className="flash">Boss</span>
                     </b>
                 </Navbar.Brand>
                 <Navbar.Toggle aria-controls="basic-navbar-nav" />
