@@ -1,96 +1,156 @@
+/* ══════════════════════════════════════════════
+   ULTRA TASK / TEST PORTAL
+   CodingBoss Premium UI
+   ══════════════════════════════════════════════ */
 
-
-.card-inner {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 15px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  padding: 20px;
-  margin: 10px;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  text-align: center;
-
+.task-container {
+  padding: 40px 0;
+  animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.card-inner h2 {
-  font-size: 30px;
-  margin-bottom: 15px;
-  color: white;
+.task-header {
+  margin-bottom: 50px;
+  text-align: left;
 }
 
-.card-inner p {
-  font-size: 16px;
-  margin-bottom: 20px;
-  color: white;
+.task-title {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -1.5px;
+  margin-bottom: 12px;
 }
 
-.card-inner .btn-primary {
-  background-color: #017a8c;
-  border-color: #013c4c;
-  font-size: 18px;
-  padding: 10px 20px;
-  border-radius: 25px;
-  transition: all 0.3s ease;
+.task-subtitle {
+  color: #64748b;
+  font-size: 1.1rem;
+  font-weight: 500;
 }
 
-.card-inner .btn-primary:hover {
-  background-color: #013c4c;
-  border-color: #017a8c;
+/* --- CARD ARCHITECTURE --- */
+.task-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 32px;
 }
 
-/* .img{
-  width:300px;
-  height:200px;
-} */
-
-
-
-.mcq-test-card {
-  background: linear-gradient(135deg, #013c4c 0%, #017a8c 100%);
-  color: white;
-  padding: 50px 20px;
-  border-radius: 15px;
-  border-top-left-radius: 50px;
-  border-bottom-right-radius: 50px;
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+.task-card {
+  background: white;
+  border: 1px solid #f1f5f9;
+  border-radius: 40px;
+  padding: 40px;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  animation: fadeInUp 1s ease-in-out;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.02);
 }
 
-.programming-test-card {
-  background: linear-gradient(135deg, #013c4c 0%, #017a8c 100%);
-  color: white;
-  padding: 50px 20px;
-  border-radius: 15px;
-  border-top-left-radius: 50px;
-  border-bottom-right-radius: 50px;
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+.task-card:hover {
+  transform: translateY(-12px);
+  box-shadow: 0 40px 80px -15px rgba(0, 0, 0, 0.08);
+  border-color: #FFA003;
+}
+
+.task-img-wrapper {
+  width: 100%;
+  height: 240px;
+  border-radius: 24px;
+  overflow: hidden;
+  margin-bottom: 32px;
+  background: #f8fafc;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  text-align: center;
-  animation: fadeInUp 1s ease-in-out;
+  justify-content: center;
 }
 
-/* @media (max-width: 954px) {
-  .mcq-test-card, .programming-test-card {
-    padding: 30px 15px;
-  };
-  .im{
-     width: 300px;
-     height: 200px;
-  }
+.task-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.6s ease;
+}
+
+.task-card:hover .task-img {
+  transform: scale(1.05);
+}
+
+.task-card h2 {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 16px;
+  letter-spacing: -0.5px;
+}
+
+.task-card p {
+  color: #64748b;
+  line-height: 1.6;
+  margin-bottom: 32px;
+  font-size: 1rem;
+  flex-grow: 1;
+}
+
+/* --- BUTTONS --- */
+.task-btn {
+  width: 100%;
+  padding: 16px 32px;
+  border-radius: 18px;
+  font-weight: 800;
+  font-size: 1rem;
+  text-transform: none;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  border: none;
+}
+
+.task-btn-mcq {
+  background: #0f172a;
+  color: white;
+}
+
+.task-btn-mcq:hover {
+  background: #1e293b;
+  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.2);
+}
+
+.task-btn-code {
+  background: #FFA003;
+  color: white;
+}
+
+.task-btn-code:hover {
+  background: #e69002;
+  box-shadow: 0 12px 24px rgba(255, 160, 3, 0.2);
+}
+
+/* --- BADGES --- */
+.task-badge {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  background: rgba(255, 160, 3, 0.1);
+  color: #FFA003;
+  padding: 6px 14px;
+  border-radius: 99px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @media (max-width: 768px) {
-  .mcq-test-card, .programming-test-card {
-    padding: 30px 15px;
+  .task-grid {
+    grid-template-columns: 1fr;
   }
-  .im{
-    width: 200px;
-    height: 200px;
-  }
-}; */
+}

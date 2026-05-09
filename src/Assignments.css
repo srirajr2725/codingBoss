@@ -1,0 +1,150 @@
+/* ══════════════════════════════════════════════
+   ULTRA ASSIGNMENTS PORTAL
+   CodingBoss Premium UI
+   ══════════════════════════════════════════════ */
+
+.as-container {
+  padding: 40px 0;
+  animation: fadeIn 0.8s ease-out;
+}
+
+.as-header {
+  margin-bottom: 40px;
+}
+
+.as-title {
+  font-size: 2.25rem;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -1.5px;
+}
+
+/* --- PROGRESS TRACKER --- */
+.as-progress-card {
+  background: #0f172a;
+  border-radius: 32px;
+  padding: 32px;
+  color: white;
+  margin-bottom: 40px;
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.2);
+}
+
+.as-progress-info {
+  flex: 1;
+}
+
+.as-progress-info h4 {
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+
+.as-progress-bar-bg {
+  width: 100%;
+  height: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 99px;
+  overflow: hidden;
+  margin-top: 16px;
+}
+
+.as-progress-fill {
+  height: 100%;
+  background: #FFA003;
+  border-radius: 99px;
+  transition: width 1s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* --- SECTION TABS --- */
+.as-section-title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 40px 0 20px 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* --- ASSIGNMENT ITEMS --- */
+.as-item-card {
+  background: white;
+  border: 1px solid #f1f5f9;
+  border-radius: 24px;
+  padding: 24px 32px;
+  margin-bottom: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.3s;
+}
+
+.as-item-card:hover {
+  transform: translateX(10px);
+  border-color: #FFA003;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+}
+
+.as-item-main {
+  display: flex;
+  flex-direction: column;
+}
+
+.as-item-name {
+  font-weight: 700;
+  color: #0f172a;
+  font-size: 1.1rem;
+}
+
+.as-item-desc {
+  color: #64748b;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+/* --- BUTTONS --- */
+.as-btn-start {
+  background: #f8fafc;
+  color: #0f172a;
+  border: 1px solid #e2e8f0;
+  padding: 10px 24px;
+  border-radius: 12px;
+  font-weight: 700;
+  transition: all 0.2s;
+  text-decoration: none;
+}
+
+.as-btn-start:hover {
+  background: #0f172a;
+  color: white;
+  border-color: #0f172a;
+}
+
+.as-btn-completed {
+  background: #f0fdf4;
+  color: #10b981;
+  border: 1px solid #dcfce7;
+  padding: 10px 24px;
+  border-radius: 12px;
+  font-weight: 700;
+  cursor: default;
+}
+
+.as-lock-icon {
+  color: #94a3b8;
+  font-size: 1.2rem;
+}
+
+/* --- BLUR FOR LOCKED --- */
+.as-locked {
+  filter: blur(4px);
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}

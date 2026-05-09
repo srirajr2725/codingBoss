@@ -73,8 +73,6 @@ const OurOfferings = () => {
         <div className="scroll-progress" style={{ height: `${scrollProgress}%` }}></div>
       </div>
 
-      <h2 className="offerings-title">OUR OFFERINGS</h2>
-
       <div className="category-header">
         <span className="category-title">Projects</span>
         <span className="category-tag for-students">For College Students</span>
@@ -89,11 +87,13 @@ const OurOfferings = () => {
               ref={ref}
               className={`project-card ${inView ? "visible" : ""}`}
             >
-              <img src={project.img} alt={project.name} className="project-image" />
+              <div className="project-image-wrapper">
+                <img src={project.img} alt={project.name} className="project-image" />
+              </div>
               <div className="project-info">
                 <h3>{project.name}</h3>
                 <button onClick={() => handleBookNowClick(project)} className="book-now-btn">
-                  Book Now
+                  Explore Project
                 </button>
               </div>
             </div>

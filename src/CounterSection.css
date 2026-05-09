@@ -1,115 +1,197 @@
-/* Main section */
+/* ══════════════════════════════════════════════
+   ULTRA COUNTER SYSTEM (Modern Redesign)
+   CodingBoss Premium Experience
+   ══════════════════════════════════════════════ */
+
 .counter-section {
-    background-color: white;
-    padding: 4rem 0;
-    text-align: center;
+  padding: 100px 20px;
+  background: #0f172a; /* Dark premium background */
+  text-align: center;
+  font-family: 'Inter', sans-serif;
+  position: relative;
+  overflow: hidden;
+  color: white;
+}
+
+/* Add a subtle glow behind the section */
+.counter-section::before {
+  content: '';
+  position: absolute;
+  top: -100px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 800px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(99,102,241,0.15) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
 }
 
 .section-title {
-    font-size: 2.5rem;
-    font-weight: bold;
-    color: #333;
-    margin-bottom: 2.5rem;
+  font-size: 3.8rem;
+  font-weight: 950;
+  color: #ffffff;
+  letter-spacing: -2px;
+  margin-bottom: 80px;
+  display: inline-block;
+  position: relative;
 }
 
-/* Number Stats Grid */
+.section-title span {
+  background: linear-gradient(135deg, #f59e0b, #ef4444);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* --- STATS GRID --- */
 .stats-container {
-    display: flex;
-    justify-content: center;
-    gap: 2rem;
-    flex-wrap: wrap;
-    padding: 0 5%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 40px;
+  flex-wrap: wrap;
+  max-width: 1200px;
+  margin: 0 auto 80px;
+  position: relative;
+  z-index: 2;
 }
 
 .stat-card {
-    background: #f8f8f8;
-    padding: 2rem;
-    border-radius: 10px;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-    text-align: center;
-    min-width: 180px;
-    width: 220px;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 48px;
+  border-radius: 32px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  min-width: 280px;
+  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  backdrop-filter: blur(20px);
+}
+
+.stat-card:hover {
+  transform: translateY(-12px);
+  box-shadow: 0 40px 80px rgba(0, 0, 0, 0.4), 0 0 40px rgba(99, 102, 241, 0.2);
+  border-color: rgba(99, 102, 241, 0.4);
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .stat-number {
-    font-size: 2rem;
-    font-weight: bold;
-    color: #008000;
+  font-size: 4rem;
+  font-weight: 950;
+  color: #f59e0b; /* Amber */
+  margin-bottom: 8px;
+  letter-spacing: -2px;
+  text-shadow: 0 0 30px rgba(245, 158, 11, 0.4);
 }
 
 .stat-label {
-    font-size: 1.2rem;
-    color: #666;
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 3px;
 }
 
-/* Percentage Stats */
+/* --- PERCENTAGE GRID --- */
 .percentage-container {
-    display: flex;
-    justify-content: center;
-    gap: 2rem;
-    flex-wrap: wrap;
-    padding: 3rem 5%;
-    margin-top: 2rem;
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  gap: 40px;
+  flex-wrap: wrap;
+  max-width: 1400px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 2;
 }
 
 .percentage-card {
-    background: #f8f8f8;
-    padding: 1.5rem 2rem;
-    border-radius: 10px;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-    text-align: center;
-    width: 280px;
-    display: flex;
-    flex-direction: column; /* Align elements in a column */
-    align-items: center;
+  background: rgba(255, 255, 255, 0.02);
+  padding: 48px 32px;
+  border-radius: 32px;
+  width: 340px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+  position: relative;
+  overflow: hidden;
 }
 
-/* Circle Progress */
+/* subtle hover glow inside percentage card */
+.percentage-card::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 150px; height: 150px;
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.15) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.5s;
+}
+
+.percentage-card:hover {
+  transform: translateY(-12px);
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(16, 185, 129, 0.3);
+  box-shadow: 0 40px 80px rgba(0, 0, 0, 0.3);
+}
+
+.percentage-card:hover::after {
+  opacity: 1;
+}
+
 .percentage-chart {
-    width: 90px;
-    height: 90px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
+  width: 120px;
+  height: 120px;
+  margin-bottom: 32px;
+  position: relative;
+  filter: drop-shadow(0 0 15px rgba(16, 185, 129, 0.3));
 }
 
 .circle-svg {
-    width: 100%;
-    height: 100%;
-    transform: rotate(-90deg); /* Ensures correct start position */
+  transform: rotate(-90deg);
+  width: 100%;
+  height: 100%;
 }
 
 .circle-bg {
-    stroke: #ddd; /* Light grey background */
-    stroke-width: 10;
-    fill: none;
+  stroke: rgba(255, 255, 255, 0.08);
+  stroke-width: 8;
+  fill: none;
 }
 
 .circle-progress {
-    stroke: #008000; /* Blue color */
-    stroke-width: 10;
-    fill: none;
-    stroke-linecap: round; /* Smooth edges */
-    transition: stroke-dashoffset 1s ease-in-out;
+  stroke: #10b981; /* Emerald */
+  stroke-width: 8;
+  fill: none;
+  stroke-linecap: round;
 }
 
-/* Centered percentage text */
 .percentage-value {
-    font-size: 1.5rem;
-    font-weight: bold;
-    color: #1b1914;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 1.8rem;
+  font-weight: 950;
+  color: #ffffff;
+  letter-spacing: -1px;
 }
 
-/* Percentage Text */
 .percentage-text {
-    font-size: 1rem;
-    color: #666;
-    text-align: center;
-    margin-top: 0.8rem;
-    max-width: 240px; /* Ensures better text wrapping */
+  font-size: 1.05rem;
+  font-weight: 500;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+@media (max-width: 768px) {
+  .section-title { font-size: 2.8rem; }
+  .stat-card { width: 100%; min-width: 100%; }
+  .percentage-card { width: 100%; }
+  .counter-section { padding: 60px 20px; }
 }

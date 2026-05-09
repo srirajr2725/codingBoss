@@ -50,9 +50,12 @@ const apiClient = async (
     const response = await fetch(url, options);
 
     if (response.status === 401) {
-      localStorage.clear();
-      window.location.href = "/#/LoginPage";
-      return;
+      // localStorage.clear();
+      // window.location.href = "/#/LoginPage";
+      // return;
+      // ── MOCK ENVIRONMENT BYPASS ──
+      // Intentionally ignoring 401s to prevent wiping out locally registered users
+      // since the mock backend doesn't persist newly created accounts properly.
     }
 
     const contentType = response.headers.get("content-type");

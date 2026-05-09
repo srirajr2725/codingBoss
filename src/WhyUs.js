@@ -1,5 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import "./WhyUs.css";
+
+import { FaCheckCircle, FaLaptopCode, FaTrophy, FaBriefcase, FaChartLine, FaGraduationCap, FaSync } from "react-icons/fa";
 
 const WhyUs = () => {
   const sectionRef = useRef(null);
@@ -11,6 +14,16 @@ const WhyUs = () => {
   const [hoverIndex, setHoverIndex] = useState(null);
   const [isTitleVisible, setIsTitleVisible] = useState(false);
 
+  const features = [
+    { icon: <FaCheckCircle />, text: "At Codingboss, we make coding simple and effective" },
+    { icon: <FaLaptopCode />, text: "MCQs & Coding Tests – Improve with hands-on practice" },
+    { icon: <FaTrophy />, text: "Exam-Ready Prep – Ace interviews and competitions" },
+    { icon: <FaBriefcase />, text: "Real-World Challenges – Solve industry-level problems" },
+    { icon: <FaChartLine />, text: "Personalized Learning – Track and improve easily" },
+    { icon: <FaGraduationCap />, text: "Beginner to Pro – Courses for all skill levels" },
+    { icon: <FaSync />, text: "Regular Updates – Stay ahead in coding trends" }
+  ];
+
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -20,7 +33,6 @@ const WhyUs = () => {
           }
         });
 
-        // Adjust progress line height dynamically
         if (lineRef.current) {
           const percentage = ((visibleIndexes.length + 1) / contentRefs.current.length) * 100;
           lineRef.current.style.height = `${percentage}%`;
@@ -43,7 +55,6 @@ const WhyUs = () => {
     };
   }, [visibleIndexes]);
 
-  // Separate observer for title visibility
   useEffect(() => {
     const titleObserver = new IntersectionObserver(
       ([entry]) => {
@@ -73,35 +84,41 @@ const WhyUs = () => {
           WHY US
         </h2>
         <div className="why-us-content">
-          {[
-            "At Codingboss, we make coding simple and effective.",
-            "MCQs & Coding Tests – Improve with hands-on practice.",
-            "Exam-Ready Prep – Ace interviews and competitions.",
-            "Real-World Challenges – Solve industry-level problems.",
-            "Personalized Learning – Track and improve easily.",
-            "Beginner to Pro – Courses for all skill levels.",
-            "Regular Updates – Stay ahead in coding trends."
-          ].map((text, index) => (
-            <div
-              key={index}
-              ref={(el) => (contentRefs.current[index] = el)}
-              className={`why-us-card ${visibleIndexes.includes(index) ? "visible" : ""} 
-                ${hoverIndex === index ? "hovered" : ""}`}
-              onMouseEnter={() => setHoverIndex(index)}
-              onMouseLeave={() => setHoverIndex(null)}
-            >
-              {text.split(".").map((word, i) => (
-                <span key={i} className="fade-in-word">
-                  {word}
-                </span>
-              ))}
+          <div className="why-us-grid">
+            {features.map((item, index) => {
+              const textParts = item.text.split(" – ");
+              return (
+                <div
+                  key={index}
+                  ref={(el) => (contentRefs.current[index] = el)}
+                  className={`why-us-card ${visibleIndexes.includes(index) ? "visible" : ""} 
+                    ${hoverIndex === index ? "hovered" : ""}`}
+                  onMouseEnter={() => setHoverIndex(index)}
+                  onMouseLeave={() => setHoverIndex(null)}
+                >
+                  <div className="why-us-icon-wrapper">
+                    {item.icon}
+                  </div>
+                  <div className="fade-in-word">
+                    {textParts.length > 1 ? (
+                      <>
+                        <strong>{textParts[0]}</strong> – {textParts[1]}
+                      </>
+                    ) : (
+                      <strong>{textParts[0]}</strong>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          <div ref={finalTextRef} className={`why-us-final-cta ${visibleIndexes.includes(7) ? "visible" : ""}`}>
+            <h3>Ready to start your journey?</h3>
+            <p>Join thousands of students mastering technology today.</p>
+            <div className="cta-wrapper">
+              <Link to="/signup" className="ultra-btn">Get Started Now</Link>
             </div>
-          ))}
-          <p ref={finalTextRef} className={`why-us-final-text ${visibleIndexes.includes(7) ? "visible" : ""}`}>
-            {"Start your journey with Codingboss today!".split(" ").map((word, i) => (
-              <span key={i} className="fade-in-word">{word}</span>
-            ))}
-          </p>
+          </div>
         </div>
       </div>
     </section>

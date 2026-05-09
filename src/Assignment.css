@@ -1,0 +1,232 @@
+
+/* ══════════════════════════════════════════════
+   PREMIUM ASSIGNMENT PORTAL STYLES
+   ══════════════════════════════════════════════ */
+
+.as-portal-wrapper {
+  padding: 40px;
+  background: #f8fafc;
+  min-height: 100vh;
+}
+
+/* HEADER CARD */
+.as-main-header-card {
+  background: white;
+  border-radius: 24px;
+  border: 1px solid rgba(0,0,0,0.05);
+  padding: 32px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.02);
+  margin-bottom: 40px;
+}
+
+.as-title-main {
+  font-size: 2.2rem;
+  font-weight: 950;
+  color: #0f172a;
+  letter-spacing: -1.5px;
+  margin: 0;
+}
+
+.as-meta-row {
+  display: flex;
+  gap: 20px;
+  margin-top: 16px;
+}
+
+.as-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: #64748b;
+}
+
+.as-status-badge {
+  padding: 6px 16px;
+  border-radius: 99px;
+  font-weight: 900;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* STATS CARDS */
+.as-stat-card-glass {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 24px;
+  padding: 32px;
+  text-align: center;
+  transition: all 0.4s;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+}
+
+.as-stat-card-glass:hover {
+  transform: translateY(-8px);
+  background: white;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.05);
+}
+
+.as-stat-icon-wrapper {
+  width: 64px;
+  height: 64px;
+  background: #f1f5f9;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+  color: #f59e0b; /* BRAND AMBER */
+  font-size: 1.5rem;
+  transition: all 0.3s;
+}
+
+.as-stat-card-glass:hover .as-stat-icon-wrapper {
+  background: #f59e0b;
+  color: white;
+  transform: rotate(10deg);
+}
+
+.as-stat-value {
+  font-size: 1.8rem;
+  font-weight: 950;
+  color: #0f172a;
+  margin-bottom: 4px;
+}
+
+.as-stat-label {
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* SECTION TITLES */
+.as-section-header-row {
+  margin: 60px 0 32px;
+  text-align: center;
+}
+
+.as-section-h4 {
+  font-size: 1.8rem;
+  font-weight: 950;
+  color: #0f172a;
+  letter-spacing: -1px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.as-section-h4::before, .as-section-h4::after {
+  content: "";
+  height: 2px;
+  width: 50px;
+  background: #e2e8f0;
+}
+
+/* ASSESSMENT CARDS */
+.as-premium-card {
+  background: white;
+  border-radius: 28px;
+  border: 1px solid rgba(0,0,0,0.05);
+  overflow: hidden;
+  transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.as-premium-card:hover {
+  transform: translateY(-12px);
+  box-shadow: 0 40px 80px rgba(0,0,0,0.1);
+}
+
+.as-card-img-wrapper {
+  height: 200px;
+  position: relative;
+  overflow: hidden;
+}
+
+.as-card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.8s;
+}
+
+.as-premium-card:hover .as-card-img {
+  transform: scale(1.1);
+}
+
+.as-level-badge {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  padding: 6px 14px;
+  border-radius: 99px;
+  font-weight: 900;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  z-index: 2;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+}
+
+.as-card-content {
+  padding: 32px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.as-card-title {
+  font-size: 1.3rem;
+  font-weight: 900;
+  color: #0f172a;
+  line-height: 1.3;
+  margin-bottom: 12px;
+}
+
+.as-card-desc {
+  font-size: 0.95rem;
+  color: #64748b;
+  line-height: 1.6;
+  margin-bottom: 24px;
+}
+
+.as-btn-launch {
+  width: 100%;
+  height: 56px;
+  background: #0f172a;
+  color: white;
+  border: none;
+  border-radius: 16px;
+  font-weight: 900;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  transition: all 0.3s;
+  margin-top: auto;
+}
+
+.as-btn-launch:hover {
+  background: #f59e0b; /* BRAND AMBER ON HOVER */
+  transform: translateY(-2px);
+  box-shadow: 0 15px 30px rgba(245, 158, 11, 0.3);
+}
+
+.as-score-badge {
+  background: #f0fdf4;
+  color: #16a34a;
+  padding: 12px;
+  border-radius: 12px;
+  text-align: center;
+  font-weight: 900;
+  font-size: 1.1rem;
+}

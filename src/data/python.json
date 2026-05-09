@@ -1,0 +1,232 @@
+{
+  "id": 3,
+  "title": "Modern Python Engineering",
+  "description": "Master high-performance Python with Asyncio, FastAPI, and advanced data processing.",
+  "imageUrl": "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg",
+  "badge": "Modern Track",
+  "duration": "16 Weeks",
+  "level": "Beginner → Professional",
+  "students": "15k+",
+  "rating": "4.9",
+  "color": "#3776ab",
+  "curriculum": [
+    {
+      "id": "p1",
+      "title": "Chapter 1: The Pythonic Zen",
+      "type": "chapter",
+      "dur": "30m read",
+      "contentBlocks": [
+        { "type": "text", "value": "Python is designed for high-level productivity. To master it, you must write 'Pythonic' code." },
+        { "type": "definition", "term": "Pythonic", "value": "An idiomatic style of writing Python code that follows the language's core philosophies, such as those listed in the Zen of Python (PEP 20)." },
+        { "type": "definition", "term": "Interpreter", "value": "A program that directly executes instructions written in a programming or scripting language, without requiring them previously to have been compiled into a machine language program." },
+        { "type": "definition", "term": "Dynamic Typing", "value": "A programming language feature where the type of a variable is checked during runtime rather than at compile-time." },
+        { "type": "step", "number": 1, "title": "List Comprehensions", "value": "A more efficient way to build lists. They are evaluated at the C-layer and are often 2x faster than traditional for-loops." },
+        { "type": "code", "lang": "python", "value": "squares = [x**2 for x in range(10) if x % 2 == 0]" },
+        { "type": "text", "value": "### Mastery Summary: The Full Answer\nPythonic code follows the 'Zen of Python'. Focus on readability, use built-in functions, and avoid over-engineering. Lists are dynamic, Strings are immutable, and Tuples are for fixed records." }
+      ],
+      "objectives": ["PEP 8 Style", "Generator Expressions", "String Interpolation"]
+    },
+    {
+      "id": "p2",
+      "title": "Chapter 2: Memory & Object Models",
+      "type": "chapter",
+      "dur": "35m read",
+      "contentBlocks": [
+        { "type": "text", "value": "Everything in Python is an object. Understanding the memory model is key to writing efficient applications." },
+        { "type": "definition", "term": "GIL (Global Interpreter Lock)", "value": "A mutex that protects access to Python objects, preventing multiple native threads from executing Python bytecodes at once." },
+        { "type": "definition", "term": "Reference Counting", "value": "The primary memory management technique in Python where an object is deallocated when its reference count drops to zero." },
+        { "type": "definition", "term": "Garbage Collection", "value": "The process by which Python automatically reclaims memory occupied by objects that are no longer in use." },
+        { "type": "step", "number": 1, "title": "Mutable vs Immutable", "value": "Integers and Strings are immutable. Lists and Dictionaries are mutable." },
+        { "type": "code", "lang": "python", "value": "x = 10\ny = x # y refers to the same object\nx = 20 # x now refers to a new object; y is still 10" },
+        { "type": "text", "value": "### Mastery Summary: The Full Answer\nPython's memory management is automatic but influenced by the GIL. For CPU-bound tasks, the GIL can be a bottleneck, requiring the use of the 'multiprocessing' module." }
+      ],
+      "objectives": ["GIL mechanics", "Reference counts", "Garbage Collection tuning"]
+    },
+    {
+      "id": "p3",
+      "title": "Chapter 3: Advanced Data Structures",
+      "type": "chapter",
+      "dur": "40m read",
+      "contentBlocks": [
+        { "type": "text", "value": "Mastering Python's built-in data structures is essential for algorithmic efficiency." },
+        { "type": "definition", "term": "List", "value": "A dynamic array that can hold objects of different types and allows for fast indexed access." },
+        { "type": "definition", "term": "Dictionary", "value": "A high-performance hash map that stores data in key-value pairs, providing O(1) average-case search time." },
+        { "type": "definition", "term": "Set", "value": "An unordered collection of unique elements, useful for membership testing and eliminating duplicates." },
+        { "type": "step", "number": 1, "title": "Dictionary Optimization", "value": "Since Python 3.7, dictionaries maintain insertion order. Use them for fast lookups and caches." },
+        { "type": "code", "lang": "python", "value": "cache = {i: i**2 for i in range(1000)}" },
+        { "type": "text", "value": "### Mastery Summary: The Full Answer\nChoose the right data structure for the job. Use Lists for ordered sequences, Sets for uniqueness, and Dictionaries for mapping relations. This reduces the time complexity of your algorithms." }
+      ],
+      "objectives": ["Time Complexity analysis", "Hash collisions", "Memory overhead"]
+    },
+    {
+      "id": "p4",
+      "title": "Chapter 4: Functional Programming in Python",
+      "type": "chapter",
+      "dur": "35m read",
+      "contentBlocks": [
+        { "type": "text", "value": "Python supports functional paradigms like higher-order functions and lambdas." },
+        { "type": "definition", "term": "Lambda Function", "value": "A small, anonymous function defined with the lambda keyword. It can take any number of arguments but can only have one expression." },
+        { "type": "definition", "term": "Closure", "value": "A function object that remembers values in enclosing scopes even if they are no longer present in memory." },
+        { "type": "step", "number": 1, "title": "Map, Filter, and Reduce", "value": "Use these functions to process collections in a functional style, often combined with lambdas." },
+        { "type": "code", "lang": "python", "value": "evens = list(filter(lambda x: x % 2 == 0, range(10)))" },
+        { "type": "text", "value": "### Mastery Summary: The Full Answer\nFunctional programming in Python leads to more concise and testable code. Closures are particularly useful for creating function factories and decorators." }
+      ],
+      "objectives": ["Higher-order functions", "Closures", "Partial functions"]
+    },
+    {
+      "id": "p5",
+      "title": "Chapter 5: Advanced Concurrency (Asyncio)",
+      "type": "chapter",
+      "dur": "45m read",
+      "contentBlocks": [
+        { "type": "text", "value": "Asyncio is the standard for high-concurrency I/O tasks in Python." },
+        { "type": "definition", "term": "Coroutine", "value": "A function that can be paused and resumed, allowing for non-blocking execution of I/O tasks." },
+        { "type": "definition", "term": "Event Loop", "value": "The core of the asyncio module that manages the scheduling and execution of coroutines." },
+        { "type": "step", "number": 1, "title": "Building an Async Scraper", "value": "Use aiohttp to fetch multiple web pages simultaneously without waiting for each one to finish." },
+        { "type": "code", "lang": "python", "value": "async with aiohttp.ClientSession() as session:\n    await session.get(url)" },
+        { "type": "text", "value": "### Mastery Summary: The Full Answer\nAsyncio uses a single thread to handle thousands of concurrent tasks. It is perfect for network I/O but should not be used for CPU-intensive calculations, which still block the event loop." }
+      ],
+      "objectives": ["Awaitable objects", "Task gathering", "Exception handling in Async"]
+    },
+    {
+      "id": "p6",
+      "title": "Python Concurrency Quiz",
+      "type": "test",
+      "dur": "10m",
+      "question": "What is the primary benefit of using 'asyncio' over 'threading' for I/O-bound tasks?",
+      "options": ["Better CPU utilization", "Lighter overhead and no GIL issues", "Easier debugging", "Support for 100% parallel execution"],
+      "correct": 1,
+      "explanation": "Asyncio uses cooperative multitasking within a single thread, which avoids the overhead of thread context switching."
+    },
+    {
+      "id": "p7",
+      "title": "Chapter 6: Meta-Programming & Decorators",
+      "type": "chapter",
+      "dur": "40m read",
+      "contentBlocks": [
+        { "type": "text", "value": "Decorators allow you to wrap functions and modify their behavior without changing the original source code." },
+        { "type": "definition", "term": "Decorator", "value": "A design pattern that allows a user to add new functionality to an existing object without modifying its structure." },
+        { "type": "definition", "term": "Descriptor", "value": "A Python object that defines how attribute access is handled for other objects. It is the magic behind properties and methods." },
+        { "type": "step", "number": 1, "title": "The @property Decorator", "value": "Use properties to turn method calls into attribute access, providing a clean API while maintaining encapsulation." },
+        { "type": "code", "lang": "python", "value": "@property\ndef age(self): return self._age" },
+        { "type": "text", "value": "### Mastery Summary: The Full Answer\nMeta-programming is about writing code that writes or modifies other code. Decorators are the most common form of this in Python, providing a powerful way to handle cross-cutting concerns." }
+      ],
+      "objectives": ["Function wrappers", "Class decorators", "Meta-classes basics"]
+    },
+    {
+      "id": "p8",
+      "title": "Chapter 7: Object-Oriented Engineering",
+      "type": "chapter",
+      "dur": "45m read",
+      "contentBlocks": [
+        { "type": "text", "value": "Python's OOP system is flexible and powerful, supporting multiple inheritance and mixins." },
+        { "type": "definition", "term": "MRO (Method Resolution Order)", "value": "The order in which Python looks for a method in a hierarchy of classes. It uses the C3 Linearization algorithm." },
+        { "type": "definition", "term": "Dunder Methods", "value": "Special methods surrounded by double underscores (e.g., __init__, __str__) that allow you to define how objects behave with built-in operations." },
+        { "type": "step", "number": 1, "title": "Operator Overloading", "value": "Use dunder methods like __add__ to define what happens when you use the '+' operator with your custom objects." },
+        { "type": "code", "lang": "python", "value": "def __add__(self, other): return self.value + other.value" },
+        { "type": "text", "value": "### Mastery Summary: The Full Answer\nOOP in Python is about protocols. By implementing specific dunder methods, your objects can act like numbers, lists, or even functions. Understanding MRO is vital when using multiple inheritance." }
+      ],
+      "objectives": ["Multiple Inheritance", "Super() logic", "Abstract Base Classes"]
+    },
+    {
+      "id": "p9",
+      "title": "Chapter 8: Web Engineering with FastAPI",
+      "type": "chapter",
+      "dur": "50m read",
+      "contentBlocks": [
+        { "type": "text", "value": "FastAPI is the modern standard for Python web services." },
+        { "type": "definition", "term": "Pydantic", "value": "A library for data validation and settings management based on Python type hints." },
+        { "type": "definition", "term": "Middleware", "value": "A function that works on every request before it is processed by any specific path operation, and also on every response before returning it." },
+        { "type": "step", "number": 1, "title": "Dependency Injection", "value": "FastAPI has a powerful dependency injection system that allows you to share logic (like DB connections) across routes." },
+        { "type": "code", "lang": "python", "value": "def get_db(): ...\n@app.get('/')\ndef read(db=Depends(get_db)): ..." },
+        { "type": "text", "value": "### Mastery Summary: The Full Answer\nFastAPI is high-performance because it's built on Starlette and Pydantic. It is fully asynchronous and generates interactive Swagger documentation automatically." }
+      ],
+      "objectives": ["Pydantic Schemas", "Authentication patterns", "WebSocket support"]
+    },
+    {
+      "id": "p10",
+      "title": "Chapter 9: Database Integration (SQLAlchemy)",
+      "type": "chapter",
+      "dur": "45m read",
+      "contentBlocks": [
+        { "type": "text", "value": "Interact with SQL databases using Object-Relational Mapping (ORM)." },
+        { "type": "definition", "term": "ORM (Object-Relational Mapping)", "value": "A programming technique for converting data between incompatible type systems in object-oriented programming languages and relational databases." },
+        { "type": "definition", "term": "Migration", "value": "A way to manage version control for your database schema, allowing you to update the database as your models change." },
+        { "type": "step", "number": 1, "title": "Alembic Migrations", "value": "Use Alembic to track and apply database changes. This is essential for professional team development." },
+        { "type": "code", "lang": "bash", "value": "alembic revision --autogenerate -m 'Add user table'" },
+        { "type": "text", "value": "### Mastery Summary: The Full Answer\nORMs like SQLAlchemy allow you to work with databases using Python objects. While they add some overhead, they greatly increase productivity and protect against SQL injection." }
+      ],
+      "objectives": ["ORM vs Core", "Session management", "Relationship mapping"]
+    },
+    {
+      "id": "p11",
+      "title": "Chapter 10: Testing with Pytest",
+      "type": "chapter",
+      "dur": "40m read",
+      "contentBlocks": [
+        { "type": "text", "value": "Testing is non-negotiable for professional Python engineering." },
+        { "type": "definition", "term": "Fixture", "value": "A function that provides a baseline for tests, such as a database connection or a set of test data, which can be reused across multiple test functions." },
+        { "type": "definition", "term": "Mocking", "value": "A technique where you replace parts of your system under test with mock objects and make assertions about how they have been used." },
+        { "type": "step", "number": 1, "title": "Parametrized Testing", "value": "Run the same test with different inputs using @pytest.mark.parametrize. This increases test coverage with minimal code." },
+        { "type": "code", "lang": "python", "value": "@pytest.mark.parametrize('a,b,expected', [(1,2,3), (4,5,9)])" },
+        { "type": "text", "value": "### Mastery Summary: The Full Answer\nPytest is the most popular testing framework in Python. It features a powerful fixture system and a simple, readable assertion syntax." }
+      ],
+      "objectives": ["Fixture scopes", "Monkeypatching", "Coverage reports"]
+    },
+    {
+      "id": "p12",
+      "title": "Chapter 11: Packaging & Environments",
+      "type": "chapter",
+      "dur": "35m read",
+      "contentBlocks": [
+        { "type": "text", "value": "Managing dependencies and distributing your code professionally." },
+        { "type": "definition", "term": "Virtual Environment", "value": "A self-contained directory tree that contains a Python installation for a particular version of Python, plus a number of additional packages." },
+        { "type": "definition", "term": "Wheel", "value": "The standard built-package format for Python, which allows for faster installation than source distributions." },
+        { "type": "step", "number": 1, "title": "Poetry Dependency Management", "value": "Use Poetry for deterministic builds and easy packaging. It handles virtual environments and dependencies in a single tool." },
+        { "type": "code", "lang": "bash", "value": "poetry add fastapi\npoetry build" },
+        { "type": "text", "value": "### Mastery Summary: The Full Answer\nProfessional Python development requires isolated environments. Tools like Poetry or Pipenv ensure that your project's dependencies are locked and reproducible across all machines." }
+      ],
+      "objectives": ["Venv vs Conda", "Pyproject.toml", "CI/CD integration"]
+    },
+    {
+      "id": "p13",
+      "title": "Chapter 12: Data Science Basics (Numpy/Pandas)",
+      "type": "chapter",
+      "dur": "50m read",
+      "contentBlocks": [
+        { "type": "text", "value": "Python is the leader in data science thanks to its powerful ecosystem." },
+        { "type": "definition", "term": "Vectorization", "value": "The process of performing operations on entire arrays at once, which is much faster than looping through individual elements in Python." },
+        { "type": "definition", "term": "DataFrame", "value": "A 2-dimensional labeled data structure with columns of potentially different types, similar to a spreadsheet or SQL table." },
+        { "type": "step", "number": 1, "title": "Efficient Array Operations", "value": "Use Numpy arrays for mathematical operations to take advantage of C-level performance." },
+        { "type": "code", "lang": "python", "value": "import numpy as np\na = np.array([1, 2, 3]); b = a * 2" },
+        { "type": "text", "value": "### Mastery Summary: The Full Answer\nData science in Python relies on 'Vectorized' operations. Libraries like Numpy and Pandas move the heavy lifting to optimized C and Fortran code, allowing Python to handle massive datasets with ease." }
+      ],
+      "objectives": ["Array broadcasting", "Data cleaning", "Aggregation logic"]
+    },
+    {
+      "id": "p14",
+      "title": "Python Engineering Quiz",
+      "type": "test",
+      "dur": "25m",
+      "question": "Which Python module is used to bypass the GIL for CPU-bound tasks?",
+      "options": ["threading", "asyncio", "multiprocessing", "concurrent.futures"],
+      "correct": 2,
+      "explanation": "The multiprocessing module creates separate memory spaces for each process, each with its own GIL, allowing for true parallel execution on multi-core systems."
+    },
+    {
+      "id": "p15",
+      "title": "Final Capstone: Real-time Data Platform",
+      "type": "practice",
+      "dur": "15h",
+      "problem": "Build a real-time analytics dashboard using FastAPI, WebSockets, and Redis. Must handle high-throughput data streams and live client updates.",
+      "starterCode": "from fastapi import FastAPI, WebSocket\napp = FastAPI()\n\n@app.websocket('/ws/stats')\nasync def stats_endpoint(websocket: WebSocket):\n    await websocket.accept()",
+      "solutionSteps": [
+        "1. Set up a Redis Pub/Sub system for message distribution.",
+        "2. Implement a background worker to simulate or fetch live data streams.",
+        "3. Build a FastAPI WebSocket endpoint to manage multiple client connections.",
+        "4. Use Pydantic to validate incoming data packets.",
+        "5. Implement a Graceful Shutdown mechanism."
+      ]
+    }
+  ]
+}

@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { Card, Button, Container, Row, Col, Spinner } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
+import { FaCode, FaLightbulb, FaUserTie, FaChevronRight, FaLock, FaExclamationTriangle, FaCheckCircle, FaClock } from 'react-icons/fa';
 import Navbar from './NavbarComponent';
 import apiClient from './utils/apiClient';
 import CryptoJS from 'crypto-js';
+import './TestPage.css';
 
 // Helper: get decrypted userId from localStorage
 const getDecryptedUserId = () => {
@@ -98,10 +100,7 @@ const CategoryList = ({ isLoggedIn, setIsLoggedIn, userRole, handleLogout, usern
 
   // ================= CATEGORY SELECT =================
   const handleViewSubtypes = async (category) => {
-    if (filterCategory === category) {
-      setFilterCategory(null);
-      return;
-    }
+    if (filterCategory === category) return;
     setLoadingSubtypes(category);
     try {
       const response = await apiClient(
@@ -123,9 +122,7 @@ const CategoryList = ({ isLoggedIn, setIsLoggedIn, userRole, handleLogout, usern
 
   // ================= START CLICK =================
   const handleNavigateToMcqTestPage = (subtype) => {
-    if (isAlreadyAttended(subtype)) {
-      return;
-    }
+    if (isAlreadyAttended(subtype)) return;
     setSelectedSubtype(subtype);
     setShowWarning(true);
   };
@@ -146,24 +143,26 @@ const CategoryList = ({ isLoggedIn, setIsLoggedIn, userRole, handleLogout, usern
     );
   };
 
+  const getCategoryIcon = (cat) => {
+    if (cat === 'Technical') return <FaCode />;
+    if (cat === 'Aptitude') return <FaLightbulb />;
+    if (cat === 'SoftSkill') return <FaUserTie />;
+    return <FaCode />;
+  };
+
 
   // ================= LOADING =================
   if (loadingCategories)
     return (
-      <div style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        height: '100vh'
-      }}>
-        <p>Loading...</p>
+      <div className="flex-center">
+        <Spinner animation="border" variant="primary" />
+        <p className="ms-3">Syncing assessments...</p>
       </div>
     );
 
   if (error)
     return (
-      <div className="text-center text-danger mt-5">
+      <div className="flex-center text-danger">
         <p>{error}</p>
       </div>
     );
@@ -171,85 +170,34 @@ const CategoryList = ({ isLoggedIn, setIsLoggedIn, userRole, handleLogout, usern
 
   // ================= UI =================
   return (
-    <>
-
-      {/* ================= WARNING POPUP ================= */}
+    <div className="test-page-container">
+      {/* ================= WARNING MODAL ================= */}
       {showWarning && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          background: 'rgba(0,0,0,0.7)',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          zIndex: 9999
-        }}>
-          <div style={{
-            background: '#fff',
-            padding: '25px',
-            width: '400px',
-            borderRadius: '10px',
-            textAlign: 'center',
-            boxShadow: '0 5px 15px rgba(0,0,0,0.3)'
-          }}>
-            <h4 style={{ color: '#dc3545' }}>
-              ⚠️ Test Instructions
-            </h4>
-            <ul style={{ textAlign: 'left', marginTop: '15px' }}>
-              <li>Do not switch tabs</li>
-              <li>Do not refresh page</li>
-              <li>No malpractice allowed</li>
-              <li>Camera may be monitored</li>
-              <li>Violation leads to auto submit</li>
+        <div className="warning-overlay">
+          <div className="warning-card">
+            <div className="warning-icon"><FaExclamationTriangle /></div>
+            <h4 className="warning-title">Test Instructions</h4>
+            <ul className="instructions-list">
+              <li>Do not switch tabs or windows</li>
+              <li>Refresh or back navigation is disabled</li>
+              <li>Malpractice is strictly prohibited</li>
+              <li>Camera monitoring may be active</li>
+              <li>Violations lead to immediate disqualification</li>
             </ul>
-            <div style={{
-              display: 'flex',
-              justifyContent: 'center',
-              gap: '10px',
-              marginTop: '20px',
-              flexWrap: 'wrap'
-            }}>
-              <Button
-                variant="outline-dark"
-                onClick={() => {
-                  setShowWarning(false);
-                  navigate('/UserDashboard', { replace: true });
-                }}
-              >
-                ⬅ Go to Dashboard
-              </Button>
-
-              <Button
-                variant="secondary"
-                onClick={() => setShowWarning(false)}
-              >
-                Cancel
-              </Button>
-
-              <Button
-                variant="primary"
-                onClick={() => {
-                  setShowWarning(false);
-                  navigate('/McqTestPage', {
-                    state: {
-                      subtype: selectedSubtype,
-                      filterCategory
-                    }
-                  });
-                }}
-              >
-                Continue Test
-              </Button>
+            <div className="d-flex justify-content-center gap-3">
+              <Button className="quiz-btn btn-attended" onClick={() => setShowWarning(false)}>Cancel</Button>
+              <Button className="quiz-btn btn-start" onClick={() => {
+                setShowWarning(false);
+                navigate('/McqTestPage', {
+                  state: { subtype: selectedSubtype, filterCategory }
+                });
+              }}>Continue Test</Button>
             </div>
           </div>
         </div>
       )}
 
 
-      {/* ================= NAVBAR ================= */}
       <Navbar
         isLoggedIn={isLoggedIn}
         setIsLoggedIn={setIsLoggedIn}
@@ -258,80 +206,73 @@ const CategoryList = ({ isLoggedIn, setIsLoggedIn, userRole, handleLogout, usern
         handleLogout={handleLogout}
       />
 
-
-      {/* ================= MAIN ================= */}
-      <Container style={{
-        maxWidth: '1200px',
-        margin: '0 auto',
-        padding: '15px',
-        marginTop: '80px'
-      }}>
-
-        <h2 className="text-center my-4">
-          Explore <span style={{ color: '#007bff' }}>Quiz Categories</span>
-        </h2>
-
-        <div className="level-buttons-container">
-          <button
-            className={`level-button technical ${filterCategory === 'Technical' ? 'selected' : ''}`}
-            onClick={() => handleViewSubtypes('Technical')}
-          >
-            Technical
-          </button>
-          <button
-            className={`level-button aptitude ${filterCategory === 'Aptitude' ? 'selected' : ''}`}
-            onClick={() => handleViewSubtypes('Aptitude')}
-          >
-            Aptitude
-          </button>
-          <button
-            className={`level-button softskill ${filterCategory === 'SoftSkill' ? 'selected' : ''}`}
-            onClick={() => handleViewSubtypes('SoftSkill')}
-          >
-            SoftSkill
-          </button>
+      <Container>
+        <div className="explorer-header text-center">
+          <h2 className="explorer-title">
+            Explore <span className="highlight-blue">Assessments</span>
+          </h2>
+          <p className="explorer-subtitle">
+            Challenge yourself with industry-standard quizzes designed to evaluate and enhance your technical and professional skills.
+          </p>
         </div>
 
-        <h5 style={{ color: '#2E7D32' }}>{submitMsg}</h5>
+        <div className="category-tabs">
+          {['Technical', 'Aptitude', 'SoftSkill'].map((cat) => (
+            <button
+              key={cat}
+              className={`tab-btn ${filterCategory === cat ? 'active' : ''}`}
+              onClick={() => handleViewSubtypes(cat)}
+            >
+              {getCategoryIcon(cat)} <span className="ms-2">{cat}</span>
+            </button>
+          ))}
+        </div>
 
-        {filterCategory && subtypes[filterCategory] && (
-          <Row>
-            {subtypes[filterCategory].map((subtype, index) => {
+        {submitMsg && <h5 className="text-center text-success mb-4">{submitMsg}</h5>}
+
+        <div className="quiz-grid">
+          {loadingSubtypes ? (
+            <div className="text-center py-5">
+              <Spinner animation="border" variant="primary" />
+              <p className="mt-3">Loading available tests...</p>
+            </div>
+          ) : (
+            subtypes[filterCategory] && subtypes[filterCategory].map((subtype, index) => {
               const attended = isAlreadyAttended(subtype);
               return (
-                <Col key={index} md={12} className="mb-4">
-                  <Card className="question-card">
-                    <Card.Body className="d-flex justify-content-between align-items-center">
-                      <span>{subtype}</span>
-                      <Button
-                        size="sm"
-                        disabled={attended}
-                        onClick={() => handleNavigateToMcqTestPage(subtype)}
-                        style={{
-                          backgroundColor: attended ? '#28a745' : '#017a8c',
-                          borderColor: attended ? '#28a745' : '#017a8c',
-                          minWidth: '150px',
-                        }}
-                      >
-                        {attended ? 'Already Attended' : 'Start'}
-                      </Button>
-                    </Card.Body>
-                  </Card>
-                </Col>
+                <Card key={index} className="quiz-card">
+                  <Card.Body className="d-flex justify-content-between align-items-center">
+                    <div className="quiz-info">
+                      <div className="quiz-icon-wrapper">
+                        {getCategoryIcon(filterCategory)}
+                      </div>
+                      <div>
+                        <h4 className="quiz-name">{subtype}</h4>
+                        <div className={`status-badge ${attended ? 'status-completed' : 'status-pending'}`}>
+                          {attended ? <FaCheckCircle /> : <FaClock />}
+                          <span className="ms-1">{attended ? 'Completed' : 'Available'}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <Button
+                      className={`quiz-btn ${attended ? 'btn-attended' : 'btn-start'}`}
+                      disabled={attended}
+                      onClick={() => handleNavigateToMcqTestPage(subtype)}
+                    >
+                      {attended ? (
+                        <><FaLock className="me-2" /> Already Attended</>
+                      ) : (
+                        <>Start Assessment <FaChevronRight className="ms-2" /></>
+                      )}
+                    </Button>
+                  </Card.Body>
+                </Card>
               );
-            })}
-          </Row>
-        )}
-
-        {loadingSubtypes && filterCategory === loadingSubtypes && (
-          <div className="text-center">
-            <Spinner animation="border" />
-            Loading Subtypes...
-          </div>
-        )}
-
+            })
+          )}
+        </div>
       </Container>
-    </>
+    </div>
   );
 };
 

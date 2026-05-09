@@ -1,10 +1,11 @@
 // src/McqTestPage.js
 
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import CryptoJS from 'crypto-js';
 import { Alert, Spinner, Container } from 'react-bootstrap';
 import { toast, ToastContainer } from 'react-toastify';
+import { FaShieldAlt, FaLock } from 'react-icons/fa';
 import 'react-toastify/dist/ReactToastify.css';
 
 // 🔥 FIX: Adjusted imports to point to folders inside src/
@@ -33,15 +34,111 @@ const McqTestPage = () => {
   const [isTestCompleted, setIsTestCompleted] = useState(false);
   const [completionLoading, setCompletionLoading] = useState(false);
   const [tabSwitchCount, setTabSwitchCount] = useState(0);
+  const [error, setError] = useState(null);
+  const [isTestStarted, setIsTestStarted] = useState(false);
+  const [cameraStream, setCameraStream] = useState(null);
 
-  // Required by your MCQQuiz component
+  const videoRef = useRef(null);
+  const canvasRef = useRef(null); // Ref for capturing frames
+
+  // 🔥 NEW: Frame Upload Proctoring Logic
+  useEffect(() => {
+    let interval;
+    if (isTestStarted && cameraStream) {
+      interval = setInterval(async () => {
+        if (videoRef.current && canvasRef.current) {
+          const canvas = canvasRef.current;
+          const video = videoRef.current;
+          const context = canvas.getContext('2d');
+
+          // Set optimized canvas dimensions for proctoring (reduces payload size)
+          canvas.width = 320;
+          canvas.height = 240;
+
+          // Draw frame with scaling
+          context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+          // Use full base64 data URL (required by backend)
+          const imageData = canvas.toDataURL('image/jpeg', 0.1);
+
+          try {
+            const res = await fetch('https://copious-frill-parrot.ngrok-free.dev/exam/upload-frame/', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'ngrok-skip-browser-warning': 'true' // Required to bypass ngrok browser warning
+              },
+              body: JSON.stringify({
+                student_id: 1,
+                image: imageData
+              })
+            });
+            if (!res.ok) {
+              const errText = await res.text();
+              console.error('Upload failed:', res.status, errText);
+            } else {
+              console.log('Frame uploaded successfully', res.status);
+            }
+          } catch (error) {
+            console.error('Error uploading frame:', error);
+          }
+        }
+      }, 10000); // Upload every 10 seconds
+    }
+    return () => clearInterval(interval);
+  }, [isTestStarted, cameraStream]);
+
+  // Required by MCQQuiz component to track answer progress
   const updateQuestionStatus = (questionId, status) => {
     setQuestionStatus((prev) => ({ ...prev, [questionId]: status }));
   };
 
+  // 🔥 FIX: Ensure video stream is attached after the video element is rendered
+  useEffect(() => {
+    if (isTestStarted && cameraStream && videoRef.current) {
+      videoRef.current.srcObject = cameraStream;
+    }
+  }, [isTestStarted, cameraStream]);
+
+  const startProctoring = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      setCameraStream(stream);
+
+      const elem = document.documentElement;
+      if (elem.requestFullscreen) {
+        await elem.requestFullscreen();
+      }
+
+      setIsTestStarted(true);
+      setTestStartTime(Date.now());
+    } catch (err) {
+      toast.error("❌ Camera access and Fullscreen are required to start the test!");
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      if (cameraStream) {
+        cameraStream.getTracks().forEach(track => track.stop());
+      }
+      if (document.fullscreenElement) {
+        document.exitFullscreen().catch(() => { });
+      }
+    };
+  }, [cameraStream]);
+
   useEffect(() => {
     const fetchQuestions = async () => {
+      // 🚨 CRITICAL: If state is missing (e.g. on refresh), redirect back
+      if (!subtype) {
+        console.warn('Test metadata missing, redirecting to explorer...');
+        navigate('/TestPage', { replace: true });
+        return;
+      }
+
       try {
+        setError(null);
         const currentUserId = getDecryptedUserId();
 
         if (currentUserId) {
@@ -74,23 +171,30 @@ const McqTestPage = () => {
           'GET'
         );
         if (Array.isArray(data)) {
-          setQuestions(data);
-          setTestStartTime(Date.now());
+          if (data.length === 0) {
+            setError('No questions available for this category.');
+          } else {
+            setQuestions(data);
+            setTestStartTime(Date.now());
+          }
+        } else {
+          setError('Invalid data received from server.');
         }
-      } catch (error) {
-        console.error('Error fetching MCQ data:', error);
+      } catch (err) {
+        console.error('Error fetching MCQ data:', err);
+        setError('Failed to load questions. Please check your connection or try again later.');
       }
     };
 
     fetchQuestions();
-  }, [subtype, filterCategory]);
+  }, [subtype, filterCategory, navigate]);
 
   const submitTest = async (answers) => {
     setCompletionLoading(true);
     const currentUserId = getDecryptedUserId();
-    const token = 
-      localStorage.getItem("token") || 
-      localStorage.getItem("user_token") || 
+    const token =
+      localStorage.getItem("token") ||
+      localStorage.getItem("user_token") ||
       localStorage.getItem("access_token");
 
     if (!token) {
@@ -322,24 +426,75 @@ const McqTestPage = () => {
     );
   }
 
+  if (error) {
+    return (
+      <div className="flex-center flex-column text-center p-4">
+        <div style={{ fontSize: '4rem', color: '#ef4444', marginBottom: '24px' }}>⚠️</div>
+        <h3 style={{ fontWeight: 800, color: '#0f172a' }}>Assessment Error</h3>
+        <p style={{ color: '#64748b', maxWidth: '400px', marginBottom: '32px' }}>{error}</p>
+        <button
+          className="btn btn-dark px-4 py-2"
+          style={{ borderRadius: '12px', fontWeight: 800 }}
+          onClick={() => navigate('/TestPage', { replace: true })}
+        >
+          Return to Explorer
+        </button>
+      </div>
+    );
+  }
+
   if (questions.length === 0) {
     return (
-      <Container className="text-center mt-5">
-        <Spinner animation="border" />
-        <p>Loading questions...</p>
-      </Container>
+      <div className="flex-center flex-column">
+        <Spinner animation="border" variant="primary" />
+        <p className="mt-3" style={{ fontWeight: 600, color: '#64748b' }}>Syncing questions...</p>
+      </div>
+    );
+  }
+
+  if (!isTestStarted) {
+    return (
+      <div className="ide-lock-screen">
+        <div className="ide-lock-card text-center">
+          <div className="ide-lock-icon" style={{ fontSize: '3rem', color: '#FFA003', marginBottom: '24px' }}>
+            <FaShieldAlt />
+          </div>
+          <h2 style={{ fontWeight: 800, marginBottom: '16px' }}>Secure Assessment Portal</h2>
+          <p style={{ color: '#64748b', marginBottom: '32px' }}>
+            To ensure the integrity of this evaluation, you must enable your camera and enter fullscreen mode.
+            All tab switches and browser interactions are strictly monitored.
+          </p>
+          <button
+            className="btn btn-dark w-100 py-3"
+            style={{ borderRadius: '12px', fontWeight: 800, fontSize: '1.1rem' }}
+            onClick={startProctoring}
+          >
+            Initialize Secure Environment
+          </button>
+        </div>
+      </div>
     );
   }
 
   return (
-    <>
+    <div style={{ background: '#f8fafc', minHeight: '100vh', position: 'relative' }}>
       <ToastContainer position="top-center" autoClose={3000} />
+
+      {/* CAMERA PREVIEW */}
+      <div className="camera-proctor-box">
+        <video ref={videoRef} autoPlay playsInline muted className="camera-video" />
+        <canvas ref={canvasRef} style={{ display: 'none' }} />
+        <div className="camera-status">
+          <div className="pulse"></div> PROCTORING ACTIVE
+        </div>
+      </div>
+
       <MCQQuiz
         questions={questions}
         updateQuestionStatus={updateQuestionStatus}
         submitTest={submitTest}
       />
-    </>
+    </div>
   );
 };
 

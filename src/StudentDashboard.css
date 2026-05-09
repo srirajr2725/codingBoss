@@ -1,0 +1,183 @@
+/* ══════════════════════════════════════════════
+   ULTRA STUDENT DASHBOARD SYSTEM
+   Premium Sidebar & Navigation
+   ══════════════════════════════════════════════ */
+
+.sd-root {
+  background: #f8fafc;
+  min-height: 100vh;
+  display: flex;
+  overflow-x: hidden;
+}
+
+.sd-sidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 280px;
+  background: #0f172a; /* Deep Obsidian */
+  padding: 32px 16px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 10px 0 30px rgba(0, 0, 0, 0.05);
+  z-index: 1100;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.sd-sidebar-header {
+  padding: 0 16px 40px;
+  margin-bottom: 20px;
+}
+
+.sd-sidebar-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: white;
+  letter-spacing: -1px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sd-sidebar-title b {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #ffffff; /* coding - white for visibility on dark */
+}
+
+.sd-sidebar-title span {
+  color: #FFA003; /* boss - orange */
+}
+
+.sd-nav-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+
+.sd-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 20px;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: #94a3b8;
+  font-weight: 600;
+  position: relative;
+}
+
+.sd-nav-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: white;
+}
+
+.sd-nav-item.active {
+  background: #FFA003; /* Orange accent */
+  color: white;
+  box-shadow: 0 8px 20px rgba(255, 160, 3, 0.2);
+}
+
+.sd-nav-item.locked {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.sd-nav-icon {
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+}
+
+/* MAIN AREA */
+.sd-main-wrapper {
+  flex: 1;
+  margin-left: 280px;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  width: calc(100% - 280px);
+}
+
+.sd-topbar-placeholder {
+  height: 100px;
+}
+
+.sd-content-area {
+  padding: 0 40px 60px;
+  flex: 1;
+}
+
+/* Progress area in sidebar */
+.sd-progress-box {
+  padding: 24px;
+  background: rgba(255,255,255,0.03);
+  border-radius: 24px;
+  marginTop: auto;
+}
+
+.sd-progress-bar {
+  height: 6px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.sd-progress-fill {
+  background: linear-gradient(90deg, #FFA003, #ff7e00);
+  height: 100%;
+  border-radius: 10px;
+}
+
+/* Update Navbar for Dashboard */
+.sd-root .navigation-container {
+    position: fixed;
+    top: 15px;
+    left: 280px;
+    right: 0;
+    width: auto;
+    transform: none;
+    max-width: none;
+    padding: 0 20px;
+    display: flex;
+    justify-content: flex-start;
+}
+
+.sd-root .custom-navbar {
+    width: 100%;
+    max-width: none;
+}
+
+@media (max-width: 1024px) {
+  .sd-sidebar {
+    width: 80px;
+  }
+  .sd-nav-text, .sd-sidebar-title b span, .sd-sidebar-title b b {
+    display: none;
+  }
+  .sd-main-wrapper {
+    margin-left: 80px;
+    width: calc(100% - 80px);
+  }
+  .sd-root .navigation-container {
+    left: 80px;
+  }
+}
+
+@media (max-width: 600px) {
+  .sd-sidebar {
+    display: none;
+  }
+  .sd-main-wrapper {
+    margin-left: 0;
+    width: 100%;
+  }
+  .sd-root .navigation-container {
+    left: 0;
+    padding: 0 10px;
+  }
+}

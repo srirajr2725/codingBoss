@@ -8,7 +8,8 @@ import {
   ChevronRight,
   CheckCircle2,
   AlertCircle,
-  LayoutGrid
+  LayoutGrid,
+  Sparkles
 } from "lucide-react";
 import "./MCQQuiz.css";
 
@@ -20,6 +21,7 @@ function MCQQuiz({ questions, updateQuestionStatus, submitTest }) {
   const [attemptedCount, setAttemptedCount] = useState(0);
   const [unattemptedCount, setUnattemptedCount] = useState(questions.length);
   const [autoNextEnabled, setAutoNextEnabled] = useState(true);
+  const [showHint, setShowHint] = useState(false);
 
   // Initialize
   useEffect(() => {
@@ -29,6 +31,11 @@ function MCQQuiz({ questions, updateQuestionStatus, submitTest }) {
     });
     setSelectedAnswer(initialAnswers);
   }, [questions]);
+
+  // Reset Hint on Question Change
+  useEffect(() => {
+    setShowHint(false);
+  }, [currentQuestionIndex]);
 
   // Timer
   useEffect(() => {
@@ -72,6 +79,28 @@ function MCQQuiz({ questions, updateQuestionStatus, submitTest }) {
     if (autoNextEnabled && currentQuestionIndex < questions.length - 1) {
       setTimeout(() => setCurrentQuestionIndex((prev) => prev + 1), 400);
     }
+  };
+
+  // Dynamic AI Hint Generator based on question text
+  const generateHint = (questionText) => {
+    if (!questionText) return "Think about the fundamental principles of this topic before selecting an option.";
+    const lowerQ = questionText.toLowerCase();
+    
+    if (lowerQ.includes("java")) return "Consider how Java handles object-oriented principles or memory management (like Garbage Collection).";
+    if (lowerQ.includes("python")) return "Python emphasizes readability. Think about dynamic typing, indentation rules, and built-in data structures.";
+    if (lowerQ.includes("react")) return "React relies heavily on component state and the virtual DOM. Consider how changes trigger re-renders.";
+    if (lowerQ.includes("sql") || lowerQ.includes("database")) return "For databases, focus on relations, ACID properties, and how joins connect different tables.";
+    if (lowerQ.includes("html") || lowerQ.includes("css")) return "Web design principles dictate structure (HTML) vs presentation (CSS).";
+    if (lowerQ.includes("c++") || lowerQ.includes("pointer")) return "C++ gives direct memory access. Think about pointers, references, and manual memory management.";
+    if (lowerQ.includes("loop") || lowerQ.includes("iteration")) return "Loops repeat actions. Check the exit condition to ensure it doesn't run infinitely.";
+    if (lowerQ.includes("array") || lowerQ.includes("list")) return "Arrays are contiguous blocks of memory. Consider index bounds (usually 0 to length-1).";
+    if (lowerQ.includes("function") || lowerQ.includes("method")) return "Functions encapsulate logic. What inputs (arguments) does it take, and what does it return?";
+    
+    // Fallback dynamic extraction
+    const words = questionText.split(" ").filter(w => w.length > 5);
+    const keyWord = words.length > 0 ? words[0].replace(/[^a-zA-Z]/g, '') : "the core concept";
+    
+    return `Focus on the role of '${keyWord}' in this context. Eliminating options that clearly violate standard rules will help you narrow down the correct answer.`;
   };
 
   const handleSubmitTest = () => setShowConfirmationDialog(true);
@@ -144,19 +173,28 @@ function MCQQuiz({ questions, updateQuestionStatus, submitTest }) {
                {currentQuestionIndex + 1} / {questions.length}
             </span>
 
-            {/* Custom Toggle Switch */}
-            <label className="toggle-wrapper">
-              <span className="toggle-text">Auto Next</span>
-              <input
-                type="checkbox"
-                className="toggle-input"
-                checked={autoNextEnabled}
-                onChange={() => setAutoNextEnabled(!autoNextEnabled)}
-              />
-              <div className="toggle-bg">
-                <div className="toggle-circle"></div>
-              </div>
-            </label>
+            <div className="header-actions">
+              <button 
+                className={`ai-hint-btn ${showHint ? 'active' : ''}`}
+                onClick={() => setShowHint(!showHint)}
+              >
+                <Sparkles size={16} /> {showHint ? 'Hide Hint' : 'Ask AI Hint'}
+              </button>
+
+              {/* Custom Toggle Switch */}
+              <label className="toggle-wrapper">
+                <span className="toggle-text">Auto Next</span>
+                <input
+                  type="checkbox"
+                  className="toggle-input"
+                  checked={autoNextEnabled}
+                  onChange={() => setAutoNextEnabled(!autoNextEnabled)}
+                />
+                <div className="toggle-bg">
+                  <div className="toggle-circle"></div>
+                </div>
+              </label>
+            </div>
           </div>
 
           <AnimatePresence mode="wait">
@@ -186,6 +224,28 @@ function MCQQuiz({ questions, updateQuestionStatus, submitTest }) {
                   );
                 })}
               </div>
+
+              {/* --- AI HINT COMPONENT --- */}
+              <AnimatePresence>
+                {showHint && (
+                  <motion.div 
+                    className="ai-hint-box"
+                    initial={{ opacity: 0, height: 0, marginTop: 0 }}
+                    animate={{ opacity: 1, height: 'auto', marginTop: 24 }}
+                    exit={{ opacity: 0, height: 0, marginTop: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <div className="ai-hint-header">
+                      <Sparkles size={18} color="#a855f7" /> 
+                      <span>AI Assistant</span>
+                    </div>
+                    <p className="ai-hint-text">
+                      <strong>Hint:</strong> {generateHint(questions[currentQuestionIndex]?.question)}
+                    </p>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+              
             </motion.div>
           </AnimatePresence>
 

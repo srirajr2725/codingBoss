@@ -23,7 +23,7 @@ const CounterSection = () => {
 
   return (
     <div ref={ref} className="counter-section">
-      <h2 className="section-title">We are proud of...</h2>
+      <h2 className="section-title">We are <span>proud of...</span></h2>
 
       {/* Number Stats */}
       <div className="stats-container">

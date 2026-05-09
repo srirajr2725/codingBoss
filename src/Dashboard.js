@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import Navbar from "./NavbarComponent";
-
 import {
   AreaChart,
   Area,
@@ -11,11 +10,10 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-
+import { FaTrophy, FaQuestionCircle, FaCheckCircle, FaRocket, FaChartLine } from "react-icons/fa";
 import CryptoJS from "crypto-js";
 import apiClient from "./utils/apiClient";
-
-import "./Dashboard.css"; // Make sure this exists
+import "./Dashboard.css";
 
 const Dashboard = ({
   isLoggedIn,
@@ -27,84 +25,54 @@ const Dashboard = ({
   const location = useLocation();
   const navigate = useNavigate();
 
-  const studentData = location.state?.student;
-
   const [graphType, setGraphType] = useState("percentage");
-
   const [mcqResults, setMcqResults] = useState([]);
   const [loading, setLoading] = useState(true);
-
-  // ✅ Toast State
   const [showToast, setShowToast] = useState(false);
-
   const [stats, setStats] = useState({
     average: 0,
     totalQuestions: 0,
     completed: 0,
   });
 
-  // ================= GET USER ID =================
   const getUserId = () => {
     try {
       const encrypted = localStorage.getItem("userID");
-
       if (!encrypted) return null;
-
-      const bytes = CryptoJS.AES.decrypt(
-        encrypted,
-        "thirancoding360mgai"
-      );
-
+      const bytes = CryptoJS.AES.decrypt(encrypted, "thirancoding360mgai");
       return bytes.toString(CryptoJS.enc.Utf8);
     } catch {
       return null;
     }
   };
 
-  // ================= AUTO LOGIN =================
   useEffect(() => {
     if (!isLoggedIn) {
       navigate("/LoginPage");
     }
   }, [isLoggedIn, navigate]);
 
-  // ================= SHOW TOAST =================
   useEffect(() => {
-    // We check for the token to confirm access, 
-    // but check a specific toast flag so the popup only appears once.
     const unlocked = localStorage.getItem("user_token");
     const toastPending = localStorage.getItem("unlock_toast_pending");
 
     if (unlocked && toastPending === "true") {
       setShowToast(true);
-
-      setTimeout(() => {
-        setShowToast(false);
-      }, 3000);
-
-      // Remove only the toast flag, NOT the user_token
+      setTimeout(() => setShowToast(false), 4000);
       localStorage.removeItem("unlock_toast_pending");
     }
   }, []);
 
-  // ================= FETCH MARKS =================
   useEffect(() => {
     const fetchMarks = async () => {
       try {
         const userId = getUserId();
-
         if (!userId) {
           navigate("/LoginPage");
           return;
         }
 
-        const data = await apiClient(
-          `compiler/mcq-marks/user/${userId}/`,
-          "GET"
-        );
-
-        console.log("MCQ Results:", data);
-
+        const data = await apiClient(`compiler/mcq-marks/user/${userId}/`, "GET");
         if (!Array.isArray(data)) return;
 
         setMcqResults(data);
@@ -118,70 +86,29 @@ const Dashboard = ({
         });
 
         setStats({
-          average:
-            data.length > 0
-              ? Math.round(totalPercent / data.length)
-              : 0,
-
+          average: data.length > 0 ? Math.round(totalPercent / data.length) : 0,
           totalQuestions,
-
           completed: data.length,
         });
-
       } catch (err) {
         console.error("Dashboard Error:", err);
       } finally {
         setLoading(false);
       }
     };
-
     fetchMarks();
   }, [navigate]);
 
-  // ================= GRAPH =================
   const generateGraphData = () => {
     if (!mcqResults.length) return [];
-
     return mcqResults.map((test, index) => ({
-      day: `Test ${index + 1}`,
-      value:
-        graphType === "percentage"
-          ? test.percentage
-          : graphType === "questions"
-            ? test.total_questions
-            : 1,
+      day: `T${index + 1}`,
+      value: graphType === "percentage" ? test.percentage : test.total_questions,
     }));
   };
 
-  const graphData = generateGraphData();
-
-  // ================= STYLES =================
-  const dashboardContainerStyle = {
-    textAlign: "center",
-    padding: "20px",
-  };
-
-  const infoCardsStyle = {
-    display: "flex",
-    justifyContent: "center",
-    gap: "20px",
-    marginTop: "20px",
-    flexWrap: "wrap",
-  };
-
-  const infoCardStyle = {
-    backgroundColor: "#f0f0f0",
-    padding: "20px",
-    borderRadius: "8px",
-    width: "180px",
-    textAlign: "center",
-    boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
-    cursor: "pointer",
-  };
-
-  // ================= UI =================
   return (
-    <>
+    <div className="db-root">
       <Navbar
         isLoggedIn={isLoggedIn}
         setIsLoggedIn={setisLoggedIn}
@@ -190,124 +117,107 @@ const Dashboard = ({
         handleLogout={handleLogout}
       />
 
-      {/* ✅ MODERN TOAST */}
+      <div className="db-container">
+        <header className="db-header">
+          <h1 className="db-welcome">Welcome back, <span>{username}</span></h1>
+          <p className="db-subtext">Track your progress and mastery across all tracks.</p>
+        </header>
+
+        <div className="db-stats-grid">
+          <div className="db-card" onClick={() => setGraphType("percentage")}>
+            <div className="db-card-icon"><FaTrophy /></div>
+            <div className="db-card-value">{stats.average}%</div>
+            <div className="db-card-label">Average Accuracy</div>
+          </div>
+
+          <div className="db-card" onClick={() => setGraphType("questions")}>
+            <div className="db-card-icon"><FaQuestionCircle /></div>
+            <div className="db-card-value">{stats.totalQuestions}</div>
+            <div className="db-card-label">Questions Solved</div>
+          </div>
+
+          <div className="db-card">
+            <div className="db-card-icon"><FaCheckCircle /></div>
+            <div className="db-card-value">{stats.completed}</div>
+            <div className="db-card-label">Tests Completed</div>
+          </div>
+        </div>
+
+        <section className="db-chart-section">
+          <div className="db-chart-header">
+            <h3 className="db-chart-title">
+              <FaChartLine style={{ marginRight: '12px', color: '#FFA003' }} />
+              Performance Analytics
+            </h3>
+            <div className="db-chart-controls">
+              <button 
+                className={`db-btn-pill ${graphType === 'percentage' ? 'active' : ''}`}
+                onClick={() => setGraphType('percentage')}
+              >
+                Percentage
+              </button>
+              <button 
+                className={`db-btn-pill ${graphType === 'questions' ? 'active' : ''}`}
+                onClick={() => setGraphType('questions')}
+              >
+                Questions
+              </button>
+            </div>
+          </div>
+
+          <div style={{ width: '100%', height: 400 }}>
+            {loading ? (
+              <div className="text-center py-5">Loading analytics...</div>
+            ) : (
+              <ResponsiveContainer>
+                <AreaChart data={generateGraphData()}>
+                  <defs>
+                    <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#FFA003" stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor="#FFA003" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                  <XAxis 
+                    dataKey="day" 
+                    axisLine={false} 
+                    tickLine={false} 
+                    tick={{ fill: '#94a3b8', fontSize: 12, fontWeight: 600 }}
+                    dy={10}
+                  />
+                  <YAxis 
+                    axisLine={false} 
+                    tickLine={false} 
+                    tick={{ fill: '#94a3b8', fontSize: 12, fontWeight: 600 }}
+                  />
+                  <Tooltip 
+                    contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 30px rgba(0,0,0,0.1)' }}
+                  />
+                  <Area 
+                    type="monotone" 
+                    dataKey="value" 
+                    stroke="#FFA003" 
+                    strokeWidth={4}
+                    fillOpacity={1} 
+                    fill="url(#colorValue)" 
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            )}
+          </div>
+        </section>
+      </div>
+
       {showToast && (
-        <div className="modern-toast">
-          <div className="toast-icon">🚀</div>
-          <div className="toast-content">
-            <h4>Access Unlocked</h4>
-            <p>You now have full access</p>
+        <div className="db-toast">
+          <FaRocket size={24} color="#FFA003" />
+          <div>
+            <div style={{ fontWeight: 800 }}>Achievement Unlocked!</div>
+            <div style={{ fontSize: '0.85rem', opacity: 0.8 }}>Full platform access granted</div>
           </div>
         </div>
       )}
-
-      <div style={dashboardContainerStyle}>
-
-        <h2>{username}</h2>
-
-        {/* INFO CARDS */}
-        <div style={infoCardsStyle}>
-
-          <div
-            style={infoCardStyle}
-            onClick={() => setGraphType("percentage")}
-          >
-            <h5><b>Average Score</b></h5>
-            <p>{stats.average}%</p>
-          </div>
-
-          <div
-            style={infoCardStyle}
-            onClick={() => setGraphType("questions")}
-          >
-            <h5><b>Total Questions</b></h5>
-            <p>{stats.totalQuestions}</p>
-          </div>
-
-          <div
-            style={infoCardStyle}
-            onClick={() => setGraphType("assessments")}
-          >
-            <h5><b>Completed Tests</b></h5>
-            <p>{stats.completed}</p>
-          </div>
-
-        </div>
-
-        {/* GRAPH */}
-        <div
-          style={{
-            marginTop: "60px",
-            backgroundColor: "#f0f0f0",
-            padding: "20px",
-            borderRadius: "8px",
-            boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
-            maxWidth: "700px",
-            margin: "60px auto",
-          }}
-        >
-          <h4>
-
-            {graphType === "percentage"
-              ? "Marks Percentage History"
-              : graphType === "questions"
-                ? "Questions Per Test"
-                : "Completed Tests"}
-
-          </h4>
-
-          {loading ? (
-            <p>Loading chart...</p>
-          ) : (
-            <ResponsiveContainer width="100%" height={300}>
-
-              <AreaChart data={graphData}>
-
-                <defs>
-                  <linearGradient
-                    id="colorData"
-                    x1="0"
-                    y1="0"
-                    x2="0"
-                    y2="1"
-                  >
-                    <stop offset="5%" stopColor="#6366f1" stopOpacity={0.8} />
-                    <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-
-                <CartesianGrid strokeDasharray="3 3" />
-
-                <XAxis dataKey="day" />
-
-                <YAxis
-                  label={{
-                    value:
-                      graphType === "percentage"
-                        ? "Percentage"
-                        : "Count",
-                    angle: -90,
-                    position: "insideLeft",
-                  }}
-                />
-
-                <Tooltip />
-
-                <Area
-                  type="monotone"
-                  dataKey="value"
-                  stroke="#6366f1"
-                  fillOpacity={1}
-                  fill="url(#colorData)"
-                />
-
-              </AreaChart>
-
-            </ResponsiveContainer>
-          )}
-        </div>
-      </div>
-    </>
+    </div>
   );
 };
 

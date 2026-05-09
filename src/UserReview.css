@@ -1,147 +1,124 @@
-/* Main Container */
-.resources-container {
-  background: linear-gradient(135deg, #001920 0%, #017a8c 100%);
-  padding: 2rem 1rem;
-  overflow-x: auto; /* Enable horizontal scrolling */
-  max-width: 100%;
-  border-radius: 15px;
-  -ms-overflow-style: none;  /* Hide scrollbar in IE */
-  scrollbar-width: none; /* Hide scrollbar in Firefox */
+/* ══════════════════════════════════════════════
+   ULTRA TESTIMONIAL SYSTEM
+   CodingBoss Premium Experience
+   ══════════════════════════════════════════════ */
+
+.user-review-section {
+  padding: 100px 0;
+  background: #ffffff;
+  font-family: 'Plus Jakarta Sans', sans-serif;
 }
 
-/* Scrollable Area */
-.scroll-container {
-  display: flex;
-  flex-wrap: nowrap;
-  overflow-x: auto; /* Enable horizontal scrolling */
-  position: relative;
+.section-header {
+  margin-bottom: 80px;
 }
 
-/* Scroll Track (no animation) */
-.scroll-track {
-  display: flex;
-  gap: 1rem;
-  will-change: transform; /* Performance optimization */
-  /* Removed animation */
+.badge-premium {
+  display: inline-block;
+  padding: 6px 16px;
+  background: rgba(255, 160, 3, 0.1);
+  color: #FFA003;
+  border-radius: 99px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 2px;
+  margin-bottom: 24px;
 }
 
-/* Hide scrollbar for webkit browsers */
-.resources-container::-webkit-scrollbar {
-  display: none; /* Hides the scrollbar */
-}
-
-.scroll-container::-webkit-scrollbar {
-  display: none; /* Hides the scrollbar */
-}
-
-/* Review Cards */
-.glass-view {
-  background-color: rgba(255, 255, 255, 0.9); /* Semi-transparent background for glass effect */
-  backdrop-filter: blur(10px);
-  border-radius: 15px;
-  min-width: 250px;
-  min-height: 300px;
-  padding: 1rem;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-  color: gray;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-}
-
-/* User Profile Image */
-.user-profile {
-  width: 100px;
-  height: 100px;
-  object-fit: cover;
-  border-radius: 50%;
-  border: 3px solid #017a8c;
-}
-
-/* Headings */
 .resources-heading {
-  font-size: 1.8rem;
-  color: whitesmoke;
-  text-align: center;
-  margin-bottom: 0.5rem;
+  font-size: 3.5rem;
+  font-weight: 900;
+  color: #0f172a;
+  letter-spacing: -2px;
+  line-height: 1.1;
 }
 
-.attract {
-  color: #ffa003;
+.highlight-orange {
+  background: linear-gradient(90deg, #FFA003, #ff7e00);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
-.resources-subheading {
-  font-size: 1.2rem;
-  color: whitesmoke;
-  text-align: center;
-  margin-bottom: 2rem;
-}
-
-/* Card Text Styling */
-.text-warning {
+.resources-subtext {
   font-size: 1.1rem;
+  color: #64748b;
+  margin-top: 16px;
 }
 
-.glass-view p {
+/* --- TESTIMONIAL GRID --- */
+.testimonials-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 32px;
+}
+
+.testimonial-card {
+  background: #ffffff !important;
+  border: 1px solid #f1f5f9 !important;
+  border-radius: 32px !important;
+  padding: 32px !important;
+  height: 100%;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  position: relative;
+  overflow: hidden;
+}
+
+.testimonial-card:hover {
+  transform: translateY(-12px);
+  box-shadow: 0 40px 80px -20px rgba(0, 0, 0, 0.08) !important;
+  border-color: #FFA003 !important;
+}
+
+.quote-icon {
+  position: absolute;
+  top: 32px;
+  right: 32px;
+  font-size: 2.5rem;
+  color: #f1f5f9;
+  z-index: 0;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+  position: relative;
+  z-index: 10;
+}
+
+.user-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 20px;
+  object-fit: cover;
+  border: 2px solid #f1f5f9;
+}
+
+.user-name {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #0f172a;
   margin: 0;
-  font-size: 0.9rem;
 }
 
-/* Responsive Adjustments */
-@media (max-width: 992px) {
-  .resources-heading {
-    font-size: 1.5rem;
-  }
+.stars {
+  color: #FFA003;
+  font-size: 0.85rem;
+  display: flex;
+  gap: 2px;
+}
 
-  .resources-subheading {
-    font-size: 1rem;
-  }
-
-  .glass-view {
-    min-height: 280px;
-  }
-
-  .user-profile {
-    width: 80px;
-    height: 80px;
-  }
+.testimonial-text {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: #475569;
+  font-style: italic;
+  position: relative;
+  z-index: 10;
 }
 
 @media (max-width: 768px) {
-  .resources-heading {
-    font-size: 1.3rem;
-  }
-
-  .resources-subheading {
-    font-size: 0.9rem;
-  }
-
-  .glass-view {
-    min-height: 250px;
-  }
-
-  .user-profile {
-    width: 70px;
-    height: 70px;
-  }
-}
-
-@media (max-width: 576px) {
-  .resources-heading {
-    font-size: 1.1rem;
-  }
-
-  .resources-subheading {
-    font-size: 0.8rem;
-  }
-
-  .glass-view {
-    min-height: 220px;
-    padding: 0.8rem;
-  }
-
-  .user-profile {
-    width: 60px;
-    height: 60px;
-  }
+  .resources-heading { font-size: 2.5rem; }
+  .testimonials-grid { grid-template-columns: 1fr; }
 }

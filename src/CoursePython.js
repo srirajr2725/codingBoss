@@ -1,27 +1,19 @@
 import React, { useEffect, useState } from 'react';
-import './CoursePython.css';
-import Navbar from './NavbarComponent';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { FaLock, FaCheckCircle, FaChevronLeft, FaChevronRight, FaPlay, FaBookOpen } from 'react-icons/fa';
 import apiClient from './utils/apiClient';
-import CryptoJS from 'crypto-js';
-import {
-  Card,
-  Button,
-  Container,
-  Row,
-  Col,
-  Spinner,
-  Alert,
-} from 'react-bootstrap'
+import Navbar from './NavbarComponent';
+import './CourseContent.css';
+
 const CoursePython = ({ isLoggedIn, setIsLoggedIn, userRole, handleLogout, username }) => {
   const [topics, setTopics] = useState([]);
-  const [languages, setLanguages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [unlockedIndex, setUnlockedIndex] = useState(() => {
     const saved = localStorage.getItem(`python_progress_${username.toLowerCase()}`);
     return saved ? parseInt(saved, 10) : 0;
   });
+  
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -30,11 +22,8 @@ const CoursePython = ({ isLoggedIn, setIsLoggedIn, userRole, handleLogout, usern
   }, [unlockedIndex, username]);
 
   useEffect(() => {
-    if (!isLoggedIn) {
-      navigate('/LoginPage');
-    }
+    if (!isLoggedIn) navigate('/LoginPage');
   }, [isLoggedIn, navigate]);
-
 
   useEffect(() => {
     const fetchTopics = async () => {
@@ -44,162 +33,108 @@ const CoursePython = ({ isLoggedIn, setIsLoggedIn, userRole, handleLogout, usern
         const sortedTopics = filteredTopics.sort((a, b) => a.position - b.position);
         setTopics(sortedTopics);
       } catch (error) {
+        console.error(error);
       } finally {
         setLoading(false);
       }
     };
-
-    const fetchLanguages = async () => {
-      try {
-        const data = await apiClient('compiler/languages/', 'GET');
-        setLanguages(data);
-      } catch (error) {
-      }
-    };
-
     fetchTopics();
-    fetchLanguages();
   }, []);
 
   const handleTopicClick = (index) => {
-    if (index <= unlockedIndex) {
-      setCurrentIndex(index);
-    }
+    if (index <= unlockedIndex) setCurrentIndex(index);
   };
+
   const handleNext = () => {
-    const nextIdx = currentIndex + 1;
-    if (nextIdx < topics.length && nextIdx <= unlockedIndex) {
-      setCurrentIndex(nextIdx);
+    if (currentIndex < topics.length - 1 && currentIndex < unlockedIndex) {
+      setCurrentIndex(currentIndex + 1);
     }
   };
+
   const handlePrevious = () => setCurrentIndex((prev) => Math.max(prev - 1, 0));
-
-  const renderContentAsList = (content) => {
-    const points = content.split('\n').filter((line) => line.trim() !== '');
-    return <ul>{points.map((point, index) => <li key={index}>{point}</li>)}</ul>;
-  };
-
-  const handleLanguageNavigation = (language) => {
-    const pathMap = { java: '/CourseJava', python: '/CoursePython', c: '/CourseC' };
-    const newPath = pathMap[language.toLowerCase()];
-    if (newPath && location.pathname !== newPath) navigate(newPath);
-  };
 
   const handleStart = (question, index) => {
     if (index === unlockedIndex && unlockedIndex < topics.length - 1) {
       setUnlockedIndex(unlockedIndex + 1);
     }
-    navigate('/QuestionPage', { state: { questionId: question } })
-  }
+    navigate('/QuestionPage', { state: { questionId: question } });
+  };
+
+  if (loading) return <div className="text-center py-5">Loading Python Curriculum...</div>;
 
   return (
     <>
-      <Navbar
-        isLoggedIn={isLoggedIn}
-        setIsLoggedIn={setIsLoggedIn}
-        username={username}
-        userRole={userRole}
-        handleLogout={handleLogout}
+      <Navbar 
+        isLoggedIn={isLoggedIn} 
+        setIsLoggedIn={setIsLoggedIn} 
+        username={username} 
+        userRole={userRole} 
+        handleLogout={handleLogout} 
       />
-      {/* <div className="header">
-        <button className="nav-button" onClick={() => navigate('/')}>Home</button>
-        {languages.map((lang, index) => (
-          <button key={index} className="nav-button" onClick={() => handleLanguageNavigation(lang.language)}>
-            {lang.language}
-          </button>
-        ))}
-      </div> */}
+      
+      <div className="cc-root">
+        <aside className="cc-sidebar">
+          <div className="cc-sidebar-title">Curriculum</div>
+          <ul className="cc-topic-list">
+            {topics.map((topic, index) => {
+              const isLocked = index > unlockedIndex;
+              const isCompleted = index < unlockedIndex;
+              const isActive = index === currentIndex;
 
-      <div className="row flex-nowrap">
-        <div className="col-4 sidebarCource">
-          <ul>
-            {loading ? (
-              <li>Loading topics...</li>
-            ) : topics.length > 0 ? (
-              topics.map((topic, index) => (
+              return (
                 <li 
                   key={index} 
-                  onClick={() => handleTopicClick(index)} 
-                  className={`${index === currentIndex ? 'active' : ''} ${index > unlockedIndex ? 'locked' : ''}`}
-                  style={{ opacity: index > unlockedIndex ? 0.6 : 1, cursor: index > unlockedIndex ? 'not-allowed' : 'pointer' }}
+                  className={`cc-topic-item ${isActive ? 'active' : ''} ${isLocked ? 'locked' : ''}`}
+                  onClick={() => handleTopicClick(index)}
                 >
-                  <span className="topic-title">
-                    {index > unlockedIndex && <span className="me-2">🔒</span>}
-                    {topic.title}
-                  </span>
-                  {index < unlockedIndex && <span className="ms-auto">✅</span>}
+                  {isLocked ? <FaLock size={14} /> : isCompleted ? <FaCheckCircle color="#10b981" /> : <FaBookOpen />}
+                  <span>{topic.title}</span>
                 </li>
-              ))
-            ) : (
-              <li>No topics available</li>
-            )}
+              );
+            })}
           </ul>
-        </div>
+        </aside>
 
-        <div className="content col-8">
+        <main className="cc-main">
+          <div className="cc-content-card">
+            <h1>{topics[currentIndex]?.title}</h1>
+            <div className="cc-text-content">
+              {topics[currentIndex]?.content || 'Initializing lesson content...'}
+            </div>
 
-          <div className="content-body">
-            {topics.length > 0 ? (
-              <>
-                <div>{topics[currentIndex].content || 'No content available.'}</div>
-                <br />
-
-                {topics[currentIndex].expected_output && (
-                  <a href={topics[currentIndex].expected_output} target="_blank" rel="noopener noreferrer">
-                    <button style={{
-                      padding: '10px 20px',
-                      fontSize: '16px',
-                      backgroundColor: '#007bff',
-                      color: '#fff',
-                      border: 'none',
-                      borderRadius: '5px',
-                      cursor: 'pointer',
-                      transition: 'background 0.3s',
-                    }}
-                      onMouseOver={(e) => e.target.style.backgroundColor = '#0056b3'}
-                      onMouseOut={(e) => e.target.style.backgroundColor = '#007bff'}
-                    >
-                      {topics[currentIndex].expected_output}
-                    </button>
-                  </a>
-                )}
-
-
-                {topics[currentIndex].question && <Card className="question-card">
-                  <Card.Body className="d-flex justify-content-between align-items-center">
-                    <span style={{ textAlign: 'left' }}>
-                      {topics[currentIndex].question}
-                    </span>
-
-                    <Button
-                      variant="primary"
-                      size="sm"
-                      onClick={() => handleStart(topics[currentIndex].position, currentIndex)} // Pass the question object including ID
-                      className="d-flex flex-column align-items-center justify-content-center"
-                      style={{
-                        minWidth: '80px',
-                        height: '30px',
-                        backgroundColor: '#017a8c', // Button background color
-                        borderColor: '#017a8c', // Button border color
-                      }} // Consistent button size
-                    >
-                      Start
-                    </Button>
-
-                  </Card.Body>
-                </Card>}
-
-              </>
-            ) : (
-              <p>Select a topic to see its content.</p>
+            {topics[currentIndex]?.question && (
+              <div className="cc-question-box">
+                <div className="cc-question-text">
+                  <span className="d-block text-muted small mb-1">PRACTICAL CHALLENGE</span>
+                  {topics[currentIndex].question}
+                </div>
+                <button 
+                  className="cc-btn-start" 
+                  onClick={() => handleStart(topics[currentIndex].position, currentIndex)}
+                >
+                  <FaPlay size={12} className="me-2" /> Start Lab
+                </button>
+              </div>
             )}
           </div>
 
-          <div className="bottom-buttons">
-            <button className="prev-next" onClick={handlePrevious} disabled={currentIndex === 0}>Previous</button>
-            <button className="prev-next" onClick={handleNext} disabled={currentIndex === topics.length - 1}>Next</button>
+          <div className="cc-footer-nav">
+            <button 
+              className="cc-btn-nav" 
+              onClick={handlePrevious} 
+              disabled={currentIndex === 0}
+            >
+              <FaChevronLeft /> Previous
+            </button>
+            <button 
+              className="cc-btn-nav" 
+              onClick={handleNext} 
+              disabled={currentIndex === topics.length - 1 || currentIndex >= unlockedIndex}
+            >
+              Next <FaChevronRight />
+            </button>
           </div>
-        </div>
+        </main>
       </div>
     </>
   );

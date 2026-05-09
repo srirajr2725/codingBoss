@@ -1,67 +1,84 @@
-/* Preloader Container */
+/* ══════════════════════════════════════════════
+   ELITE PRELOADER
+   CodingBoss Premium UI
+   ══════════════════════════════════════════════ */
+
 .preloader {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: white;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 9999;
-    transition: opacity 0.5s ease-in-out;
-    flex-direction: column;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #0f172a; /* Dark Obsidian */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  transition: opacity 0.8s cubic-bezier(0.65, 0, 0.35, 1), visibility 0.8s;
 }
 
-/* Preloader Content (Stacked Layout) */
+.preloader.fade-out {
+  opacity: 0;
+  visibility: hidden;
+}
+
 .preloader-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 30px;
 }
 
-/* Coding Image (Smaller & Positioned Above) */
-.coding-image {
-    width: 120px; /* Adjust size */
-    height: auto;
-    margin-bottom: 15px; /* Space between coding.png and boss.png */
-    animation: fadeIn 1.5s ease-in-out;
-}
-
-/* Boss Image (Move Slightly Up) */
+/* --- LOGO ANIMATION --- */
 .boss-image {
-    width: 150px;
-    height: auto;
-    animation: bounce 1.5s infinite alternate;
-    position: relative;
-    top: -30px; /* Moves boss.png slightly upwards */
+  width: 120px;
+  height: auto;
+  filter: drop-shadow(0 0 30px rgba(255, 160, 3, 0.4));
+  animation: logoPulse 2s ease-in-out infinite;
 }
 
-/* Bounce Animation */
-@keyframes bounce {
-    0% {
-        transform: translateY(0);
-    }
-    100% {
-        transform: translateY(-10px);
-    }
+.coding-image {
+  width: 200px;
+  height: auto;
+  opacity: 0.8;
 }
 
-/* Fade-in Animation */
-@keyframes fadeIn {
-    0% {
-        opacity: 0;
-        transform: translateY(-20px);
-    }
-    100% {
-        opacity: 1;
-        transform: translateY(0);
-    }
+@keyframes logoPulse {
+  0%, 100% { transform: scale(1); filter: drop-shadow(0 0 20px rgba(255, 160, 3, 0.2)); }
+  50% { transform: scale(1.05); filter: drop-shadow(0 0 40px rgba(255, 160, 3, 0.6)); }
 }
 
-/* Fade Out Effect */
-.fade-out {
-    opacity: 0;
-    pointer-events: none;
+/* --- LOADING LINE --- */
+.loading-bar {
+  width: 240px;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 99px;
+  overflow: hidden;
+  position: relative;
+}
+
+.loading-bar::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, #FFA003, transparent);
+  animation: scan 1.5s infinite ease-in-out;
+}
+
+@keyframes scan {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+.loading-text {
+  color: #64748b;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  margin-top: 10px;
 }

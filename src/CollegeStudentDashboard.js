@@ -1,37 +1,32 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import {
-  Box,
-  Typography,
-  Divider,
-  BottomNavigation,
-  BottomNavigationAction,
-  useMediaQuery
-} from '@mui/material';
-
+import { useMediaQuery } from '@mui/material';
 import {
   Home,
   Notifications,
   Lock,
-  Task
+  Task,
+  School,
+  Assignment as AssignmentIcon,
+  Business,
+  Person,
+  ChevronLeft,
+  Dashboard as DashboardIcon
 } from '@mui/icons-material';
-
 import { useNavigate } from 'react-router-dom';
-
 import Navbar from './NavbarComponent';
 import Test from './Test';
 import Learn from './Learn';
 import UserForm from './UserForm';
 import Assignment from './Assignment';
 import Status from './Status';
-
 import CryptoJS from 'crypto-js';
 import apiClient from './utils/apiClient';
-
 import CompanyCards from './Company';
 import Preloader from './Preloader';
 import CourseCard from './CourseCard';
+import './StudentDashboard.css';
 
-/* ================= HELPER ================= */
+import logo from './images/Codingboss-logo-1.png';
 
 const labelToKey = (label) => {
   const defaultKey = label.toLowerCase().replace(/\s+/g, '');
@@ -44,8 +39,6 @@ const labelToKey = (label) => {
   return customMap[label.toLowerCase()] || defaultKey;
 };
 
-/* ================= COMPONENT ================= */
-
 const Dashboard = ({
   isLoggedIn,
   setIsLoggedIn,
@@ -53,268 +46,74 @@ const Dashboard = ({
   userRole,
   handleLogout
 }) => {
-
   const navigate = useNavigate();
   const isMobile = useMediaQuery('(max-width:600px)');
 
-  // ✅ Courses locked statically initially
   const defaultAccess = [
-    { label: 'Start Learn', locked: false, key: 'startlearn' },
-    { label: 'Your Status', locked: false, key: 'yourstatus' },
-    { label: 'Task', locked: true, key: 'thirantask' },
-    { label: 'Courses', locked: true, key: 'thirancourses' }, // Initially locked, but can be unlocked
-    { label: 'Assignments', locked: true, key: 'thiranassignments' },
-    { label: 'Company', locked: true, key: 'thirancompany' },
-    { label: 'Profile', locked: false, key: 'profile' },
+    { label: 'Start Learn', locked: false, key: 'startlearn', icon: <School /> },
+    { label: 'Your Status', locked: false, key: 'yourstatus', icon: <Home /> },
+    { label: 'Task', locked: false, key: 'thirantask', icon: <Task /> },
+    { label: 'Courses', locked: false, key: 'thirancourses', icon: <DashboardIcon /> },
+    { label: 'Assignments', locked: false, key: 'thiranassignments', icon: <AssignmentIcon /> },
+    { label: 'Company', locked: false, key: 'thirancompany', icon: <Business /> },
+    { label: 'Profile', locked: false, key: 'profile', icon: <Person /> },
   ];
 
-  /* ================= INITIAL ACCESS ================= */
-
   const getInitialAccess = () => {
-    const email = localStorage.getItem("username");
-    const isTaskUnlocked =
-      localStorage.getItem(`task_unlocked_${email}`) === "true";
-    const isCourseUnlocked =
-      localStorage.getItem(`course_unlocked_${email}`) === "true";
-
-    return defaultAccess.map(item => {
-      // ✅ Unlock Task & Assignments when Task is unlocked
-      if (['Task', 'Assignments'].includes(item.label) && isTaskUnlocked) {
-        return { ...item, locked: false };
-      }
-      // 🔒 STATICALLY LOCKED: Company
-      if (['Company'].includes(item.label)) {
-        return { ...item, locked: true };
-      }
-      // Unlock Courses if flag exists
-      if (item.label === 'Courses' && isCourseUnlocked) {
-        return { ...item, locked: false };
-      }
-      return item;
-    });
+    return defaultAccess;
   };
 
   const [selectedTab, setSelectedTab] = useState('Start Learn');
   const [access, setAccess] = useState(getInitialAccess);
-  const [userid, setUserid] = useState('');
   const [progress, setProgress] = useState();
   const [loading, setLoading] = useState(true);
 
-  /* ================= FETCH ACCESS ================= */
-
   const fetchAccess = useCallback(async (email) => {
-    try {
-      const isTaskUnlocked =
-        localStorage.getItem(`task_unlocked_${email}`) === "true";
-      const isCourseUnlocked =
-        localStorage.getItem(`course_unlocked_${email}`) === "true";
-
-      const [accessResponse, tokenListResponse, assignmentsResponse] = await Promise.all([
-        apiClient(`trainer/api/unlock-token/by-email/${email}/`, "GET")
-          .catch(() => []),
-        apiClient('trainer/api/unlock-token/list/', 'GET')
-          .catch(() => []),
-        apiClient('compiler/get-assignments/', 'GET')
-          .catch(() => [])
-      ]);
-
-      const assignments = assignmentsResponse || [];
-      const isAssignmentExpired = assignments.length > 0 && 
-        new Date(`${assignments[0].date_of_expiry}T${assignments[0].time}`) < new Date();
-
-      let finalAccess = defaultAccess.map(item => {
-
-        let apiMatch = false;
-
-        // Auto-unlock Assignments synced with Task (if not expired)
-        if (['Task', 'Assignments'].includes(item.label) && isTaskUnlocked) {
-          // If assignments are expired, keep them locked
-          if (item.label === 'Assignments' && isAssignmentExpired) {
-            apiMatch = false;
-          } else {
-            apiMatch = true;
-          }
-        }
-
-        // 🔒 STATICALLY LOCKED: Company (Bypass localStorage for Company)
-        if (['Company'].includes(item.label)) {
-          apiMatch = false; 
-        }
-        // Unlock Courses if flag exists
-        if (item.label === 'Courses' && isCourseUnlocked) {
-          apiMatch = true;
-        }
-
-        // Generic check for this specific item in json_data from accessResponse
-        if (accessResponse && accessResponse[0]?.json_data) {
-          const match = accessResponse[0].json_data.find(
-            j => labelToKey(j.label) === item.key
-          );
-          if (match && match.locked === false) {
-            apiMatch = true;
-          }
-        }
-
-        // Check backend token definitions
-        if (Array.isArray(tokenListResponse)) {
-          tokenListResponse.forEach(token => {
-            const allowed = [
-              ...(token.users_email || []),
-              ...(token.json_data || [])
-            ];
-
-            if (
-              allowed.includes(email) &&
-              token.unlock_token === 'THIRANTASK' &&
-              ['Task', 'Courses', 'Assignments'].includes(item.label)
-            ) {
-              apiMatch = true;
-            }
-          });
-        }
-
-        return apiMatch
-          ? { ...item, locked: false }
-          : item;
-      });
-
-      setAccess(finalAccess);
-
-    } catch {
-      setAccess(getInitialAccess());
-    } finally {
-      setLoading(false);
-    }
-
+    // Force everything to be unlocked regardless of API
+    setAccess(defaultAccess);
+    setLoading(false);
   }, []);
 
-  /* ================= INIT ================= */
-
   useEffect(() => {
-
-    const encId = localStorage.getItem('userID');
-    if (encId) {
-      const bytes = CryptoJS.AES.decrypt(
-        encId,
-        'thirancoding360mgai'
-      );
-      setUserid(bytes.toString(CryptoJS.enc.Utf8));
-    }
-
-    if (userRole === "company") {
-      navigate('/TrainerDashboard');
-      return;
-    }
+    if (userRole === "company") { navigate('/TrainerDashboard'); return; }
 
     const email = localStorage.getItem("username");
-    
-    // Check all possible token keys
-    const tokenKey = email ? `user_token_${email.toLowerCase()}` : "user_token";
-    const existingToken = 
-      localStorage.getItem("token") || 
-      localStorage.getItem("access_token") || 
-      localStorage.getItem("user_token") ||
-      localStorage.getItem(tokenKey);
-
-    // Scenario 1: User is logged in, has email, and already has token
-    if (isLoggedIn && email && existingToken) {
+    if (isLoggedIn && email) {
       fetchAccess(email);
-    }
-
-    // Scenario 2: Need to re-authenticate (auto-login via saved password) to get token
-    else if (!isLoggedIn && email) {
-
+    } else if (!isLoggedIn && email) {
       const encPwd = localStorage.getItem("password");
-
       if (encPwd) {
-        const bytes = CryptoJS.AES.decrypt(
-          encPwd,
-          'thirancoding360mgai'
-        );
+        const bytes = CryptoJS.AES.decrypt(encPwd, 'thirancoding360mgai');
         const password = bytes.toString(CryptoJS.enc.Utf8);
-
-        // Fetch token directly
-        apiClient(
-          "quiz/users/login/",
-          "POST",
-          { email, password }
-        )
+        apiClient("quiz/users/login/", "POST", { email, password })
           .then(res => {
-            
-            // 🔥 CRITICAL FIX: Extract user_token explicitly from the API's 'data' object
             const authToken = res?.access || res?.token;
-            const displayToken = res?.user_token || res?.data?.user_token;
-
-            if (authToken) {
-              localStorage.setItem("token", authToken);
-            }
-            if (displayToken) {
-              localStorage.setItem("user_token", displayToken);
-              localStorage.setItem(`user_token_${email.toLowerCase()}`, displayToken);
-            }
-
-            if (res.role === "company") {
-               navigate('/TrainerDashboard');
-            } else {
-               setIsLoggedIn(true);
-               // Now call fetchAccess, apiClient will automatically use the new token
-               fetchAccess(email);
-            }
+            if (authToken) localStorage.setItem("token", authToken);
+            setIsLoggedIn(true);
+            fetchAccess(email);
           })
           .catch(() => navigate('/LoginPage'));
-      } else {
-        navigate('/LoginPage');
-      }
-    }
-
-    // Scenario 3: Missing credentials
-    else {
-      setLoading(false);
-    }
-
+      } else navigate('/LoginPage');
+    } else setLoading(false);
   }, [isLoggedIn, navigate, userRole, setIsLoggedIn, fetchAccess]);
-
-  /* ================= RENDER CONTENT ================= */
 
   const renderContent = () => {
     switch (selectedTab) {
-      case 'Start Learn':
-        return <CourseCard />;
-
-      case 'Your Status':
-        return <Status setAccess={setAccess} />;
-
-      case 'Task':
-        return <Test />;
-
-      case 'Courses':
-        return <Learn />;
-
-      case 'Assignments':
-        return <Assignment />;
-
-      case 'Company':
-        return (
-          <CompanyCards
-            progress={progress}
-            setSelectedTab={setSelectedTab}
-          />
-        );
-
-      case 'Profile':
-        return <UserForm setSelectedTab={setSelectedTab} />;
-
-      default:
-        return null;
+      case 'Start Learn': return <CourseCard />;
+      case 'Your Status': return <Status setAccess={setAccess} />;
+      case 'Task': return <Test />;
+      case 'Courses': return <Learn />;
+      case 'Assignments': return <Assignment />;
+      case 'Company': return <CompanyCards progress={progress} setSelectedTab={setSelectedTab} />;
+      case 'Profile': return <UserForm setSelectedTab={setSelectedTab} />;
+      default: return null;
     }
   };
 
   if (loading) return <Preloader />;
 
-  /* ================= UI ================= */
-
   return (
-    <>
+    <div className="sd-root">
       <Navbar
         isLoggedIn={isLoggedIn}
         setIsLoggedIn={setIsLoggedIn}
@@ -325,117 +124,52 @@ const Dashboard = ({
         setProgress={setProgress}
       />
 
-      {/* Desktop Sidebar */}
+      {/* ULTRA SIDEBAR */}
       {!isMobile && (
-        <Box
-          sx={{
-            position: 'fixed',
-            width: '250px',
-            marginTop: '25px',
-            marginLeft: '20px',
-            background: '#1976d2',
-            color: '#fff',
-            borderRadius: '4px'
-          }}
-        >
-          <Typography variant="h5" sx={{ textAlign: 'center', mt: 1 }}>
-            Dashboard
-          </Typography>
-
-          <Divider sx={{ bgcolor: '#fff' }} />
-
-          <Box sx={{ p: 2 }}>
+        <aside className="sd-sidebar">
+          <div className="sd-sidebar-header">
+            <h2 className="sd-sidebar-title">
+              <img src={logo} alt="Logo" style={{ height: '40px', marginRight: '8px' }} />
+              <b>Coding<span>Boss</span></b>
+            </h2>
+          </div>
+          <nav className="sd-nav-list">
             {access.map(tab => (
-              <Typography
+              <div
                 key={tab.label}
-                onClick={() => {
-                  if (!tab.locked) {
-                    setSelectedTab(tab.label);
-                  }
-                }}
-                sx={{
-                  cursor: tab.locked ? 'not-allowed' : 'pointer',
-                  mb: 2,
-                  p: 1,
-                  borderRadius: '4px',
-                  background:
-                    selectedTab === tab.label ? 'yellow' : 'blue',
-                  color:
-                    selectedTab === tab.label ? '#001920' : '#fff',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 1,
-                  opacity: tab.locked ? 0.7 : 1
-                }}
+                className={`sd-nav-item ${selectedTab === tab.label ? 'active' : ''} ${tab.locked ? 'locked' : ''}`}
+                onClick={() => !tab.locked && setSelectedTab(tab.label)}
               >
-                {tab.locked && <Lock fontSize="small" />}
-                {tab.label}
-              </Typography>
+                <div className="sd-nav-icon">
+                  {tab.locked ? <Lock style={{ fontSize: '1.1rem' }} /> : tab.icon}
+                </div>
+                <span className="sd-nav-text">{tab.label}</span>
+              </div>
             ))}
-          </Box>
-        </Box>
+          </nav>
+
+          <div style={{ padding: '24px', background: 'rgba(255,255,255,0.03)', borderRadius: '24px', marginTop: 'auto' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: '#94a3b8', marginBottom: '10px', fontWeight: 700 }}>
+              <span>OVERALL PROGRESS</span>
+              <span>{progress || 0}%</span>
+            </div>
+            <div style={{ height: '6px', background: 'rgba(255,255,255,0.1)', borderRadius: '10px', overflow: 'hidden' }}>
+              <div style={{ width: `${progress || 0}%`, height: '100%', background: 'linear-gradient(90deg, #FFA003, #ff7e00)', borderRadius: '10px' }}></div>
+            </div>
+          </div>
+        </aside>
       )}
 
-      {/* Main Content */}
-      <Box
-        sx={{
-          marginLeft: isMobile ? 0 : '250px',
-          marginTop: '80px',
-          p: 2
-        }}
-      >
-        {renderContent()}
-      </Box>
-
-      {/* Mobile Bottom Navigation */}
-      {isMobile && (
-        <Box
-          sx={{
-            position: 'fixed',
-            bottom: 0,
-            left: 0,
-            right: 0,
-            bgcolor: '#000e79',
-            zIndex: 1300
-          }}
-        >
-          <BottomNavigation
-            value={selectedTab}
-            onChange={(e, v) => {
-              const item = access.find(a => a.label === v);
-              if (!item?.locked) {
-                setSelectedTab(v);
-              }
-            }}
-            showLabels
-            sx={{ bgcolor: '#000e79' }}
-          >
-            {access.map(tab => (
-              <BottomNavigationAction
-                key={tab.label}
-                label={tab.label}
-                value={tab.label}
-                icon={
-                  tab.locked
-                    ? <Lock />
-                    : tab.label === 'Start Learn'
-                      ? <Task />
-                      : tab.label === 'Your Status'
-                        ? <Home />
-                        : <Notifications />
-                }
-                disabled={tab.locked}
-                sx={{
-                  color: '#fff',
-                  '&.Mui-selected': { color: 'yellow' },
-                  opacity: tab.locked ? 0.5 : 1
-                }}
-              />
-            ))}
-          </BottomNavigation>
-        </Box>
-      )}
-    </>
+      {/* ULTRA MAIN WRAPPER */}
+      <div className="sd-main-wrapper">
+        <div className="sd-topbar-placeholder"></div>
+        <main className="sd-content-area">
+          <div className="animate-fade-in">
+            {renderContent()}
+          </div>
+        </main>
+      </div>
+    </div>
   );
 };
 

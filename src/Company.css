@@ -1,0 +1,219 @@
+/* ══════════════════════════════════════════════
+   ULTRA RECRUITMENT PORTAL
+   CodingBoss Premium UI
+   ══════════════════════════════════════════════ */
+
+.re-container {
+  padding: 40px 0;
+  animation: fadeIn 0.8s ease-out;
+}
+
+.re-header {
+  margin-bottom: 50px;
+  text-align: left;
+}
+
+.re-title {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -1.5px;
+}
+
+/* --- JOB CARD ARCHITECTURE --- */
+.re-job-list {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.re-job-card {
+  background: white;
+  border: 1px solid #f1f5f9;
+  border-radius: 32px;
+  padding: 32px;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  gap: 32px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.02);
+}
+
+.re-job-card:hover {
+  transform: translateX(12px);
+  border-color: #FFA003;
+  box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.08);
+}
+
+/* --- COMPANY SIDEBAR --- */
+.re-company-info {
+  min-width: 180px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding-right: 32px;
+  border-right: 1px solid #f1f5f9;
+}
+
+.re-logo-wrapper {
+  width: 80px;
+  height: 80px;
+  background: #f8fafc;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+  transition: transform 0.4s;
+}
+
+.re-job-card:hover .re-logo-wrapper {
+  transform: scale(1.1) rotate(5deg);
+  background: rgba(255, 160, 3, 0.05);
+}
+
+.re-logo {
+  width: 50px;
+  height: 50px;
+  object-fit: contain;
+}
+
+.re-company-name {
+  font-weight: 800;
+  color: #0f172a;
+  font-size: 1.1rem;
+}
+
+/* --- CONTENT AREA --- */
+.re-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.re-job-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 12px;
+  letter-spacing: -0.5px;
+}
+
+.re-desc {
+  color: #64748b;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  margin-bottom: 24px;
+}
+
+.re-meta-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  margin-top: auto;
+}
+
+.re-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #64748b;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.re-meta-icon {
+  color: #FFA003;
+}
+
+/* --- BADGES --- */
+.re-badge {
+  background: #0f172a;
+  color: white;
+  padding: 4px 12px;
+  border-radius: 8px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+  display: inline-block;
+}
+
+/* --- ACTION AREA --- */
+.re-actions {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-end;
+  min-width: 160px;
+}
+
+.re-progress-tag {
+  font-size: 0.75rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.re-btn-apply {
+  background: #FFA003;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.3s;
+  width: 100%;
+}
+
+.re-btn-apply:hover {
+  background: #0f172a;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(15, 23, 42, 0.2);
+}
+
+.re-btn-disabled {
+  background: #f1f5f9;
+  color: #94a3b8;
+  cursor: not-allowed;
+}
+
+/* --- BLURRED STATE --- */
+.re-locked-card {
+  filter: blur(8px);
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.re-lock-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10;
+  background: #0f172a;
+  color: white;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 768px) {
+  .re-job-card { flex-direction: column; gap: 20px; }
+  .re-company-info { border-right: none; border-bottom: 1px solid #f1f5f9; padding: 0 0 20px 0; min-width: 100%; }
+  .re-actions { align-items: stretch; min-width: 100%; margin-top: 20px; }
+}

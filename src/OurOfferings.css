@@ -1,84 +1,63 @@
+﻿/* ══════════════════════════════════════════════
+   PREMIUM PROJECTS UI (OurOfferings)
+   ══════════════════════════════════════════════ */
+
 .offerings-container {
-  text-align: center;
-  padding: 50px 20px;
-  background: #f8f9fa;
+  padding: 100px 0;
+  background: #f8fafc;
   position: relative;
 }
 
-/* Large faded title */
-.offerings-title {
-  font-size: 4.5rem;
-  font-weight: bold;
-  color: rgba(0, 0, 0, 0.1);
-  text-transform: uppercase;
-  margin-bottom: 30px;
-}
-
-/* Grid layout for two cards per row */
-.offerings-list {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 30px;
-  justify-content: center;
-  align-items: center;
-  max-width: 1000px;
-  margin: auto;
-}
-
-/* Card styling */
-.project-card {
-  width: 100%;
-  height: 200px; /* Decreased height */
+.category-header {
+  max-width: 1400px;
+  margin: 0 auto 60px;
+  padding: 0 40px;
   display: flex;
-  flex-direction: row;
   align-items: center;
-  justify-content: space-around;
-  padding: 20px;
-  border-radius: 15px;
-  text-align: center;
+  gap: 20px;
+}
+
+.category-title {
+  font-size: 3.5rem;
+  font-weight: 950;
+  color: #0f172a;
+  letter-spacing: -2px;
+}
+
+.category-tag {
+  padding: 8px 24px;
+  background: linear-gradient(135deg, #f59e0b, #f97316);
+  border-radius: 99px;
+  font-size: 0.8rem;
+  font-weight: 900;
+  color: #ffffff;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  box-shadow: 0 10px 20px rgba(245, 158, 11, 0.3);
+}
+
+/* --- PROJECT GRID --- */
+.offerings-list {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 40px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: 40px;
+}
+
+.project-card {
+  background: #ffffff;
+  border-radius: 32px;
+  overflow: hidden;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
   opacity: 0;
-  transition: opacity 0.8s ease, transform 0.8s ease;
-  cursor: pointer;
-
-  /* Glassmorphism Effect */
-  background: linear-gradient(135deg, rgba(200, 200, 200, 0.4), rgba(230, 230, 230, 0.4));
-  backdrop-filter: blur(15px);
-  -webkit-backdrop-filter: blur(15px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0px 5px 20px rgba(0, 0, 0, 0.2);
-  position: relative; /* Added for left border effect */
-}
-
-/* Left-side animated border */
-.project-card::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 10%;
-  width: 3px;
-  height: 80%;
-  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 1));
-  transform: scaleY(0);
-  transform-origin: top;
-  transition: transform 0.8s ease-in-out;
-}
-
-.project-card.visible::before {
-  transform: scaleY(1);
-}
-
-/* Animations for appearing from different directions */
-.project-card:nth-child(4n+1) {
-  transform: translateX(-50px);
-}
-.project-card:nth-child(4n+2) {
-  transform: translateX(50px);
-}
-.project-card:nth-child(4n+3) {
-  transform: translateY(-50px);
-}
-.project-card:nth-child(4n+4) {
-  transform: translateY(50px);
+  transform: translateY(40px);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.04);
 }
 
 .project-card.visible {
@@ -86,73 +65,115 @@
   transform: translateY(0);
 }
 
-/* Image inside the card */
-.project-image {
-  width: 80px;
-  height: 80px;
-  object-fit: contain;
-}
-/* Scroll Progress Line - Fix */
-.scroll-line {
-  position: fixed; /* Fix it to the screen */
-  left: 5%; /* Adjust position */
-  top: 10%; /* Start from top */
-  width: 4px;
-  height: 80vh; /* Cover 80% of viewport */
-  background: rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-  z-index: 10;
+.project-card:hover {
+  transform: translateY(-16px);
+  box-shadow: 0 40px 80px -10px rgba(99, 102, 241, 0.15);
+  border-color: #c7d2fe;
 }
 
-.scroll-line-fill {
+.project-image-wrapper {
+  position: relative;
   width: 100%;
-  height: 0%;
-  background: black;
-  transition: height 0.3s ease-out;
+  height: 250px;
+  overflow: hidden;
+  background: #f1f5f9;
 }
-.category-header {
+
+.project-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.project-card:hover .project-image {
+  transform: scale(1.08);
+}
+
+.project-info {
+  padding: 36px 32px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  background: #ffffff;
+  position: relative;
+}
+
+.project-info h3 {
+  font-size: 1.45rem;
+  font-weight: 900;
+  color: #0f172a;
+  margin: 0 0 32px;
+  line-height: 1.3;
+  letter-spacing: -0.5px;
+}
+
+.book-now-btn {
+  width: 100%;
+  padding: 18px;
+  background: #f1f5f9;
+  color: #0f172a;
+  border: none;
+  border-radius: 16px;
+  font-weight: 900;
+  font-size: 1.05rem;
+  transition: all 0.4s;
+  cursor: pointer;
+  margin-top: auto;
   display: flex;
   align-items: center;
-  margin-top: 20px; /* Reduced further to move it up */
-  font-size: 24px;
-  font-weight: bold;
-  margin-left: 100px; /* Keeps it towards the right */
+  justify-content: center;
+  gap: 10px;
 }
 
-.category-title {
-  color: black;
-  font-size: 22px;
-  font-weight: bold;
+.book-now-btn::after {
+  content: "→";
+  font-size: 1.3rem;
+  transition: transform 0.3s;
 }
 
-.category-tag {
-  margin-left: 10px;
-  font-size: 14px;
-  padding: 5px 10px;
-  border-radius: 10px;
+.project-card:hover .book-now-btn {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: white;
+  box-shadow: 0 15px 30px rgba(99, 102, 241, 0.3);
 }
 
-.for-students {
-  background-color: #cce5ff;
-  color: #004085;
+.project-card:hover .book-now-btn::after {
+  transform: translateX(8px);
 }
 
-/* Media query for larger mobile screens */
+/* Chat overlay logic */
+.chat-window-left {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: 400px;
+  background: #ffffff;
+  z-index: 1000;
+  box-shadow: 20px 0 50px rgba(0,0,0,0.1);
+  overflow-y: auto;
+}
+
 @media (max-width: 768px) {
-  .offerings-list {
-    grid-template-columns: 1fr; /* Single column for mobile */
-  }
-  .offerings-title {
-    font-size: 3rem; /* Slightly larger title */
-  }
-  .category-header {
-    font-size: 22px; /* Adjusted size for better readability */
-  }
-  .project-card {
-    height: 160px; /* Adjusted card height */
-  }
-  .project-image {
-    width: 50px; /* Smaller image size */
-    height: 50px;
-  }
+  .offerings-list { grid-template-columns: 1fr; padding: 0 20px; }
+  .category-title { font-size: 2.5rem; }
+  .chat-window-left { width: 100%; }
+}
+.offerings-list {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 40px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 32px;
+}
+@media (max-width: 1200px) {
+  .offerings-list { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 900px) {
+  .offerings-list { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 600px) {
+  .offerings-list { grid-template-columns: 1fr; }
 }

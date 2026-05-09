@@ -1,0 +1,309 @@
+{
+  "id": 1,
+  "title": "Java Masterclass: Zero to Hero",
+  "description": "A step-by-step pedagogical journey mastering Java. From your first line of code to complex enterprise architecture.",
+  "imageUrl": "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/java/java-original.svg",
+  "badge": "Comprehensive",
+  "duration": "24 Weeks",
+  "level": "Absolute Beginner → Pro",
+  "students": "20k+",
+  "rating": "5.0",
+  "color": "#f89820",
+  "curriculum": [
+    {
+      "id": "j1",
+      "title": "Chapter 1: The Soul of Java & JVM Architecture",
+      "type": "chapter",
+      "dur": "45m read",
+      "contentBlocks": [
+        { "type": "text", "value": "Java was born in 1995 at Sun Microsystems, led by James Gosling. Its mission was simple: 'Write Once, Run Anywhere'. Today, Java powers over 3 billion devices, from the smallest Android phones to the largest enterprise bank servers." },
+        { "type": "definition", "term": "JVM (Java Virtual Machine)", "value": "A virtual machine that enables a computer to run Java programs as well as programs written in other languages that are also compiled to Java bytecode." },
+        { "type": "definition", "term": "Bytecode", "value": "A highly optimized set of instructions designed to be executed by the Java runtime environment, which is what allows Java to be platform-independent." },
+        { "type": "step", "number": 1, "title": "The Compilation Pipeline", "value": "When you write code in a .java file, it is human-readable. The 'javac' compiler transforms this into Bytecode (.class file)." },
+        { "type": "code", "lang": "bash", "value": "javac HelloWorld.java\njava HelloWorld" },
+        { "type": "definition", "term": "JDK (Java Development Kit)", "value": "A software development environment used for developing Java applications. It includes the JRE, an interpreter/loader (Java), a compiler (javac), an archiver (jar), a documentation generator (Javadoc) and other tools." },
+        { "type": "text", "value": "### Mastery Summary: The Full Answer\nJava's platform independence is achieved through the 'Bytecode' middle-layer. You write code, compile it once, and it runs on any device with a JVM." }
+      ],
+      "objectives": ["History & Evolution", "JVM Internals", "JDK Environment Setup"]
+    },
+    {
+      "id": "j2",
+      "title": "Chapter 2: Memory Systems & Deep-Type Analysis",
+      "type": "chapter",
+      "dur": "50m read",
+      "contentBlocks": [
+        { "type": "text", "value": "Every piece of data in Java has a specific type and a specific place in memory. Efficiency in Java comes from choosing the right type for the right job." },
+        { "type": "definition", "term": "Primitive Type", "value": "A basic data type provided by the language, such as int or double, which is stored directly on the stack for maximum performance." },
+        { "type": "definition", "term": "Reference Type", "value": "A type that holds the memory address of an object on the heap rather than the object itself. All objects in Java are reference types." },
+        { "type": "step", "number": 1, "title": "Integral & Floating Point Types", "value": "Java provides 8 primitives: byte, short, int, long, float, double, char, and boolean." },
+        { "type": "code", "lang": "java", "value": "int age = 25;\nlong worldPopulation = 8000000000L;" },
+        { "type": "definition", "term": "Stack Memory", "value": "A region of memory that stores temporary variables created by each function. It is a Last-In-First-Out (LIFO) data structure." },
+        { "type": "definition", "term": "Heap Memory", "value": "A region of memory used for dynamic memory allocation where blocks are allocated and freed in an arbitrary order." },
+        { "type": "text", "value": "### Mastery Summary: The Full Answer\nMastering Java memory means knowing that Primitives live on the Stack (fast, small) and Objects live on the Heap (flexible, larger)." }
+      ],
+      "objectives": ["Stack vs Heap Architecture", "Primitive Bit-Depths"]
+    },
+    {
+      "id": "j3",
+      "title": "Chapter 3: Logic, Branching & Algorithmic Flow",
+      "type": "chapter",
+      "dur": "45m read",
+      "contentBlocks": [
+        { "type": "text", "value": "Control flow statements allow you to break the linear execution of code. They are the 'decision makers' in your software." },
+        { "type": "definition", "term": "Branching", "value": "A point in a computer program where the executor can jump to different parts of the code based on the result of a condition." },
+        { "type": "definition", "term": "Iteration", "value": "The repetition of a process in order to generate a (possibly unbounded) sequence of outcomes." },
+        { "type": "step", "number": 1, "title": "The Modern Switch Expression", "value": "Introduced in Java 14, switch expressions allow you to return a value directly and use the 'arrow' (->) syntax." },
+        { "type": "code", "lang": "java", "value": "String result = switch (grade) {\n    case \"A\", \"B\" -> \"Excellent\";\n    default -> \"Needs Improvement\";\n};" },
+        { "type": "text", "value": "### Mastery Summary: The Full Answer\nAlgorithmic flow is built on clear decision-making. Favor 'switch' expressions for readability when handling multiple cases." }
+      ],
+      "objectives": ["Boolean Predicates", "Switch Expression Syntax"]
+    },
+    {
+      "id": "j4",
+      "title": "Chapter 4: Object-Oriented Engineering",
+      "type": "chapter",
+      "dur": "55m read",
+      "contentBlocks": [
+        { "type": "text", "value": "Object-Oriented Programming (OOP) is a paradigm based on the concept of 'objects', which can contain data (fields) and code (methods)." },
+        { "type": "definition", "term": "Class", "value": "An extensible program-code-template for creating objects, providing initial values for state (member variables) and implementations of behavior (member functions or methods)." },
+        { "type": "definition", "term": "Object", "value": "An instance of a class that has a specific state and behavior, residing in the heap memory during runtime." },
+        { "type": "definition", "term": "Encapsulation", "value": "A fundamental OOP concept that binds together the data and functions that manipulate the data, keeping both safe from outside interference and misuse." },
+        { "type": "step", "number": 1, "title": "The Constructor's Job", "value": "Constructors are special methods called when an object is instantiated. They initialize the object's state." },
+        { "type": "code", "lang": "java", "value": "public class Car {\n    String model;\n    public Car(String model) { this.model = model; }\n}" },
+        { "type": "text", "value": "### Mastery Summary: The Full Answer\nClasses are the structural units of Java. To design great classes, encapsulate your data and use constructors for clear initialization." }
+      ],
+      "objectives": ["Blueprint vs Instance", "Encapsulation Patterns"]
+    },
+    {
+      "id": "j5",
+      "title": "Chapter 5: Inheritance & Dynamic Dispatch",
+      "type": "chapter",
+      "dur": "50m read",
+      "contentBlocks": [
+        { "type": "text", "value": "Inheritance allows a class to acquire the properties and behaviors of another class. It promotes code reusability." },
+        { "type": "definition", "term": "Inheritance", "value": "A mechanism in which one object acquires all the properties and behaviors of a parent object." },
+        { "type": "definition", "term": "Polymorphism", "value": "The ability of an object to take on many forms. In Java, this refers to the ability of a parent class reference to refer to a child class object." },
+        { "type": "step", "number": 1, "title": "Method Overriding", "value": "A subclass can provide a specific implementation of a method that is already provided by its parent." },
+        { "type": "code", "lang": "java", "value": "class Animal { void speak() { System.out.println(\"Sound\"); } }\nclass Cat extends Animal { void speak() { System.out.println(\"Meow\"); } }" },
+        { "type": "text", "value": "### Mastery Summary: The Full Answer\nInheritance allows you to build complex systems by extending simple ones. Polymorphism is the true power of OOP." }
+      ],
+      "objectives": ["Subclassing Mechanisms", "Dynamic Method Dispatch"]
+    },
+    {
+      "id": "j6",
+      "title": "Java Fundamentals Quiz",
+      "type": "test",
+      "dur": "20m",
+      "question": "Which OOP pillar is responsible for hiding internal data and requiring access via methods?",
+      "options": ["Inheritance", "Polymorphism", "Encapsulation", "Abstraction"],
+      "correct": 2,
+      "explanation": "Encapsulation is the process of wrapping data (variables) and code (methods) together as a single unit."
+    },
+    {
+      "id": "j7",
+      "title": "Chapter 6: Abstraction & Interface Contracts",
+      "type": "chapter",
+      "dur": "40m read",
+      "contentBlocks": [
+        { "type": "text", "value": "Abstraction is a process of hiding the implementation details and showing only functionality to the user." },
+        { "type": "definition", "term": "Abstraction", "value": "A process of hiding the implementation details from the user, only the functionality will be provided to the user." },
+        { "type": "definition", "term": "Interface", "value": "A reference type in Java, similar to a class, that can contain only constants, method signatures, default methods, static methods, and nested types. It provides a formal contract." },
+        { "type": "step", "number": 1, "title": "Abstract Classes", "value": "An abstract class is a class that cannot be instantiated. It can have both abstract and concrete methods." },
+        { "type": "code", "lang": "java", "value": "abstract class Shape { abstract double area(); }" },
+        { "type": "text", "value": "### Mastery Summary: The Full Answer\nAbstraction simplifies complex systems by focusing on interaction rather than implementation." }
+      ],
+      "objectives": ["Abstract Method Contracts", "Interface Default Methods"]
+    },
+    {
+      "id": "j8",
+      "title": "Chapter 7: Professional Exception Architecture",
+      "type": "chapter",
+      "dur": "45m read",
+      "contentBlocks": [
+        { "type": "text", "value": "Exceptions are events that disrupt the normal flow of the program's instructions." },
+        { "type": "definition", "term": "Exception", "value": "An event, which occurs during the execution of a program, that disrupts the normal flow of the program's instructions." },
+        { "type": "definition", "term": "Checked Exception", "value": "Exceptions that are checked at compile-time. A program must handle or declare these exceptions." },
+        { "type": "definition", "term": "Unchecked Exception", "value": "Exceptions that are not checked at compile-time, also known as Runtime Exceptions." },
+        { "type": "step", "number": 1, "title": "Try-With-Resources", "value": "A try statement that declares one or more resources. The resource is as an object that must be closed after the program is finished with it." },
+        { "type": "code", "lang": "java", "value": "try (FileWriter writer = new FileWriter(\"log.txt\")) { writer.write(\"Log\"); }" },
+        { "type": "text", "value": "### Mastery Summary: The Full Answer\nException handling is about 'Resilience'. Always favor 'Try-With-Resources' for resource management." }
+      ],
+      "objectives": ["Throwable Class Hierarchy", "Try-With-Resources Protocol"]
+    },
+    {
+      "id": "j9",
+      "title": "Chapter 8: Data Structures & Collections",
+      "type": "chapter",
+      "dur": "55m read",
+      "contentBlocks": [
+        { "type": "text", "value": "The Collections Framework provides high-performance, dynamic data structures." },
+        { "type": "definition", "term": "Collection", "value": "A single object which represents a group of objects. It is the root interface in the collection hierarchy." },
+        { "type": "definition", "term": "Generics", "value": "A facility of generic programming that was added to the Java programming language in 2004 as part of J2SE 5.0." },
+        { "type": "step", "number": 1, "title": "ArrayList vs HashSet", "value": "ArrayList maintains order; HashSet ensures uniqueness." },
+        { "type": "code", "lang": "java", "value": "List<String> list = new ArrayList<>();\nSet<Integer> set = new HashSet<>();" },
+        { "type": "text", "value": "### Mastery Summary: The Full Answer\nThe Collections Framework is your toolbox for data management. Use ArrayList for general sequences and HashSet for uniqueness." }
+      ],
+      "objectives": ["List/Set/Map Taxonomy", "Generics & Type Safety"]
+    },
+    {
+      "id": "j10",
+      "title": "Chapter 9: Functional Java & The Stream API",
+      "type": "chapter",
+      "dur": "50m read",
+      "contentBlocks": [
+        { "type": "text", "value": "Streams allow you to process data declarations, not instructions." },
+        { "type": "definition", "term": "Lambda Expression", "value": "An anonymous function: a function without a name and that does not belong to any class." },
+        { "type": "definition", "term": "Stream", "value": "A sequence of elements supporting sequential and parallel aggregate operations." },
+        { "type": "step", "number": 1, "title": "The Stream Pipeline", "value": "A stream pipeline consists of a source, zero or more intermediate operations, and a terminal operation." },
+        { "type": "code", "lang": "java", "value": "list.stream().filter(n -> n > 10).count();" },
+        { "type": "text", "value": "### Mastery Summary: The Full Answer\nFunctional Java and Streams promote a 'Declarative' style—you tell Java what you want, not how to loop over it." }
+      ],
+      "objectives": ["Functional Interfaces", "Lambda Syntax"]
+    },
+    {
+      "id": "j11",
+      "title": "Chapter 10: Multithreading & Concurrency",
+      "type": "chapter",
+      "dur": "60m read",
+      "contentBlocks": [
+        { "type": "text", "value": "Concurrency is the ability of an application to execute multiple tasks at the same time." },
+        { "type": "definition", "term": "Thread", "value": "The smallest unit of processing that can be performed in an OS." },
+        { "type": "definition", "term": "Race Condition", "value": "A situation where two or more threads access shared data and try to change it at the same time." },
+        { "type": "definition", "term": "Deadlock", "value": "A situation where two or more threads are blocked forever, waiting for each other." },
+        { "type": "step", "number": 1, "title": "ExecutorService", "value": "A higher-level replacement for working directly with threads." },
+        { "type": "code", "lang": "java", "value": "ExecutorService executor = Executors.newFixedThreadPool(10);" },
+        { "type": "text", "value": "### Mastery Summary: The Full Answer\nMultithreading is about maximizing CPU utilization. Use ExecutorService to manage your thread pools safely." }
+      ],
+      "objectives": ["Thread Lifecycle Management", "Deadlock Prevention"]
+    },
+    {
+      "id": "j12",
+      "title": "Chapter 11: Modern File I/O & NIO.2",
+      "type": "chapter",
+      "dur": "40m read",
+      "contentBlocks": [
+        { "type": "text", "value": "NIO.2 replaced the old java.io.File class. It is more robust and supports complex operations." },
+        { "type": "definition", "term": "Path", "value": "A programmatic representation of a path in the file system." },
+        { "type": "definition", "term": "Files", "value": "The primary entry point for using the java.nio.file package, providing static methods for operating on files and directories." },
+        { "type": "step", "number": 1, "title": "Reading Files", "value": "Use the Files utility class for one-line file operations." },
+        { "type": "code", "lang": "java", "value": "Path path = Paths.get(\"config.txt\");\nList<String> lines = Files.readAllLines(path);" },
+        { "type": "text", "value": "### Mastery Summary: The Full Answer\nModern Java I/O is built on Path and Files. It is faster and more error-resistant than the legacy API." }
+      ],
+      "objectives": ["Path API vs Legacy File", "Atomic File Operations"]
+    },
+    {
+      "id": "j13",
+      "title": "Chapter 12: JDBC & Database Mastery",
+      "type": "chapter",
+      "dur": "55m read",
+      "contentBlocks": [
+        { "type": "text", "value": "JDBC is the industry standard for connecting Java apps to SQL databases." },
+        { "type": "definition", "term": "JDBC (Java Database Connectivity)", "value": "A Java API to connect and execute queries with the database." },
+        { "type": "definition", "term": "SQL Injection", "value": "A type of security vulnerability where an attacker can interfere with the queries that an application makes to its database." },
+        { "type": "step", "number": 1, "title": "PreparedStatement", "value": "Always use PreparedStatement to prevent SQL Injection." },
+        { "type": "code", "lang": "java", "value": "PreparedStatement ps = conn.prepareStatement(\"SELECT * FROM users WHERE id = ?\");" },
+        { "type": "text", "value": "### Mastery Summary: The Full Answer\nJDBC is the foundation of data persistence. Use PreparedStatement for security and Connection Pooling for performance." }
+      ],
+      "objectives": ["SQL Lifecycle Management", "SQL Injection Prevention"]
+    },
+    {
+      "id": "j14",
+      "title": "Java Enterprise Quiz",
+      "type": "test",
+      "dur": "25m",
+      "question": "Which interface in Java is used to process sequences of elements in a functional style?",
+      "options": ["Collection", "Iterator", "Stream", "List"],
+      "correct": 2,
+      "explanation": "The Stream interface is used to process collections of objects in a functional style."
+    },
+    {
+      "id": "j15",
+      "title": "Chapter 13: Spring Boot & Microservices",
+      "type": "chapter",
+      "dur": "60m read",
+      "contentBlocks": [
+        { "type": "text", "value": "Spring Boot is the standard for modern Java web development." },
+        { "type": "definition", "term": "Inversion of Control (IoC)", "value": "A process in which an object defines its dependencies only through constructor arguments, factory method arguments, or properties that are set on the object instance after it is constructed." },
+        { "type": "definition", "term": "Dependency Injection (DI)", "value": "A design pattern used to implement IoC, allowing the creation of dependent objects outside of a class and providing those objects to a class in different ways." },
+        { "type": "step", "number": 1, "title": "Building REST APIs", "value": "Use @RestController to build JSON-based web services." },
+        { "type": "code", "lang": "java", "value": "@RestController public class UserController { ... }" },
+        { "type": "text", "value": "### Mastery Summary: The Full Answer\nSpring Boot eliminates boilerplate code. It provides an embedded server and auto-configuration." }
+      ],
+      "objectives": ["Dependency Injection Lifecycle", "REST Controller Patterns"]
+    },
+    {
+      "id": "j16",
+      "title": "Chapter 14: JVM Tuning & Garbage Collection",
+      "type": "chapter",
+      "dur": "50m read",
+      "contentBlocks": [
+        { "type": "text", "value": "For high-performance applications, you must know how to tune the JVM." },
+        { "type": "definition", "term": "Garbage Collection", "value": "The process of looking at heap memory, identifying which objects are in use and which are not, and deleting the unused objects." },
+        { "type": "definition", "term": "Throughput", "value": "The amount of work per unit of time that the JVM can perform." },
+        { "type": "step", "number": 1, "title": "G1GC vs ZGC", "value": "G1GC is the default; ZGC is for ultra-low latency." },
+        { "type": "code", "lang": "bash", "value": "java -XX:+UseZGC -Xmx16g -jar app.jar" },
+        { "type": "text", "value": "### Mastery Summary: The Full Answer\nJVM tuning is an art. Focus on Xmx and choose the right collector for your latency requirements." }
+      ],
+      "objectives": ["Heap Resizing Overhead", "GC Pause Analysis"]
+    },
+    {
+      "id": "j17",
+      "title": "Chapter 15: Design Patterns for Architects",
+      "type": "chapter",
+      "dur": "55m read",
+      "contentBlocks": [
+        { "type": "text", "value": "Design patterns are generalized solutions to common software engineering problems." },
+        { "type": "definition", "term": "Singleton Pattern", "value": "Ensures that a class has only one instance and provides a global point of access to it." },
+        { "type": "definition", "term": "Factory Pattern", "value": "Defines an interface for creating an object, but let subclasses decide which class to instantiate." },
+        { "type": "step", "number": 1, "title": "Using Patterns", "value": "Singleton for shared resources; Factory for decoupled object creation." },
+        { "type": "code", "lang": "java", "value": "public enum Config { INSTANCE; }" },
+        { "type": "text", "value": "### Mastery Summary: The Full Answer\nDesign patterns are about vocabulary. They make your architecture more flexible and your intent obvious." }
+      ],
+      "objectives": ["Singleton Thread-Safety", "Factory Abstraction"]
+    },
+    {
+      "id": "j18",
+      "title": "Chapter 16: Unit Testing with JUnit 5",
+      "type": "chapter",
+      "dur": "45m read",
+      "contentBlocks": [
+        { "type": "text", "value": "Professional code is tested code. Unit testing ensures that code works in isolation." },
+        { "type": "definition", "term": "Unit Test", "value": "A level of software testing where individual units or components of a software are tested." },
+        { "type": "definition", "term": "Mocking", "value": "The process of creating objects that simulate the behavior of real objects." },
+        { "type": "step", "number": 1, "title": "JUnit & Mockito", "value": "JUnit for assertions; Mockito for isolation." },
+        { "type": "code", "lang": "java", "value": "@Test void test() { assertEquals(10, calc.add(5,5)); }" },
+        { "type": "text", "value": "### Mastery Summary: The Full Answer\nTesting is a safety net. Aim for 80% coverage on core business logic." }
+      ],
+      "objectives": ["JUnit Lifecycle Hooks", "Mock vs Spy Semantics"]
+    },
+    {
+      "id": "j19",
+      "title": "Chapter 17: Project Lifecycle Automation",
+      "type": "chapter",
+      "dur": "40m read",
+      "contentBlocks": [
+        { "type": "text", "value": "Build tools automate the lifecycle of your project." },
+        { "type": "definition", "term": "Maven", "value": "A build automation tool used primarily for Java projects, based on the concept of a project object model (POM)." },
+        { "type": "definition", "term": "Gradle", "value": "A build automation system that builds upon the concepts of Apache Ant and Apache Maven and introduces a Groovy-based domain-specific language (DSL)." },
+        { "type": "step", "number": 1, "title": "Dependency Management", "value": "Maven and Gradle handle transitive dependencies automatically." },
+        { "type": "text", "value": "### Mastery Summary: The Full Answer\nBuild tools are vital for DevOps and CI/CD pipelines. They manage your dependencies and project structure." }
+      ],
+      "objectives": ["Dependency Resolution", "Build Lifecycle Phases"]
+    },
+    {
+      "id": "j20",
+      "title": "Final Capstone Project: Enterprise Payroll",
+      "type": "practice",
+      "dur": "20h",
+      "problem": "Build a production-grade 'Payroll & HR System' from scratch. Requirements: 1. Database persistence, 2. Salary logic, 3. Multithreaded batch processing, 4. Unit testing.",
+      "starterCode": "public class EnterpriseSystem { ... }",
+      "solutionSteps": [
+        "1. DESIGN: Create a class hierarchy for Employee types.",
+        "2. PERSISTENCE: Implement a DAO layer using JDBC.",
+        "3. LOGIC: Build a calculation engine for taxes and benefits.",
+        "4. CONCURRENCY: Use an ExecutorService for batch processing.",
+        "5. VALIDATION: Write JUnit 5 tests for accuracy."
+      ]
+    }
+  ]
+}

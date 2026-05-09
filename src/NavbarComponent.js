@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Navbar, Nav, Button, Image, Dropdown } from 'react-bootstrap';
+import { Navbar, Nav, Button, Dropdown } from 'react-bootstrap';
 import { Link, useNavigate } from 'react-router-dom';
 import logo from './images/Codingboss-logo-1.png';
 import CryptoJS from "crypto-js";   
@@ -38,33 +38,6 @@ const NavbarComponent = ({ isLoggedIn, setIsLoggedIn, userRole, handleLogout, pr
         };
     }, [isLoggedIn, userRole, userid]);
 
-    const autoLogin = async () => {
-        if (localStorage.getItem("username") && localStorage.getItem("password")) {
-            const email = localStorage.getItem("username");
-            const EncryptPassword = localStorage.getItem("password");
-            const bytes = CryptoJS.AES.decrypt(EncryptPassword, 'thirancoding360mgai');
-            const password = bytes.toString(CryptoJS.enc.Utf8);
-            try {
-                const response = await apiClient(
-                    "quiz/users/login/",
-                    "POST",
-                    JSON.stringify({ email, password }),
-                    { "Content-Type": "application/json" }
-                );
-                if (response.status === "success") {
-                    setIsLoggedIn(true);
-                    if (response.role === "college") {
-                        navigate('/UserDashboard');
-                    } else if (response.role === "company") {
-                        navigate('/TrainerDashboard');
-                    }
-                }
-            } catch (error) {
-                console.error("Auto-login failed");
-            }
-        }
-    };
-
     const fetchProfileCompletion = async () => {
         try {
             const response = await apiClient(
@@ -94,7 +67,6 @@ const NavbarComponent = ({ isLoggedIn, setIsLoggedIn, userRole, handleLogout, pr
                 updateProgress(Math.floor(completionPercent));
             }
         } catch (error) {
-            // Silence 404 as it is expected for new users/non-trainers
             if (!error.message.includes('404')) {
                 console.error("Error fetching profile completion:", error);
             }
@@ -107,31 +79,22 @@ const NavbarComponent = ({ isLoggedIn, setIsLoggedIn, userRole, handleLogout, pr
         }
     }, [isLoggedIn, userRole, userid]);
 
-    // --- PERFECT LOGIC ---
     const handleLogoClick = () => {
-        // Use props first, fallback to storage.
         const currentRole = userRole || localStorage.getItem('userRole');
         const checkLogin = isLoggedIn || !!localStorage.getItem('username');
 
         if (checkLogin) {
-            if (currentRole === 'college') {
-                navigate('/UserDashboard');
-            } else if (currentRole === 'company') {
-                navigate('/TrainerDashboard');
-            } else {
-                navigate('/UserDashboard');
-            }
+            if (currentRole === 'college') navigate('/UserDashboard');
+            else if (currentRole === 'company') navigate('/TrainerDashboard');
+            else navigate('/UserDashboard');
         } else {
-            navigate('/UserDashboard'); // If not logged in, just go to Landing Page
+            navigate('/UserDashboard');
         }
     };
 
     const handleProfileClick = () => {
-        if (userRole === 'college') {
-            navigate('/UserDashboard');
-        } else if (userRole === 'company') {
-            navigate('/TrainerDashboard');
-        }
+        if (userRole === 'college') navigate('/UserDashboard');
+        else if (userRole === 'company') navigate('/TrainerDashboard');
     };
 
     const displayProgress = typeof progress === 'number' ? progress : localProgress;
@@ -139,15 +102,13 @@ const NavbarComponent = ({ isLoggedIn, setIsLoggedIn, userRole, handleLogout, pr
     return (
         <div className="navigation-container">
             <Navbar expand="lg" className="custom-navbar">
-                <Navbar.Brand className="brand-name">
-                    <img
-                        src={logo}
-                        alt="Logo"
-                        className="logo"
-                        onClick={handleLogoClick}
-                        style={{ cursor: 'pointer' }}
+                <Navbar.Brand className="brand-name" onClick={handleLogoClick}>
+                    <img 
+                        src={logo} 
+                        alt="CodingBoss Logo" 
+                        style={{ height: '45px', marginRight: '12px', cursor: 'pointer' }}
                     />
-                    <b onClick={handleLogoClick} style={{ cursor: 'pointer' }}>
+                    <b style={{ cursor: 'pointer' }}>
                         Coding<span className="flash">Boss</span>
                     </b>
                 </Navbar.Brand>

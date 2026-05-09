@@ -9,55 +9,10 @@ import {
   Alert,
 } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
+import { FaTerminal, FaCode, FaBrain, FaChevronRight, FaExclamationTriangle, FaShieldAlt } from 'react-icons/fa';
 import Navbar from "./NavbarComponent";
 import apiClient from "./utils/apiClient";
 import "./ProgrammingTestPage.css";
-
-/* ================= LEVEL INDICATOR ================= */
-
-const LevelIndicator = ({ level }) => {
-  const angle = level * 90 - 45;
-
-  return (
-    <div className="level-indicator">
-      <svg className="gauge" viewBox="0 0 100 50">
-
-        <path
-          d="M10 50 A40 40 0 0 1 90 50"
-          fill="none"
-          stroke="#e6e6e6"
-          strokeWidth="10"
-        />
-
-        <path
-          d="M10 50 A40 40 0 0 1 50 10"
-          fill="none"
-          stroke="#1e88e5"
-          strokeWidth="10"
-        />
-
-        <path
-          d="M50 10 A40 40 0 0 1 90 50"
-          fill="none"
-          stroke="#1e88e5"
-          strokeWidth="10"
-        />
-
-        <line
-          x1="50"
-          y1="50"
-          x2={50 + 40 * Math.cos((angle - 90) * Math.PI / 180)}
-          y2={50 + 40 * Math.sin((angle - 90) * Math.PI / 180)}
-          stroke="#333"
-          strokeWidth="3"
-        />
-
-      </svg>
-    </div>
-  );
-};
-
-/* ================= MAIN COMPONENT ================= */
 
 const ProgrammingTestPage = ({
   isLoggedIn,
@@ -66,49 +21,29 @@ const ProgrammingTestPage = ({
   handleLogout,
   username,
 }) => {
-
   const navigate = useNavigate();
 
   const [questions, setQuestions] = useState([]);
   const [filteredQuestions, setFilteredQuestions] = useState([]);
-
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-
   const [filterLevel, setFilterLevel] = useState("Low");
-  const [needleLevel, setNeedleLevel] = useState(0);
-
-  const [submissionMessage, setSubmissionMessage] = useState("");
-
-  // Auth is handled by App.js
+  const [showWarning, setShowWarning] = useState(false);
+  const [selectedQuestion, setSelectedQuestion] = useState(null);
 
   /* ================= FETCH QUESTIONS ================= */
-
   useEffect(() => {
-
     const fetchQuestions = async () => {
-
       try {
-
         setLoading(true);
         setError("");
 
-        const token = localStorage.getItem("token");
-        if (!token) {
-          setError("Session invalid. Please login again.");
-          setLoading(false);
-          return;
-        }
-
         const data = await apiClient("compiler/questions/", "GET");
-
         let questionsArray = data;
 
-        // Handle object wrapper and merge parallel base_tests array into questions array
         if (data && !Array.isArray(data)) {
           if (Array.isArray(data.questions)) {
             questionsArray = data.questions.map((q, idx) => {
-              // Attach the corresponding base_test to the question based on array index
               if (data.base_tests && data.base_tests[idx]) {
                 return { ...q, base_tests: [data.base_tests[idx]] };
               }
@@ -127,114 +62,95 @@ const ProgrammingTestPage = ({
 
         setQuestions(questionsArray);
 
-        // Default LOW
-        const low = questionsArray
-          .filter((q) => {
-            const diff = q.level || q.difficulty || "Low";
-            return diff.toLowerCase() === "low";
-          })
-          .sort(() => 0.5 - Math.random());
-          // .slice(0, 5); // Show all by default or at least more than 5? User said they are not fetched.
-
-        setFilteredQuestions(low);
-
+        // Default Filter
+        const initialFiltered = questionsArray.filter((q) => {
+          const diff = q.level || q.difficulty || "Low";
+          return diff.toLowerCase() === "low";
+        });
+        setFilteredQuestions(initialFiltered);
       } catch (err) {
-
         console.error("Fetch Error:", err);
-
-        setError("Session expired or server offline. Please login again.");
-
+        setError("Unable to load challenges. Please check your connection.");
       } finally {
-
         setLoading(false);
-
       }
     };
 
     fetchQuestions();
-
-  }, [navigate]);
+  }, []);
 
   /* ================= FILTER ================= */
-
   const handleFilter = (level) => {
-
     setFilterLevel(level);
-
-    if (level === "Low") setNeedleLevel(0);
-    if (level === "Medium") setNeedleLevel(1);
-    if (level === "High") setNeedleLevel(2);
-
-    const filtered = questions
-      .filter((q) => {
-        const diff = q.level || q.difficulty || "Low";
-        return diff.toLowerCase() === level.toLowerCase();
-      })
-      .sort(() => 0.5 - Math.random());
-      // .slice(0, level === "Low" ? 5 : 2); // Removed slice to show all questions
-
+    const filtered = questions.filter((q) => {
+      const diff = q.level || q.difficulty || "Low";
+      return diff.toLowerCase() === level.toLowerCase();
+    });
     setFilteredQuestions(filtered);
   };
 
-  /* ================= SUBMIT MESSAGE ================= */
-
-  useEffect(() => {
-
-    const msg = localStorage.getItem("submitMessage");
-
-    if (msg) {
-
-      setSubmissionMessage(msg);
-
-      setTimeout(() => {
-        localStorage.removeItem("submitMessage");
-        setSubmissionMessage("");
-      }, 4000);
-    }
-
-  }, []);
-
   /* ================= START TEST ================= */
-
   const handleStart = (question) => {
-
     if (!isLoggedIn) {
       navigate("/LoginPage");
       return;
     }
+    setSelectedQuestion(question);
+    setShowWarning(true);
+  };
 
+  const confirmStart = () => {
+    setShowWarning(false);
     navigate("/QuestionPage", {
       state: {
-        questionId: question.id,
-        question,
+        questionId: selectedQuestion.id,
+        question: selectedQuestion,
       },
     });
   };
 
-  /* ================= LOADING ================= */
+  const getDifficultyIcon = (level) => {
+    switch (level.toLowerCase()) {
+      case 'low': return <FaCode />;
+      case 'medium': return <FaTerminal />;
+      case 'high': return <FaBrain />;
+      default: return <FaCode />;
+    }
+  };
 
   if (loading) {
     return (
-      <Container className="text-center mt-5">
-        <Spinner animation="border" />
-      </Container>
+      <div className="programming-page-container d-flex justify-content-center align-items-center">
+        <Spinner animation="border" variant="primary" />
+      </div>
     );
   }
-
-  /* ================= ERROR ================= */
-
-  if (error) {
-    return (
-      <Container className="text-center mt-5">
-        <Alert variant="danger">{error}</Alert>
-      </Container>
-    );
-  }
-
-  /* ================= UI ================= */
 
   return (
-    <>
+    <div className="programming-page-container">
+      {/* ================= WARNING MODAL ================= */}
+      {showWarning && (
+        <div className="warning-overlay">
+          <div className="warning-card">
+            <div className="warning-icon"><FaExclamationTriangle /></div>
+            <h4 className="warning-title">Proctoring Instructions</h4>
+            <p className="text-center text-muted mb-4">You are entering a secure IDE environment.</p>
+            <ul className="instructions-list">
+              <li>Camera monitoring will be enabled</li>
+              <li>Fullscreen mode is mandatory</li>
+              <li>Tab switching leads to disqualification</li>
+              <li>Malpractice is strictly prohibited</li>
+              <li>Right-click and clipboard are disabled</li>
+            </ul>
+            <div className="d-flex justify-content-center gap-3">
+              <Button className="quiz-btn btn-attended" style={{ background: '#f1f5f9', color: '#64748b', border: 'none' }} onClick={() => setShowWarning(false)}>Cancel</Button>
+              <Button className="quiz-btn btn-start" style={{ background: '#0f172a', color: 'white', border: 'none' }} onClick={confirmStart}>
+                Initialize Secure Lab
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <Navbar
         isLoggedIn={isLoggedIn}
@@ -245,93 +161,66 @@ const ProgrammingTestPage = ({
       />
 
       <Container>
+        <header className="explorer-header mt-4">
+          <h1 className="explorer-title">Coding Challenges</h1>
+          <p className="explorer-subtitle">
+            Master your skills with real-world programming problems. 
+            Choose your difficulty and start building.
+          </p>
+        </header>
 
-        {/* SPEEDOMETER */}
-        <div className="d-flex justify-content-center mb-4">
-          <LevelIndicator level={needleLevel} />
+        <div className="difficulty-tabs-wrapper">
+          <div className="difficulty-tabs">
+            {["Low", "Medium", "High"].map((level) => (
+              <button
+                key={level}
+                className={`difficulty-tab ${filterLevel === level ? "selected" : ""}`}
+                onClick={() => handleFilter(level)}
+              >
+                {level}
+              </button>
+            ))}
+          </div>
         </div>
 
-        {/* FILTER BUTTONS */}
-        <div className="level-buttons-container">
+        {error && (
+          <Alert variant="danger" className="text-center mx-auto" style={{ maxWidth: '600px', borderRadius: '16px' }}>
+            {error}
+          </Alert>
+        )}
 
-          <button
-            className={`level-button low ${
-              filterLevel === "Low" ? "selected" : ""
-            }`}
-            onClick={() => handleFilter("Low")}
-          >
-            Low
-          </button>
-
-          <button
-            className={`level-button medium ${
-              filterLevel === "Medium" ? "selected" : ""
-            }`}
-            onClick={() => handleFilter("Medium")}
-          >
-            Medium
-          </button>
-
-          <button
-            className={`level-button high ${
-              filterLevel === "High" ? "selected" : ""
-            }`}
-            onClick={() => handleFilter("High")}
-          >
-            High
-          </button>
-
-        </div>
-
-        {/* QUESTIONS */}
-        <Row className="mt-3">
-
-          {filteredQuestions.length > 0 ? (
-
-            filteredQuestions.map((question) => (
-
-              <Col key={question.id} md={12} className="mb-3">
-
-                <Card className="question-card shadow-sm">
-
+        <Row className="justify-content-center">
+          <Col lg={10}>
+            {filteredQuestions.length > 0 ? (
+              filteredQuestions.map((question) => (
+                <Card key={question.id} className="programming-card">
                   <Card.Body className="d-flex justify-content-between align-items-center">
-
-                    <span>{question.question}</span>
-
+                    <div className="problem-info">
+                      <div className="problem-icon-wrapper">
+                        {getDifficultyIcon(filterLevel)}
+                      </div>
+                      <p className="problem-text">{question.question}</p>
+                    </div>
                     <Button
-                      size="sm"
+                      className="start-btn"
                       onClick={() => handleStart(question)}
-                      style={{
-                        minWidth: "80px",
-                        height: "32px",
-                        backgroundColor: "#017a8c",
-                        borderColor: "#017a8c",
-                      }}
                     >
-                      Start
+                      Start Challenge <FaChevronRight className="ms-2" />
                     </Button>
-
                   </Card.Body>
-
                 </Card>
-
-              </Col>
-
-            ))
-
-          ) : (
-
-            <Col md={12} className="text-center">
-              <p>No questions available</p>
-            </Col>
-
-          )}
-
+              ))
+            ) : (
+              <div className="empty-state">
+                <p style={{ color: '#64748b', fontWeight: 600, fontSize: '1.1rem' }}>
+                  No challenges found for the {filterLevel} level.
+                </p>
+              </div>
+            )}
+          </Col>
         </Row>
-
       </Container>
-
-    </>
+    </div>
   );
 };
 

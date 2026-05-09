@@ -1,22 +1,23 @@
 import React, { useEffect, useState } from "react";
 import "./Preloader.css"; 
 import bossImage from "../src/images/boss.png";
-import codingImage from "../src/images/coding.png";
 
 const Preloader = () => {
   const [fadeOut, setFadeOut] = useState(false);
 
   useEffect(() => {
-    setTimeout(() => {
+    const timer = setTimeout(() => {
       setFadeOut(true);
-    }, 2000);
+    }, 2500);
+    return () => clearTimeout(timer);
   }, []);
 
   return (
     <div className={`preloader ${fadeOut ? "fade-out" : ""}`}>
       <div className="preloader-content">
-        <img src={codingImage} alt="Coding Boss" className="coding-image" />
-        <img src={bossImage} alt="Loading..." className="boss-image" />
+        <img src={bossImage} alt="CodingBoss" className="boss-image" />
+        <div className="loading-bar"></div>
+        <span className="loading-text">Initializing Dashboard</span>
       </div>
     </div>
   );

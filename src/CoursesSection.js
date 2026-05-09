@@ -1,139 +1,127 @@
 import React, { useRef, useState, useEffect } from "react";
 import { useNavigate } from 'react-router-dom';
 import { motion, useInView } from "framer-motion";
+import { FaChevronLeft, FaChevronRight, FaPlay, FaGraduationCap } from 'react-icons/fa';
 import "./CoursesSection.css";
 import javaLogo from "../src/images/Jaava.png";
 import courseImage from "../src/images/coding.png";
 
 const courses = [
-  { name: "DSA", duration: "3 Months", chapters: "10 Chapters" },
-  { name: "AI & ML", duration: "3 Months", chapters: "10 Chapters" },
-  { name: "Blockchain", duration: "3 Months", chapters: "10 Chapters" },
-  { name: "C Programming", duration: "3 Months", chapters: "10 Chapters" },
-  { name: "Cloud Computing", duration: "3 Months", chapters: "10 Chapters" },
-  { name: "Cybersecurity", duration: "3 Months", chapters: "10 Chapters" },
-  { name: "Java", duration: "3 Months", chapters: "10 Chapters" },
-  { name: "Laravel", duration: "3 Months", chapters: "10 Chapters" },
-  { name: "Python", duration: "3 Months", chapters: "10 Chapters" },
-  { name: "React", duration: "3 Months", chapters: "10 Chapters" },
+  { name: "DSA", duration: "3 Months", chapters: "12 Chapters", icon: "https://cdn-icons-png.flaticon.com/512/2103/2103633.png" },
+  { name: "AI & ML", duration: "4 Months", chapters: "15 Chapters", icon: "https://cdn-icons-png.flaticon.com/512/2103/2103533.png" },
+  { name: "Blockchain", duration: "3 Months", chapters: "10 Chapters", icon: "https://cdn-icons-png.flaticon.com/512/2092/2092663.png" },
+  { name: "C Programming", duration: "2 Months", chapters: "8 Chapters", icon: "https://cdn-icons-png.flaticon.com/512/3665/3665923.png" },
+  { name: "Cloud Computing", duration: "3 Months", chapters: "12 Chapters", icon: "https://cdn-icons-png.flaticon.com/512/1162/1162456.png" },
+  { name: "Cybersecurity", duration: "4 Months", chapters: "14 Chapters", icon: "https://cdn-icons-png.flaticon.com/512/2092/2092663.png" },
+  { name: "Full Stack Java", duration: "6 Months", chapters: "24 Chapters", icon: "https://cdn-icons-png.flaticon.com/512/226/226773.png" },
+  { name: "Python Expert", duration: "3 Months", chapters: "12 Chapters", icon: "https://cdn-icons-png.flaticon.com/512/5968/5968350.png" },
+  { name: "React Mastery", duration: "2 Months", chapters: "10 Chapters", icon: "https://cdn-icons-png.flaticon.com/512/1126/1126012.png" },
 ];
 
-const CoursesSection = () => {
+const CoursesSection = ({ setSelectedTab }) => {
   const sliderRef = useRef(null);
   const titleRef = useRef(null);
   const isTitleInView = useInView(titleRef, { once: true, margin: "-100px" });
-
   const [currentIndex, setCurrentIndex] = useState(0);
-  const visibleCards = 3; // Number of visible cards at a time
+  const visibleCards = 3;
   const navigate = useNavigate();
 
-  // Scroll Functions
   const scrollLeft = () => {
     if (sliderRef.current) {
-      sliderRef.current.scrollBy({ left: -250, behavior: "smooth" });
-      setCurrentIndex((prev) => Math.max(prev - 1, 0));
+      sliderRef.current.scrollBy({ left: -350, behavior: "smooth" });
     }
   };
 
   const scrollRight = () => {
     if (sliderRef.current) {
-      sliderRef.current.scrollBy({ left: 250, behavior: "smooth" });
-      setCurrentIndex((prev) => Math.min(prev + 1, courses.length - visibleCards));
+      sliderRef.current.scrollBy({ left: 350, behavior: "smooth" });
     }
   };
 
-  // Automatically update dots based on scroll position
   useEffect(() => {
     const updateIndex = () => {
       if (sliderRef.current) {
-        const scrollLeft = sliderRef.current.scrollLeft;
-        const totalWidth = sliderRef.current.scrollWidth;
-        const cardWidth = totalWidth / courses.length;
-        const newIndex = Math.round(scrollLeft / cardWidth);
-        setCurrentIndex(newIndex);
+        const { scrollLeft, scrollWidth, clientWidth } = sliderRef.current;
+        const index = Math.round((scrollLeft / (scrollWidth - clientWidth)) * (courses.length - visibleCards));
+        setCurrentIndex(index);
       }
     };
-
     sliderRef.current?.addEventListener("scroll", updateIndex);
     return () => sliderRef.current?.removeEventListener("scroll", updateIndex);
   }, []);
 
+  const handleStartCourse = () => {
+    if (setSelectedTab) {
+      setSelectedTab('Start Learn');
+    } else {
+      navigate('/Learn');
+    }
+  };
+
   return (
     <div className="courses-section">
-      {/* ✅ "Built for the Future" Section */}
       <div className="future-container">
         <div className="future-text">
-          <h2 className="title">Built for the Future</h2>
+          <div className="d-flex align-items-center gap-2 mb-3" style={{ color: '#FFA003' }}>
+            <FaGraduationCap size={24} />
+            <span style={{ fontWeight: 800, letterSpacing: 2 }}>ELITE CURRICULUM</span>
+          </div>
+          <h2 className="title">Built for the <br/>Next <span className="glow">Generation</span></h2>
           <p>
-            At <span className="glow">CodingBoss</span>, we are committed to providing 
-            <span className="glow"> high-quality</span>, <span className="glow"> industry-relevant   
-            </span> courses designed specifically for <span className="glow">college students</span> eager to 
-            enhance their skills and launch successful careers in <span className="glow">technology</span>.
+            At <span className="glow">CodingBoss</span>, we bridge the gap between academic theory and industry reality. Our courses are crafted by top-tier engineers for students who aim for excellence.
           </p>
           <p>
-            Our comprehensive programs cover a wide array of topics, from 
-            <span className="glow"> foundational concepts</span> to 
-            <span className="glow"> advanced technologies</span>. Whether you're looking to specialize in 
-            <span className="glow"> software development</span>, <span className="glow"> data science</span>, 
-            or <span className="glow"> cloud computing</span>, we have a course that fits your needs.
+            Master <span className="glow">Software Development</span>, <span className="glow">AI</span>, and <span className="glow">Cloud Architecture</span> with hands-on labs and real-world projects.
           </p>
         </div>
 
         <div className="future-image">
-          <img src={courseImage} alt="Course Illustration" className="course-img" />
+          <img src={courseImage} alt="Future" className="course-img" />
         </div>
       </div>
 
-      {/* ✅ "Courses We Are Offering" Section */}
       <motion.div
         className="courses-offering-container"
         ref={titleRef}
-        initial={{ opacity: 0, x: -100 }}
-        animate={isTitleInView ? { opacity: 1, x: 0 } : {}}
-        transition={{ duration: 1.5, ease: "easeOut" }}
+        initial={{ opacity: 0, y: 30 }}
+        animate={isTitleInView ? { opacity: 1, y: 0 } : {}}
+        transition={{ duration: 0.8 }}
       >
-        <h2 className="courses-title">Courses We Are Offering</h2>
+        <h2 className="courses-title">Explore Our <span>Specializations</span></h2>
       </motion.div>
 
-      {/* ✅ Horizontal Scrolling Courses with Navigation Arrows & Pagination */}
       <div className="courses-slider-container">
-        <button className="arrow left-arrow" onClick={scrollLeft}>
-          &#10094;
-        </button>
-
+        <button className="arrow left-arrow" onClick={scrollLeft}><FaChevronLeft /></button>
+        
         <div className="courses-container" ref={sliderRef}>
           {courses.map((course, index) => (
             <motion.div
               key={index}
               className="course-card"
-              initial={{ opacity: 0, scale: 0.9 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.4, delay: index * 0.05 }}
+              initial={{ opacity: 0, x: 50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5, delay: index * 0.1 }}
               viewport={{ once: true }}
             >
               <div className="course-image-container">
-                <img src={javaLogo} alt="Course Logo" className="course-image" />
+                <img src={course.icon} alt={course.name} className="course-image" />
               </div>
               <div className="course-title">{course.name}</div>
-              <div className="course-details">Duration: {course.duration}</div>
-              <div className="course-details">Topics: {course.chapters}</div>
-              <button className="start-course-btn" onClick={() => navigate('/LoginPage')}
-              >
-               Start Course
-             </button>
+              <div className="course-details">⚡ {course.duration} Intensive</div>
+              <div className="course-details">📚 {course.chapters} Curriculum</div>
+              <button className="start-course-btn" onClick={handleStartCourse}>
+                Access Course <FaPlay style={{ fontSize: '0.7rem', marginLeft: 8 }} />
+              </button>
             </motion.div>
           ))}
         </div>
 
-        <button className="arrow right-arrow" onClick={scrollRight}>
-          &#10095;
-        </button>
+        <button className="arrow right-arrow" onClick={scrollRight}><FaChevronRight /></button>
       </div>
 
-      {/* ✅ Pagination Dots for Navigation */}
       <div className="pagination-dots">
-        {courses.slice(0, courses.length - visibleCards + 1).map((_, index) => (
-          <span key={index} className={`dot ${index === currentIndex ? "active" : ""}`}></span>
+        {Array.from({ length: Math.ceil(courses.length / 2) }).map((_, index) => (
+          <span key={index} className={`dot ${index === Math.floor(currentIndex / 2) ? "active" : ""}`}></span>
         ))}
       </div>
     </div>

@@ -1,147 +1,81 @@
 import React from 'react';
 import { Container, Row, Col, Card } from 'react-bootstrap';
-import './UserReview.css'; // Import the CSS for styling
-import userimage from './images/Arun photo.jpg';
+import { FaQuoteLeft, FaStar } from 'react-icons/fa';
+import './UserReview.css';
+
+// Import images
 import userimage1 from './images/linkedin Photo.jpg';
 import userimage2 from './images/THAMO.jpeg';
 import userimage3 from './images/Vikram.jpg';
 
 const UserReview = () => {
+  const testimonials = [
+    {
+      name: "Ajay Kishore",
+      img: "https://media.licdn.com/dms/image/v2/D5603AQFgHa1YnyVabw/profile-displayphoto-shrink_400_400/profile-displayphoto-shrink_400_400/0/1727194794036?e=1736380800&v=beta&t=E3ONwPzY1rD2OqhuZ5-JPgjJAZspkvIyRsceDKYwwlg",
+      text: "Free, fun way to learn a lot of different important coding concepts. The challenges are real-world focused.",
+      rating: 5
+    },
+    {
+      name: "Mathankumar",
+      img: "https://media.licdn.com/dms/image/v2/D5603AQElpYKHsy5-jQ/profile-displayphoto-shrink_100_100/profile-displayphoto-shrink_100_100/0/1727504461148?e=1736380800&v=beta&t=TF7EOrW6JBAIUXDYGAm4Jqe7WYJ_EmmHmySXCiJFRtU",
+      text: "Online code processing is fast, allows for own user input. The design is quite good. A lot of how a challenge goes is dependent on how the author writes it.",
+      rating: 5
+    },
+    {
+      name: "Naveenkumar",
+      img: userimage1,
+      text: "The platform is intuitive and allows for hands-on practice that solidifies learning. Highly recommended for students.",
+      rating: 5
+    },
+    {
+      name: "Thamodharan",
+      img: userimage2,
+      text: "I appreciate the community support and the diverse challenges available. It's a great place to grow.",
+      rating: 5
+    },
+    {
+      name: "Vikram",
+      img: userimage3,
+      text: "The tutorials are well-structured, making it easy to follow along. The UI is clean and distraction-free.",
+      rating: 5
+    }
+  ];
+
   return (
-    <Container className="resources-container my-5">
-      <Row className="mb-4">
-        <Col>
-          <h2 className="resources-heading text-center">
-            <b>Resources for our learners,</b> <span className="attract"><b>Get inspired</b></span>
+    <div className="user-review-section">
+      <Container>
+        <div className="section-header text-center">
+          <span className="badge-premium">TESTIMONIALS</span>
+          <h2 className="resources-heading">
+            Resources for our learners, <span className="highlight-orange">Get inspired</span>
           </h2>
-          <h2 className="resources-subheading text-center">
-            <b>👇 Real experiences from our community 👇</b>
-          </h2>
-        </Col>
-      </Row>
-      <div className="scroll-container">
-        <div className="scroll-track">
-          <Col xs={12} md={4} className="d-flex align-items-stretch">
-            <Card className="glass-view text-center">
-              <Card.Img
-                variant="top"
-                src="https://media.licdn.com/dms/image/v2/D5603AQFgHa1YnyVabw/profile-displayphoto-shrink_400_400/profile-displayphoto-shrink_400_400/0/1727194794036?e=1736380800&v=beta&t=E3ONwPzY1rD2OqhuZ5-JPgjJAZspkvIyRsceDKYwwlg"
-                className="user-profile mx-auto mt-3 rounded-circle"
-                alt="user1"
-              />
-              <Card.Body>
-                <Card.Title>Ajay Kishore</Card.Title>
-                <Card.Text>
-                  <p className="text-warning">⭐⭐⭐⭐⭐</p>
-                  <p style={{ color: 'gray' }}>
-                    “Free, fun way to learn a lot of different important coding concepts...”
-                  </p>
-                </Card.Text>
-              </Card.Body>
-            </Card>
-          </Col>
-
-          <Col xs={12} md={4} className="d-flex align-items-stretch">
-            <Card className="glass-view text-center">
-              <Card.Img
-                variant="top"
-                src="https://media.licdn.com/dms/image/v2/D5603AQElpYKHsy5-jQ/profile-displayphoto-shrink_100_100/profile-displayphoto-shrink_100_100/0/1727504461148?e=1736380800&v=beta&t=TF7EOrW6JBAIUXDYGAm4Jqe7WYJ_EmmHmySXCiJFRtU"
-                className="user-profile mx-auto mt-3 rounded-circle"
-                alt="user2"
-              />
-              <Card.Body>
-                <Card.Title>Mathankumar</Card.Title>
-                <Card.Text>
-                  <p className="text-warning">⭐⭐⭐⭐⭐</p>
-                  <p style={{ color: 'gray' }}>
-                    “Online code processing is fast, allows for own user input. The design is quite good. A lot of how a “challenge” goes is dependent on how the author writes it, but I find a lot of them to be designed well.”
-                  </p>
-                </Card.Text>
-              </Card.Body>
-            </Card>
-          </Col>
-          <Col xs={12} md={4} className="d-flex align-items-stretch">
-            <Card className="glass-view text-center">
-              <Card.Img
-                variant="top"
-                src={userimage}
-                className="user-profile mx-auto mt-3 rounded-circle"
-                alt="user3"
-              />
-              <Card.Body>
-                <Card.Title>Arun</Card.Title>
-                <Card.Text>
-                  <p className="text-warning">⭐⭐⭐⭐⭐</p>
-                  <p style={{ color: 'gray' }}>
-                    “As someone new to the tech industry, Thiran 360 provides an avenue to learn new concepts without too much cost or effort.”
-                  </p>
-                </Card.Text>
-              </Card.Body>
-            </Card>
-          </Col>
-
-          <Col xs={12} md={4} className="d-flex align-items-stretch">
-            <Card className="glass-view text-center">
-              <Card.Img
-                variant="top"
-                src={userimage1}
-                className="user-profile mx-auto mt-3 rounded-circle"
-                alt="user4"
-              />
-              <Card.Body>
-                <Card.Title>Naveenkumar</Card.Title>
-                <Card.Text>
-                  <p className="text-warning">⭐⭐⭐⭐⭐</p>
-                  <p style={{ color: 'gray' }}>
-                    “The platform is intuitive and allows for hands-on practice that solidifies learning.”
-                  </p>
-                </Card.Text>
-              </Card.Body>
-            </Card>
-          </Col>
-
-          <Col xs={12} md={4} className="d-flex align-items-stretch">
-            <Card className="glass-view text-center">
-              <Card.Img
-                variant="top"
-                src={userimage2}
-                className="user-profile mx-auto mt-3 rounded-circle"
-                alt="user5"
-              />
-              <Card.Body>
-                <Card.Title>Thamodharan</Card.Title>
-                <Card.Text>
-                  <p className="text-warning">⭐⭐⭐⭐⭐</p>
-                  <p style={{ color: 'gray' }}>
-                    “I appreciate the community support and the diverse challenges available.”
-                  </p>
-                </Card.Text>
-              </Card.Body>
-            </Card>
-          </Col>
-
-          <Col xs={12} md={4} className="d-flex align-items-stretch">
-            <Card className="glass-view text-center">
-              <Card.Img
-                variant="top"
-                src={userimage3}
-                className="user-profile mx-auto mt-3 rounded-circle"
-                alt="user6"
-              />
-              <Card.Body>
-                <Card.Title>Vikram</Card.Title>
-                <Card.Text>
-                  <p className="text-warning">⭐⭐⭐⭐⭐</p>
-                  <p style={{ color: 'gray' }}>
-                    “The tutorials are well-structured, making it easy to follow along.”
-                  </p>
-                </Card.Text>
-              </Card.Body>
-            </Card>
-          </Col>
+          <p className="resources-subtext">Real experiences from our community of achievers</p>
         </div>
-      </div>
-    </Container>
+
+        <div className="testimonials-grid">
+          {testimonials.map((item, index) => (
+            <div key={index} className="testimonial-card-wrapper">
+              <Card className="testimonial-card">
+                <div className="quote-icon"><FaQuoteLeft /></div>
+                <Card.Body>
+                  <div className="user-info">
+                    <img src={item.img} alt={item.name} className="user-avatar" />
+                    <div>
+                      <h4 className="user-name">{item.name}</h4>
+                      <div className="stars">
+                        {[...Array(item.rating)].map((_, i) => <FaStar key={i} />)}
+                      </div>
+                    </div>
+                  </div>
+                  <p className="testimonial-text">“{item.text}”</p>
+                </Card.Body>
+              </Card>
+            </div>
+          ))}
+        </div>
+      </Container>
+    </div>
   );
 };
 

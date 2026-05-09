@@ -23,7 +23,7 @@ import Dashboard from "./Dashboard.js";
 import Userdashboard from "./CollegeAdminDashboard.js";
 import Admindashboardg from "./CollegeStudentDashboard.js";
 import UploadQuestions from "./Uploadquestions.js";
-import TestPage from "./Testpage.js";
+import TestPage from "./TestPage.js";
 import Company from "./Company.js";
 import Assignments from "./Assignments.js";
 import InstructionPage from './InstructionPage.jsx';
@@ -38,7 +38,10 @@ import Frontcourse from "./Frontcourse.js";
 import OurOfferings from "./OurOfferings.js";
 import CounterSection from "./CounterSection.js";
 import WhyUs from "./WhyUs.js";
-import UserReview from "./UserReview.js";
+
+import Learn from "./Learn.js";
+import GlobalAIAssistant from "./GlobalAIAssistant.js";
+
 
 function AppWrapper() {
   const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem("username"));
@@ -46,8 +49,12 @@ function AppWrapper() {
   const [userRole, setUserRole] = useState(localStorage.getItem("role") || "");
   const [loading, setLoading] = useState(false);
   const [access, setAccess] = useState([
-    { id: 1, name: "MCQ Test", locked: true },
-    { id: 2, name: "Programming", locked: true },
+    { id: 1, name: "MCQ Test", locked: false },
+    { id: 2, name: "Programming", locked: false },
+    { id: 3, name: "Task", locked: false },
+    { id: 4, name: "Assignments", locked: false },
+    { id: 5, name: "Courses", locked: false },
+    { id: 6, name: "Company", locked: false },
   ]);
 
   useEffect(() => {
@@ -121,7 +128,7 @@ function AppWrapper() {
         <OurOfferings />
         <CounterSection />
         <WhyUs />
-        <UserReview />
+
         <Footer />
       </>
     );
@@ -157,6 +164,8 @@ function AppWrapper() {
       <Route path="/AdminPanel" element={<AdminPanel {...{ isLoggedIn, setIsLoggedIn, setUserRole, username, handleLogout, userRole }} />} />
       <Route path="/projects/:projectName" element={<ProjectForm />} />
       <Route path="/QuestionPage" element={<QuestionPage {...{ isLoggedIn, setIsLoggedIn, username, userRole, handleLogout }} />} />
+      <Route path="/courses" element={<Learn />} />
+
 
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
@@ -167,6 +176,7 @@ function App() {
   return (
     <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <AppWrapper />
+      <GlobalAIAssistant />
     </Router>
   );
 }

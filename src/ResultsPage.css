@@ -1,247 +1,167 @@
-/* =====================================
-   GLOBAL
-===================================== */
+/* ══════════════════════════════════════════════
+   ULTRA RESULTS SYSTEM
+   CodingBoss Premium Experience
+   ══════════════════════════════════════════════ */
 
 .results-container {
   min-height: 100vh;
-  background: linear-gradient(135deg, #f4f7fb, #e9eff6);
-  padding: 20px 10px;
+  background: #f8fafc;
+  padding: 60px 20px;
+  font-family: 'Inter', sans-serif;
 }
 
 .results-wrapper {
-  max-width: 1100px;
-  margin: auto;
+  max-width: 900px;
+  margin: 0 auto;
 }
 
-/* =====================================
-   SCORE CARD
-===================================== */
-
-.score-card {
-  border-radius: 16px;
-  border: none;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-  margin-bottom: 24px;
-}
-
-.score-card.success {
-  border-top: 6px solid #4caf50;
-}
-
-.score-card.warning {
-  border-top: 6px solid #ff9800;
-}
-
-.score-circle {
-  width: 110px;
-  height: 110px;
-  border-radius: 50%;
-  background: #f5f6fa;
-  margin: 0 auto 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.score-value {
-  font-size: 2.6rem;
-  font-weight: 700;
-  color: #333;
-}
-
-.score-percentage {
-  font-size: 1.3rem;
-  color: #555;
-}
-
-.result-status {
-  font-size: 1.1rem;
-  font-weight: 600;
-}
-
-/* =====================================
-   DETAILS CARD
-===================================== */
-
-.details-card {
-  border-radius: 14px;
-  border: none;
-  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.06);
-  margin-bottom: 24px;
-}
-
-.details-card p {
-  font-size: 0.95rem;
-  margin-bottom: 8px;
-}
-
-/* =====================================
-   ANALYSIS CARD
-===================================== */
-
-.analysis-card {
-  border-radius: 14px;
-  border: none;
-  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.06);
-  margin-bottom: 24px;
-}
-
-.stat-item {
+/* --- HERO SCORE CARD --- */
+.rs-hero-card {
   background: #ffffff;
-  border-radius: 12px;
-  padding: 16px;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.05);
+  border-radius: 40px;
+  padding: 60px;
   text-align: center;
-  height: 100%;
+  box-shadow: 0 40px 80px -20px rgba(0, 0, 0, 0.08);
+  border: 1px solid #f1f5f9;
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 40px;
 }
 
-.stat-item.correct {
-  border-left: 5px solid #4caf50;
+.rs-hero-card.passed::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 8px;
+  background: #10b981;
 }
 
-.stat-item.incorrect {
-  border-left: 5px solid #f44336;
+.rs-hero-card.failed::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 8px;
+  background: #ef4444;
 }
 
-.stat-item.unattempted {
-  border-left: 5px solid #9e9e9e;
-}
-
-.stat-value {
-  font-size: 1.8rem;
-  font-weight: 700;
-  margin-top: 8px;
-}
-
-.stat-label {
-  font-size: 0.85rem;
-  color: #666;
-}
-
-/* =====================================
-   PROGRESS BAR
-===================================== */
-
-.progress {
-  height: 14px;
-  border-radius: 10px;
-}
-
-.progress-bar {
-  font-size: 0.75rem;
-  font-weight: 600;
-}
-
-/* =====================================
-   TEST CASE LIST
-===================================== */
-
-.testcase-list {
+.rs-score-circle {
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  background: #f8fafc;
+  margin: 0 auto 32px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
-}
-
-.testcase-item {
-  background: #ffffff;
-  padding: 14px;
-  border-radius: 12px;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.05);
-}
-
-.testcase-item.passed {
-  border-left: 5px solid #4caf50;
-}
-
-.testcase-item.failed {
-  border-left: 5px solid #f44336;
-}
-
-.testcase-header {
-  display: flex;
-  justify-content: space-between;
   align-items: center;
-  font-weight: 600;
-  margin-bottom: 6px;
+  justify-content: center;
+  border: 4px solid #f1f5f9;
+  position: relative;
 }
 
-.testcase-details p {
-  font-size: 0.85rem;
+.rs-score-value {
+  font-size: 3.5rem;
+  font-weight: 900;
+  color: #0f172a;
+  line-height: 1;
+}
+
+.rs-score-max {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #94a3b8;
+}
+
+.rs-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 24px;
+  border-radius: 99px;
+  font-weight: 800;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.rs-status-badge.passed { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+.rs-status-badge.failed { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+
+/* --- STATS GRID --- */
+.rs-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  margin-bottom: 40px;
+}
+
+.rs-stat-card {
+  background: white;
+  padding: 32px;
+  border-radius: 24px;
+  text-align: center;
+  border: 1px solid #f1f5f9;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.02);
+}
+
+.rs-stat-icon {
+  font-size: 1.5rem;
+  color: #FFA003;
+  margin-bottom: 12px;
+}
+
+.rs-stat-value {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: #0f172a;
   margin-bottom: 4px;
 }
 
-/* =====================================
-   ACTION BUTTONS
-===================================== */
+.rs-stat-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #94a3b8;
+  text-transform: uppercase;
+}
 
-.action-buttons {
+/* --- ACTION BUTTONS --- */
+.rs-actions {
   display: flex;
   justify-content: center;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-top: 24px;
+  gap: 16px;
 }
 
-.action-buttons .btn {
-  padding: 10px 20px;
-  font-weight: 600;
-  border-radius: 10px;
-  min-width: 160px;
-}
-
-/* =====================================
-   NO RESULTS CARD
-===================================== */
-
-.no-results-card {
-  max-width: 480px;
-  margin: auto;
+.rs-btn {
+  padding: 16px 32px;
   border-radius: 16px;
+  font-weight: 800;
+  font-size: 1rem;
   border: none;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
-/* =====================================
-   MOBILE (≤ 576px)
-===================================== */
-
-@media (max-width: 576px) {
-  .score-circle {
-    width: 85px;
-    height: 85px;
-  }
-
-  .score-value {
-    font-size: 2rem;
-  }
-
-  .score-percentage {
-    font-size: 1.1rem;
-  }
-
-  .result-status {
-    font-size: 1rem;
-  }
-
-  .details-card p {
-    font-size: 0.9rem;
-  }
-
-  .stat-value {
-    font-size: 1.5rem;
-  }
-
-  .action-buttons .btn {
-    width: 100%;
-  }
+.rs-btn-primary {
+  background: #0f172a;
+  color: white;
+  box-shadow: 0 10px 20px rgba(15, 23, 42, 0.1);
 }
 
-/* =====================================
-   TABLET (577px – 991px)
-===================================== */
+.rs-btn-primary:hover {
+  background: #FFA003;
+  transform: translateY(-2px);
+  box-shadow: 0 15px 30px rgba(255, 160, 3, 0.2);
+}
 
-@media (max-width: 991px) {
-  .results-wrapper {
-    padding: 0 10px;
-  }
+@media (max-width: 768px) {
+  .rs-stats-grid { grid-template-columns: 1fr; }
+  .rs-hero-card { padding: 40px 20px; }
+  .rs-score-circle { width: 140px; height: 140px; }
+  .rs-score-value { font-size: 2.5rem; }
 }
