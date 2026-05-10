@@ -7,6 +7,9 @@ import {
   FaQuoteLeft, FaWhatsapp
 } from 'react-icons/fa';
 import './CourseCard.css';
+import banner1 from './images/Banner1.png';
+import banner2 from './images/Banner2.png';
+import courseImg from './images/course.png';
 
 /* ─── Scroll-Reveal Hook ─── */
 function useScrollReveal() {
@@ -79,9 +82,9 @@ export default function CourseCard() {
 
   /* ── DATA ── */
   const ads = [
-    { id: 1, title: "🚀 Limited Time: 50% Off Python Masterclass!", sub: "Enroll before the weekend to lock in this exclusive offer.", btn: "Claim Offer", bg: "linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)" },
-    { id: 2, title: "🔥 Next.js Premium Internship Starting Soon!", sub: "Work on real-world production apps with expert mentors.", btn: "Apply Now", bg: "linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%)" },
-    { id: 3, title: "🏆 Become a Certified Java Engineer Today", sub: "Unlock high-paying roles at top-tier software companies.", btn: "Get Certified", bg: "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)" }
+    { id: 1, title: "🚀 Limited Time: 50% Off Python Masterclass!", sub: "Enroll before the weekend to lock in this exclusive offer.", btn: "Claim Offer", img: banner1, color: "#4f46e5" },
+    { id: 2, title: "🔥 Next.js Premium Internship Starting Soon!", sub: "Work on real-world production apps with expert mentors.", btn: "Apply Now", img: banner2, color: "#0ea5e9" },
+    { id: 3, title: "🏆 Become a Certified Java Engineer Today", sub: "Unlock high-paying roles at top-tier software companies.", btn: "Get Certified", img: courseImg, color: "#f59e0b" }
   ];
 
   const courses = [
@@ -151,7 +154,11 @@ export default function CourseCard() {
         <AnimatePresence mode="wait">
           <motion.div key={currentAdIndex} initial={{ opacity: 0, x: 100 }} animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -100 }} transition={{ duration: 0.6, ease: "easeOut" }}
-            className="cc-ad-banner" style={{ background: ads[currentAdIndex].bg }}>
+            className="cc-ad-banner">
+            <div className="cc-ad-image-bg">
+              <img src={ads[currentAdIndex].img} alt={ads[currentAdIndex].title} />
+              <div className="cc-ad-overlay" style={{ background: `linear-gradient(to bottom, transparent 0%, ${ads[currentAdIndex].color}dd 90%)` }}></div>
+            </div>
             <div className="cc-ad-content">
               <div className="cc-ad-badge">⭐ PREMIUM OFFER</div>
               <h2 className="cc-ad-title">{ads[currentAdIndex].title}</h2>
@@ -181,9 +188,6 @@ export default function CourseCard() {
           <button className="cc-feature-btn" onClick={() => setCurrentView('courses')}>
             <FaPlay /> Start Learning Free
           </button>
-          <a href="https://wa.me/919159247730" className="cc-wa-btn" target="_blank" rel="noreferrer">
-            <FaWhatsapp /> Talk to Mentor
-          </a>
         </motion.div>
       </div>
 
@@ -358,9 +362,6 @@ export default function CourseCard() {
             <button className="cc-cta-primary" onClick={() => setCurrentView('courses')}>
               <FaPlay /> Get Started Free
             </button>
-            <a href="https://wa.me/919159247730" className="cc-cta-secondary" target="_blank" rel="noreferrer">
-              <FaWhatsapp /> Talk to a Mentor
-            </a>
           </div>
 
           <div className="cc-cta-trust">

@@ -143,7 +143,9 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
-  background: #f8fafc;
+  background: rgba(248, 250, 252, 0.4);
+  position: relative;
+  z-index: 1;
 }
 
 /* Custom Scrollbar for Chat Body */
@@ -215,12 +217,14 @@
 
 /* --- Chat Footer --- */
 .ai-chat-footer {
-  padding: 16px;
-  background: white;
-  border-top: 1px solid #f1f5f9;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.6);
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
   display: flex;
   align-items: center;
   gap: 12px;
+  position: relative;
+  z-index: 1;
 }
 
 .ai-chat-footer input {
@@ -236,6 +240,37 @@
 
 .ai-chat-footer input:focus {
   background: #e2e8f0;
+}
+
+.ai-chat-footer button.ai-mic-btn {
+  background: none;
+  border: none;
+  color: #64748b;
+  font-size: 1.2rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  padding: 8px;
+  border-radius: 50%;
+}
+
+.ai-chat-footer button.ai-mic-btn:hover {
+  color: #a855f7;
+  background: rgba(168, 85, 247, 0.1);
+}
+
+.ai-chat-footer button.ai-mic-btn.listening {
+  color: #ef4444;
+  animation: ai-mic-pulse 1.5s infinite;
+  background: rgba(239, 68, 68, 0.1);
+}
+
+@keyframes ai-mic-pulse {
+  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+  70% { transform: scale(1.1); box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
 }
 
 .ai-chat-footer button.ai-send-btn {
@@ -262,33 +297,4 @@
   transform: translateY(-2px);
 }
 
-.ai-mic-btn {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  background: #f1f5f9;
-  color: #64748b;
-  border: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
 
-.ai-mic-btn:hover {
-  background: #e2e8f0;
-  color: #0f172a;
-}
-
-.ai-mic-btn.listening {
-  background: #ef4444;
-  color: white;
-  animation: mic-pulse 1.5s infinite;
-}
-
-@keyframes mic-pulse {
-  0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
-  70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
-}

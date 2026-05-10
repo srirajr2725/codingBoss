@@ -113,9 +113,6 @@ const Banner = ({ isLoggedIn }) => {
           <Link to="/LoginPage" className="bn-primary-btn">
             <FaPlay /> Start Learning Free
           </Link>
-          <a href="https://wa.me/919159247730" className="bn-wa-btn" target="_blank" rel="noreferrer">
-            <FaWhatsapp /> Talk to Mentor
-          </a>
         </motion.div>
 
         <motion.div className="bn-stats-row"

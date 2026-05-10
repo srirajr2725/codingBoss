@@ -1,0 +1,307 @@
+/* ════════════════════════════════════════════════
+   ADMIN PANEL — MODERN UI OVERRIDE
+   Applies to all tabs: Dashboard, Trainers,
+   Calendar, Pending, Accepted, Denied
+   ════════════════════════════════════════════════ */
+
+/* ── Base resets for admin content area ── */
+.sd-content-area .MuiBox-root,
+.sd-content-area > div > div { font-family: 'Plus Jakarta Sans', sans-serif !important; }
+
+/* ── Typography overrides ── */
+.sd-content-area h4, .sd-content-area .MuiTypography-h4 {
+  font-size: 1.5rem !important;
+  font-weight: 900 !important;
+  color: #0f172a !important;
+  letter-spacing: -0.5px !important;
+}
+.sd-content-area h6, .sd-content-area .MuiTypography-h6 {
+  font-weight: 800 !important;
+  color: #0f172a !important;
+}
+.sd-content-area .MuiTypography-body1,
+.sd-content-area .MuiTypography-body2 {
+  color: #475569 !important;
+}
+
+/* ── CARDS ── */
+.sd-content-area .MuiPaper-root,
+.sd-content-area .MuiCard-root {
+  border-radius: 18px !important;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.06) !important;
+  border: 1px solid #e2e8f0 !important;
+  overflow: hidden !important;
+  transition: transform 0.25s ease, box-shadow 0.25s ease !important;
+}
+.sd-content-area .MuiPaper-root:hover,
+.sd-content-area .MuiCard-root:hover {
+  transform: translateY(-4px) !important;
+  box-shadow: 0 16px 40px rgba(0,0,0,0.1) !important;
+}
+
+/* ── BUTTONS ── */
+.sd-content-area .MuiButton-contained {
+  border-radius: 10px !important;
+  font-weight: 800 !important;
+  text-transform: none !important;
+  font-size: 0.88rem !important;
+  padding: 10px 20px !important;
+  box-shadow: none !important;
+  transition: all 0.2s !important;
+}
+.sd-content-area .MuiButton-contained:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15) !important;
+}
+.sd-content-area .MuiButton-containedPrimary {
+  background: linear-gradient(135deg, #6366f1, #a855f7) !important;
+}
+.sd-content-area .MuiButton-containedSuccess,
+.sd-content-area .MuiButton-contained[style*="4caf50"],
+.sd-content-area .MuiButton-contained[style*="2e7d32"] {
+  background: linear-gradient(135deg, #10b981, #059669) !important;
+}
+.sd-content-area .MuiButton-containedError,
+.sd-content-area .MuiButton-contained[style*="e53935"],
+.sd-content-area .MuiButton-contained[style*="b71c1c"] {
+  background: linear-gradient(135deg, #ef4444, #b91c1c) !important;
+}
+
+/* ── INPUTS & SELECTS ── */
+.sd-content-area .MuiOutlinedInput-root {
+  border-radius: 12px !important;
+  background: #f8fafc !important;
+  font-size: 0.9rem !important;
+}
+.sd-content-area .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+  border-color: #6366f1 !important;
+  border-width: 2px !important;
+}
+.sd-content-area .MuiInputLabel-root.Mui-focused { color: #6366f1 !important; }
+.sd-content-area .MuiFormControl-root { border-radius: 12px !important; }
+
+/* ── CHIPS ── */
+.sd-content-area .MuiChip-root {
+  border-radius: 8px !important;
+  font-weight: 700 !important;
+  font-size: 0.78rem !important;
+  background: #ede9fe !important;
+  color: #7c3aed !important;
+}
+
+/* ── AVATARS ── */
+.sd-content-area .MuiAvatar-root {
+  border: 3px solid #e2e8f0 !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
+}
+
+/* ── DIALOGS ── */
+.MuiDialog-paper {
+  border-radius: 20px !important;
+  padding: 8px !important;
+  box-shadow: 0 30px 60px rgba(0,0,0,0.2) !important;
+}
+.MuiDialogTitle-root {
+  font-weight: 900 !important;
+  font-size: 1.2rem !important;
+  color: #0f172a !important;
+  padding-bottom: 8px !important;
+}
+.MuiDialogContent-root { padding-top: 8px !important; }
+.MuiDialogActions-root { padding: 16px 24px !important; }
+
+/* ── DIVIDERS ── */
+.sd-content-area .MuiDivider-root {
+  border-color: #f1f5f9 !important;
+  margin: 16px 0 !important;
+}
+
+/* ── PAGINATION ── */
+.sd-content-area .MuiPagination-root .MuiPaginationItem-root {
+  border-radius: 10px !important;
+  font-weight: 700 !important;
+  border: 1px solid #e2e8f0 !important;
+}
+.sd-content-area .MuiPaginationItem-root.Mui-selected {
+  background: linear-gradient(135deg, #6366f1, #a855f7) !important;
+  color: #fff !important;
+  border-color: transparent !important;
+}
+
+/* ═══════════════════════════════════════
+   PENDING / ACCEPTED / DENIED REQUEST CARDS
+   ═══════════════════════════════════════ */
+
+/* Card gradient headers — override inline styles */
+.sd-content-area .MuiCard-root > .MuiBox-root:first-child[style*="linear-gradient"] {
+  padding: 20px 24px !important;
+}
+
+/* Card header titles */
+.sd-content-area .MuiCard-root .MuiTypography-h6 {
+  font-size: 1rem !important;
+  font-weight: 900 !important;
+  color: #fff !important;
+  letter-spacing: -0.3px !important;
+}
+
+/* Info rows inside cards */
+.sd-content-area .MuiCardContent-root {
+  padding: 20px 24px !important;
+  background: #fafafe !important;
+}
+
+/* Footer of request cards */
+.sd-content-area .MuiCard-root > .MuiBox-root:last-child {
+  padding: 14px 20px !important;
+}
+
+/* ═══════════════════════════════════════
+   TRAINER PROFILE CARDS
+   ═══════════════════════════════════════ */
+.sd-content-area .MuiPaper-root[style*="rgba(255, 255, 255, 0.1)"] {
+  background: #fff !important;
+  backdrop-filter: none !important;
+}
+
+/* Profile images */
+.sd-content-area img[style*="border-radius: 50%"],
+.sd-content-area img[style*="borderRadius: '50%'"] {
+  border: 3px solid #e2e8f0 !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12) !important;
+  transition: transform 0.3s ease !important;
+}
+.sd-content-area img[style*="border-radius: 50%"]:hover {
+  transform: scale(1.05) !important;
+}
+
+/* Status badges */
+.sd-content-area .MuiChip-root[style*="Teaching"] { background: #d1fae5 !important; color: #065f46 !important; }
+.sd-content-area .MuiChip-root[style*="Available"] { background: #dbeafe !important; color: #1e40af !important; }
+
+/* View Calendar button */
+.sd-content-area .MuiButton-root[style*="1976d2"],
+.sd-content-area .MuiButton-outlinedPrimary {
+  border-radius: 10px !important;
+  font-weight: 700 !important;
+  text-transform: none !important;
+  border-color: #6366f1 !important;
+  color: #6366f1 !important;
+}
+.sd-content-area .MuiButton-root[style*="1976d2"]:hover {
+  background: linear-gradient(135deg, #6366f1, #a855f7) !important;
+  color: #fff !important;
+  border-color: transparent !important;
+}
+
+/* ═══════════════════════════════════════
+   CALENDAR TAB
+   ═══════════════════════════════════════ */
+.sd-content-area .fc {
+  font-family: 'Plus Jakarta Sans', sans-serif !important;
+}
+.sd-content-area .fc .fc-toolbar-title {
+  font-size: 1.2rem !important;
+  font-weight: 900 !important;
+  color: #0f172a !important;
+}
+.sd-content-area .fc .fc-button {
+  background: linear-gradient(135deg, #6366f1, #a855f7) !important;
+  border: none !important;
+  border-radius: 10px !important;
+  font-weight: 700 !important;
+  text-transform: none !important;
+  padding: 8px 16px !important;
+  box-shadow: none !important;
+  transition: opacity 0.2s !important;
+}
+.sd-content-area .fc .fc-button:hover { opacity: 0.85 !important; }
+.sd-content-area .fc .fc-button-primary:not(:disabled).fc-button-active {
+  background: #4f46e5 !important;
+}
+.sd-content-area .fc .fc-daygrid-day:hover { background: #f8f6ff !important; }
+.sd-content-area .fc .fc-event {
+  border-radius: 8px !important;
+  border: none !important;
+  font-weight: 700 !important;
+  font-size: 0.78rem !important;
+  padding: 3px 8px !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12) !important;
+}
+.sd-content-area .fc .fc-col-header-cell {
+  background: #f8fafc !important;
+  font-weight: 800 !important;
+  color: #64748b !important;
+  font-size: 0.75rem !important;
+  text-transform: uppercase !important;
+  letter-spacing: 1px !important;
+  padding: 10px 0 !important;
+}
+.sd-content-area .fc-daygrid-day-number {
+  font-weight: 700 !important;
+  color: #334155 !important;
+}
+.sd-content-area .fc .fc-day-today { background: #f5f3ff !important; }
+.sd-content-area .fc .fc-day-today .fc-daygrid-day-number {
+  color: #6366f1 !important;
+  font-weight: 900 !important;
+}
+
+/* ═══════════════════════════════════════
+   DASHBOARD TAB — DashboardStatistics wrapper
+   ═══════════════════════════════════════ */
+.sd-content-area .MuiBox-root > h4,
+.sd-content-area .MuiBox-root > .MuiTypography-h4 {
+  margin-bottom: 24px !important;
+  padding-bottom: 16px !important;
+  border-bottom: 2px solid #f1f5f9 !important;
+}
+
+/* Filter bars */
+.sd-content-area .MuiBox-root[style*="display: 'flex'"][style*="gap"],
+.sd-content-area .MuiBox-root > .MuiFormControl-root {
+  margin-bottom: 0 !important;
+}
+
+/* Section padding normalization */
+.sd-content-area .MuiBox-root[style*="p: 3"],
+.sd-content-area .MuiBox-root[style*="padding"] {
+  padding: 28px !important;
+}
+
+/* Link colors */
+.sd-content-area a, .sd-content-area .MuiLink-root {
+  color: #6366f1 !important;
+  font-weight: 600 !important;
+  text-decoration: none !important;
+}
+.sd-content-area a:hover { color: #4f46e5 !important; text-decoration: underline !important; }
+
+/* Scrollbar */
+.sd-content-area *::-webkit-scrollbar { width: 6px; height: 6px; }
+.sd-content-area *::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 99px; }
+.sd-content-area *::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 99px; }
+.sd-content-area *::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+/* Pending count badge */
+.admin-pending-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #ef4444;
+  color: #fff;
+  border-radius: 99px;
+  padding: 2px 8px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  margin-left: auto;
+}
+
+/* Animate fade-in for tab content */
+.animate-fade-in {
+  animation: fadeInUp 0.35s ease both;
+}
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}

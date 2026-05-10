@@ -717,18 +717,7 @@ const Learn = () => {
             </div>
           </section>
 
-          {/* ── CTA FOOTER ── */}
-          <section className="lrn-cta-section">
-            <div className="lrn-container">
-              <div className="lrn-cta-inner">
-                <h2>Need Mentor Support?</h2>
-                <p>Connect with our engineering mentors directly for doubt clearance and career guidance.</p>
-                <a href="https://wa.me/919159247730" className="lrn-wa-btn">
-                  <FaWhatsapp /> Chat with Mentor
-                </a>
-              </div>
-            </div>
-          </section>
+
 
         </div>
       ) : (

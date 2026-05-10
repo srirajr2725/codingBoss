@@ -11,7 +11,7 @@ import webDev from "./images/web.png";
 import machineLearning from "./images/machine.png";
 import cyberSecurity from "./images/cybersec.png";
 
-const Frontcourse = () => {
+const Frontcourse = ({ isLoggedIn }) => {
   const [isVisible, setIsVisible] = useState(false);
   const carouselRef = useRef();
   const cardsContainerRef = useRef();
@@ -51,7 +51,11 @@ const Frontcourse = () => {
   };
 
   const navigateToCourses = () => {
-    navigate('/courses');
+    if (isLoggedIn) {
+      navigate('/courses');
+    } else {
+      navigate('/LoginPage');
+    }
   };
 
   return (

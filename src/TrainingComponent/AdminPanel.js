@@ -22,11 +22,15 @@ import interactionPlugin from '@fullcalendar/interaction';
 import DashboardStatistics from './DashboardStatistics' ;
 import Autocomplete from '@mui/material/Autocomplete';
 import CryptoJS from 'crypto-js';
+import ProctoringRecords from './ProctoringRecords';
+import '../StudentDashboard.css';
+import './AdminPanel.css';
+import { FiGrid, FiUsers, FiCalendar, FiClock, FiCheckCircle, FiXCircle, FiVideo } from 'react-icons/fi';
 
 
 
 const AdminPanel = ({ isLoggedIn, setIsLoggedIn, setUserRole, username, handleLogout, userRole }) => {
-  const [selectedTab, setSelectedTab] = useState('dashboard');
+  const [selectedTab, setSelectedTab] = useState('Trainer-Profiles');
   const [searchTerm, setSearchTerm] = useState("");
   const [openBookingModal, setOpenBookingModal] = useState(false);
   const [showAll, setShowAll] = useState(false);
@@ -679,7 +683,7 @@ const handleAcceptRequest = async (id) => {
         payload
       );
   
-      setSelectedTab('pending')
+      setSelectedTab('Trainer-Profiles')
     } catch (error) {
       console.error("Error updating program:", error);
     }
@@ -687,787 +691,174 @@ const handleAcceptRequest = async (id) => {
 
   
   const renderContent = () => {
-  switch (selectedTab) {
-    case "dashboard":
-      return (
-        <Box sx={{ p: 3 }}>
-          <DashboardStatistics />
-        </Box>
-      );
-
-      case "Trainer-Profiles":
+    switch (selectedTab) {
+      case "proctoring":
         return (
-          <Box sx={{ width: "100%", p: 3 }}>
-            <Typography variant="h4" textAlign="center" mb={4} fontWeight="bold">
-              Trainer Overview
-            </Typography>
-            <Box display="flex" flexWrap="wrap" gap={2} mb={3} justifyContent="center">
-  {/* Location Filter */}
-  <FormControl sx={{ minWidth: 200 }}>
-    <InputLabel>Location</InputLabel>
-    <Select
-      value={selectedLocation}
-      onChange={(e) => setSelectedLocation(e.target.value)}
-      label="Location"
-    >
-      <MenuItem value="">All</MenuItem>
-      {[...new Set(trainers.map((t) => t.location))].map((loc) => (
-        <MenuItem key={loc} value={loc}>{loc}</MenuItem>
-      ))}
-    </Select>
-  </FormControl>
-
-  {/* Experience Filter */}
-  <FormControl sx={{ minWidth: 200 }}>
-    <InputLabel>Experience</InputLabel>
-    <Select
-      value={selectedExperience}
-      onChange={(e) => setSelectedExperience(e.target.value)}
-      label="Experience"
-    >
-      <MenuItem value="">All</MenuItem>
-      {[...new Set(trainers.map((t) => t.experience))].sort((a, b) => a - b).map((exp) => (
-        <MenuItem key={exp} value={exp}>{exp}+ years</MenuItem>
-      ))}
-    </Select>
-  </FormControl>
-
-  {/* Skills Filter */}
-  <Autocomplete
-    multiple
-    options={[...new Set(trainers.flatMap((t) => t.skills))]}
-    value={selectedSkills}
-    onChange={(e, value) => setSelectedSkills(value)}
-    renderTags={(value, getTagProps) =>
-      value.map((option, index) => (
-        <Chip key={index} label={option} {...getTagProps({ index })} />
-      ))
-    }
-    renderInput={(params) => (
-      <TextField {...params} label="Skills" placeholder="Select Skills" sx={{ minWidth: 300 }} />
-    )}
-  />
-</Box>
-
-            <Grid container spacing={2} justifyContent="center">
-              {filteredALLTrainers
-                .slice((page - 1) * trainersPerPage, page * trainersPerPage)
-                .map((trainer) => (
-                  <Grid item xs={12} md={10} key={trainer.id}>
-                 <Paper
-  sx={{
-    p: 3,
-    bgcolor: "rgba(255, 255, 255, 0.1)",
-    backdropFilter: "blur(10px)",
-    borderRadius: "12px",
-    boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
-    transition: "transform 0.3s ease",
-    "&:hover": { transform: "scale(1.02)" },
-  }}
->
-  <Grid container spacing={2} alignItems="center">
-    {/* Profile Image - 2 columns */}
-    <Grid item xs={12} sm={3}>
-      <Box>
-        <img
-          src={`${BASE_URL.replace(/\/$/, "")}${trainer.photoUrl}`}
-          alt={trainer.name}
-          style={{
-            width: "100%",
-            maxWidth: "200px",
-            height: "200px",
-            borderRadius: "50%",
-            objectFit: "cover",
-            border: "3px solid white",
-            boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.2)",
-          }}
-        />
-      </Box>
-    </Grid>
-
-    {/* Trainer Details - 6 columns */}
-    <Grid item xs={12} sm={6}>
-      <Typography variant="h6" fontWeight="bold">
-        {trainer.name}
-      </Typography>
-
-      <Box display="flex" alignItems="center" mt={1}>
-        <LocationOn color="primary" />
-        <Typography variant="body2" ml={1}>
-          <b>Location:</b> {trainer.location}
-        </Typography>
-      </Box>
-{/* 
-      <Box display="flex" alignItems="center" mt={1}>
-        <School color="secondary" />
-        <Typography variant="body2" ml={1}>
-          <b>Degree:</b> {trainer.degree} ({trainer.passoutYear})
-        </Typography>
-      </Box> */}
-
-      {/* <Box display="flex" alignItems="center" mt={1}>
-        <Work color="success" />
-        <Typography variant="body2" ml={1}>
-          <b>Experience:</b> {trainer.experience} years
-        </Typography>
-      </Box> */}
-
-      {/* <Box display="flex" alignItems="center" mt={1}>
-        <Timeline color="warning" />
-        <Typography variant="body2" ml={1}>
-          <b>Trainings Conducted:</b> {trainer.trainings}
-        </Typography>
-      </Box> */}
-
-      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mt: 2 }}>
-        <b>Skills:</b>
-        {trainer.skills.map((skill, index) => (
-          <Box
-            key={index}
-            sx={{
-              bgcolor: "#1976D2",
-              color: "white",
-              px: 1.5,
-              py: 0.5,
-              borderRadius: "5px",
-              fontSize: "12px",
-              fontWeight: "bold",
-            }}
-          >
-            {skill.name} - {skill.rating}
-          </Box>
-        ))}
-      </Box>
-    </Grid>
-
-    {/* Action Buttons - 4 columns */}
-    <Grid item xs={12} sm={3}>
-      <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
-        <Button variant="contained" color="secondary" size="small">
-          Download Profile
-        </Button>
-        <Button
-          variant="outlined"
-          color="primary"
-          size="small"
-          onClick={() => {
-            setSelectedTrainerProfile({
-              name: 'John Doe',
-              mobile_number: '9876543210',
-              dob: '1990-05-15',
-              current_location: 'Bangalore',
-              native_location: 'Chennai',
-              linkedin_url: 'https://linkedin.com/in/johndoe',
-              profilePicture: 'https://via.placeholder.com/100',
-              education: [
-                { degree: 'B.Tech', year: '2012', institution: 'IIT Madras' },
-              ],
-              experience: [
-                { role: 'Trainer', organization: 'ABC Corp', duration: '3 years' },
-              ],
-              training_history: [
-                {
-                  company: 'Infosys',
-                  eventPlace: 'Hyderabad',
-                  programTitle: 'React Bootcamp',
-                  audience: 'Developers',
-                },
-              ],
-              skills: [
-                { name: 'React', rating: 80 },
-                { name: 'JavaScript', rating: 75 },
-              ],
-              projects: [
-                {
-                  title: 'E-commerce Website',
-                  description: 'Full-stack e-commerce platform',
-                  repoLink: 'https://github.com/example/project',
-                  deployLink: 'https://example.com',
-                  thumbnail: 'https://via.placeholder.com/150',
-                },
-              ],
-              resume: 'https://example.com/resume.pdf',
-            });
-            setOpenProfileModal(true);
-          }}
-        >
-          View Profile
-        </Button>
-        <Button
-          variant="contained"
-          color="success"
-          size="small"
-          onClick={() => {
-            setSelectedTrainer(trainer.id);
-            setSearchTerm("");
-            setSelectedTab("calendar");
-          }}
-        >
-          View Calendar
-        </Button>
-      </Box>
-    </Grid>
-  </Grid>
-</Paper>
-
-                  </Grid>
-                ))}
-            </Grid>
-      
-            {/* Pagination */}
-            <Box display="flex" justifyContent="center" mt={3}>
-              <Pagination
-                count={totalPages}
-                page={page}
-                onChange={(_, newPage) => setPage(newPage)}
-                color="primary"
-              />
-            </Box>
+          <Box sx={{ p: 0 }}>
+            <ProctoringRecords />
           </Box>
         );
 
-        case 'accepted':
-          const uniquePrograms = [...new Set(acceptedRequests.map(req => req.program_title))];
-          const uniqueTrainers = [...new Set(acceptedRequests.map(req => req.requester))];
-        
-          const filteredRequests = acceptedRequests.filter((req) => {
-            return (
-              (selectedProgram ? req.program_title === selectedProgram : true) &&
-              (selectedTrainer ? req.requester === selectedTrainer : true)
-            );
-          });
-        
-          return (
-            <Box sx={{ width: "100%", p: 3 }}>
-              <Typography variant="h4" textAlign="center" mb={4} fontWeight="bold" color="#1565c0">
-                Accepted Requests
-              </Typography>
-        
-              {/* Filters */}
-              <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
-                <FormControl sx={{ minWidth: 200 }}>
-                  <InputLabel>Filter by Program</InputLabel>
-                  <Select
-                    value={selectedProgram}
-                    label="Filter by Program"
-                    onChange={(e) => setSelectedProgram(e.target.value)}
-                  >
-                    <MenuItem value="">All Programs</MenuItem>
-                    {uniquePrograms.map((program, index) => (
-                      <MenuItem key={index} value={program}>{program}</MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-        
-                <FormControl sx={{ minWidth: 200 }}>
-                  <InputLabel>Filter by Trainer</InputLabel>
-                  <Select
-                    value={selectedTrainer}
-                    label="Filter by Trainer"
-                    onChange={(e) => setSelectedTrainer(e.target.value)}
-                  >
-                    <MenuItem value="">All Trainers</MenuItem>
-                    {uniqueTrainers.map((trainer, index) => (
-                      <MenuItem key={index} value={trainer}>{trainer}</MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Box>
-        
-              {/* Filtered Cards */}
-              {filteredRequests.map((req) => (
-                <Card
-                  key={req.id}
-                  elevation={6}
-                  sx={{
-                    mb: 3,
-                    borderRadius: "16px",
-                    overflow: "hidden",
-                    backdropFilter: "blur(10px)",
-                    background: "rgba(255, 255, 255, 0.3)",
-                    boxShadow: "0 8px 20px rgba(0, 0, 0, 0.1)",
-                    border: "1px solid rgba(255, 255, 255, 0.2)",
-                    transition: "transform 0.3s ease",
-                    "&:hover": { transform: "scale(1.02)" }
-                  }}
-                >
-                  {/* Header */}
-                  <Box
-                    sx={{
-                      background: "linear-gradient(135deg, #1565c0, #1e88e5)",
-                      p: 3,
-                      color: "white",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                    }}
-                  >
-                    <Box />
-                    <Box sx={{ fontSize: 40 }}>✅</Box>
-                  </Box>
-        
-                  {/* Details */}
-                  <CardContent sx={{ p: 3 }}>
-                    <Grid container spacing={2}>
-                      <Grid item xs={6}>
-                        <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-                          <Typography variant="body1" fontWeight="bold" sx={{ color: "#1565c0", mr: 1 }}>🏢 Company:</Typography>
-                          <Typography variant="body1">{req.company_name}</Typography>
-                        </Box>
-                        <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-                          <Typography variant="body1" fontWeight="bold" sx={{ color: "#1565c0", mr: 1 }}>🎯 Program:</Typography>
-                          <Typography variant="body1">{req.program_title}</Typography>
-                        </Box>
-                        <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-                          <Typography variant="body1" fontWeight="bold" sx={{ color: "#1565c0", mr: 1 }}>📍 Location:</Typography>
-                          <Typography variant="body1">{req.location}</Typography>
-                        </Box>
-                      </Grid>
-                      <Grid item xs={6}>
-                        <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-                          <Typography variant="body1" fontWeight="bold" sx={{ color: "#1565c0", mr: 1 }}>📅 Event Place:</Typography>
-                          <Typography variant="body1">{req.event_place}</Typography>
-                        </Box>
-                        <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-                          <Typography variant="body1" fontWeight="bold" sx={{ color: "#1565c0", mr: 1 }}>⏳ Duration:</Typography>
-                          <Typography variant="body1">{req.no_of_days} days</Typography>
-                        </Box>
-                        <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-                          <Typography variant="body1" fontWeight="bold" sx={{ color: "#1565c0", mr: 1 }}>🗓 Dates:</Typography>
-                          <Typography variant="body1">{req.start_date} → {req.end_date}</Typography>
-                        </Box>
-                      </Grid>
-                    </Grid>
-        
-                    <Divider sx={{ my: 2 }} />
-                    <Box sx={{ mt: 2 }}>{renderFile(req.toc)}</Box>
-                  </CardContent>
-        
-                  {/* Footer */}
-                  <Box
-                    sx={{
-                      p: 2,
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      background: "#f0f7ff",
-                      borderTop: "2px solid #1565c0",
-                    }}
-                  >
-                    <Box>
-                      <Typography><strong>👤 Requester:</strong> {req.requester}</Typography>
-                      <Typography><strong>📆 Request Date:</strong> {new Date(req.date).toLocaleDateString()}</Typography>
-                    </Box>
-                  </Box>
-                </Card>
-              ))}
-            </Box>
-          );
-          case 'denied':
-            const deniedRequests = requests.filter((req) => req.status === "denied");
-          
-            const uniqueDeniedPrograms = [...new Set(deniedRequests.map(req => req.program_title))];
-            const uniqueDeniedTrainers = [...new Set(deniedRequests.map(req => req.requester))];
-          
-            const filteredDeniedRequests = deniedRequests.filter((req) => {
-              return (
-                (deniedProgram ? req.program_title === deniedProgram : true) &&
-                (deniedTrainer ? req.requester === deniedTrainer : true)
-              );
-            });
-          
-            return (
-              <Box sx={{ width: "100%", p: 3 }}>
-                <Typography variant="h4" textAlign="center" mb={4} fontWeight="bold" color="#d32f2f">
-                  Denied Requests
-                </Typography>
-          
-                {/* Filter Controls */}
-                <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
-                  <FormControl sx={{ minWidth: 200 }}>
-                    <InputLabel>Filter by Program</InputLabel>
-                    <Select
-                      value={deniedProgram}
-                      label="Filter by Program"
-                      onChange={(e) => setDeniedProgram(e.target.value)}
-                    >
-                      <MenuItem value="">All Programs</MenuItem>
-                      {uniqueDeniedPrograms.map((program, index) => (
-                        <MenuItem key={index} value={program}>{program}</MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-          
-                  <FormControl sx={{ minWidth: 200 }}>
-                    <InputLabel>Filter by Trainer</InputLabel>
-                    <Select
-                      value={deniedTrainer}
-                      label="Filter by Trainer"
-                      onChange={(e) => setDeniedTrainer(e.target.value)}
-                    >
-                      <MenuItem value="">All Trainers</MenuItem>
-                      {uniqueDeniedTrainers.map((trainer, index) => (
-                        <MenuItem key={index} value={trainer}>{trainer}</MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </Box>
-          
-                {filteredDeniedRequests.map((req) => (
-                  <Card
-                    key={req.id}
-                    elevation={6}
-                    sx={{
-                      mb: 3,
-                      borderRadius: "16px",
-                      overflow: "hidden",
-                      background: "#fff",
-                      boxShadow: "0 6px 18px rgba(0, 0, 0, 0.1)",
-                      transition: "transform 0.3s ease",
-                      "&:hover": { transform: "scale(1.03)" }
-                    }}
-                  >
-                    {/* Header */}
-                    <Box
-                      sx={{
-                        background: "linear-gradient(135deg, #b71c1c, #d32f2f)",
-                        p: 3,
-                        color: "white",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                      }}
-                    >
-                      <Box />
-                      <Box sx={{ fontSize: 40 }}>❌</Box>
-                    </Box>
-          
-                    {/* Details */}
-                    <CardContent sx={{ p: 3 }}>
-                      <Grid container spacing={2}>
-                        <Grid item xs={6}>
-                          <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-                            <Typography variant="body1" fontWeight="bold" sx={{ color: "#b71c1c", mr: 1 }}>🏢 Company:</Typography>
-                            <Typography variant="body1">{req.company_name}</Typography>
-                          </Box>
-                          <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-                            <Typography variant="body1" fontWeight="bold" sx={{ color: "#b71c1c", mr: 1 }}>🎯 Program:</Typography>
-                            <Typography variant="body1">{req.program_title}</Typography>
-                          </Box>
-                          <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-                            <Typography variant="body1" fontWeight="bold" sx={{ color: "#b71c1c", mr: 1 }}>📍 Location:</Typography>
-                            <Typography variant="body1">{req.location}</Typography>
-                          </Box>
-                        </Grid>
-          
-                        <Grid item xs={6}>
-                          <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-                            <Typography variant="body1" fontWeight="bold" sx={{ color: "#b71c1c", mr: 1 }}>📅 Event Place:</Typography>
-                            <Typography variant="body1">{req.event_place}</Typography>
-                          </Box>
-                          <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-                            <Typography variant="body1" fontWeight="bold" sx={{ color: "#b71c1c", mr: 1 }}>⏳ Duration:</Typography>
-                            <Typography variant="body1">{req.no_of_days} days</Typography>
-                          </Box>
-                          <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-                            <Typography variant="body1" fontWeight="bold" sx={{ color: "#b71c1c", mr: 1 }}>🗓 Dates:</Typography>
-                            <Typography variant="body1">{req.start_date} → {req.end_date}</Typography>
-                          </Box>
-                        </Grid>
-                      </Grid>
-          
-                      <Divider sx={{ my: 2 }} />
-          
-                      {/* TOC File */}
-                      <Box sx={{ mt: 2 }}>
-                        {req.toc ? renderFile(req.toc) : <Typography color="error">No TOC Available</Typography>}
-                      </Box>
-                    </CardContent>
-          
-                    {/* Footer */}
-                    <Box
-                      sx={{
-                        p: 2,
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        background: "#ffebee",
-                        borderTop: "2px solid #b71c1c",
-                      }}
-                    >
-                      <Box>
-                        <Typography><strong>👤 Requester:</strong> {req.requester}</Typography>
-                        <Typography><strong>📆 Request Date:</strong> {new Date(req.date).toLocaleDateString()}</Typography>
-                      </Box>
-                      <Button
-                        variant="contained"
-                        sx={{
-                          backgroundColor: "#1565c0",
-                          color: "#fff",
-                          "&:hover": { backgroundColor: "#0d47a1" }
-                        }}
-                        onClick={() => handleRestoreRequest(req.id)}
-                      >
-                        🔄 Restore
-                      </Button>
-                    </Box>
-                  </Card>
-                ))}
-              </Box>
-            );          
-          
-            case 'pending':
-              const pendingRequests = requests.filter((req) => req.status === "pending");
+      case "Trainer-Profiles":
+      default:
+        return (
+          <Box sx={{ width: "100%", p: 3 }}>
+            <Typography variant="h4" textAlign="left" mb={4} fontWeight="bold">
+              Trainer Overview
+            </Typography>
             
-              const uniquePendingPrograms = [...new Set(pendingRequests.map(req => req.program_title))];
-              const uniquePendingTrainers = [...new Set(pendingRequests.map(req => req.requester))];
-            
-              const filteredPendingRequests = pendingRequests.filter((req) => {
-                return (
-                  (pendingProgram ? req.program_title === pendingProgram : true) &&
-                  (pendingTrainer ? req.requester === pendingTrainer : true)
-                );
-              });
-            
-              return (
-                <Box sx={{ width: "100%", p: 3 }}>
-                  <Typography variant="h4" textAlign="center" mb={4} fontWeight="bold" color="#ff9800">
-                    Pending Requests
-                  </Typography>
-            
-                  {/* Filter Controls */}
-                  <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
-                    <FormControl sx={{ minWidth: 200 }}>
-                      <InputLabel>Filter by Program</InputLabel>
-                      <Select
-                        value={pendingProgram}
-                        label="Filter by Program"
-                        onChange={(e) => setPendingProgram(e.target.value)}
-                      >
-                        <MenuItem value="">All Programs</MenuItem>
-                        {uniquePendingPrograms.map((program, index) => (
-                          <MenuItem key={index} value={program}>{program}</MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
-            
-                    <FormControl sx={{ minWidth: 200 }}>
-                      <InputLabel>Filter by Trainer</InputLabel>
-                      <Select
-                        value={pendingTrainer}
-                        label="Filter by Trainer"
-                        onChange={(e) => setPendingTrainer(e.target.value)}
-                      >
-                        <MenuItem value="">All Trainers</MenuItem>
-                        {uniquePendingTrainers.map((trainer, index) => (
-                          <MenuItem key={index} value={trainer}>{trainer}</MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
-                  </Box>
-            
-                  {/* Pending Cards */}
-                  {filteredPendingRequests.map((req) => (
-                    <Card
-                      key={req.id}
-                      elevation={6}
-                      sx={{
-                        mb: 3,
-                        borderRadius: "16px",
-                        overflow: "hidden",
-                        background: "#fff",
-                        boxShadow: "0 6px 18px rgba(0, 0, 0, 0.1)",
-                        transition: "transform 0.3s ease",
-                        "&:hover": { transform: "scale(1.03)" }
-                      }}
-                    >
-                      {/* Header */}
-                      <Box
-                        sx={{
-                          background: "linear-gradient(135deg, #ff9800, #ff5722)",
-                          p: 3,
-                          color: "white",
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "center"
-                        }}
-                      >
-                        <Box />
-                        <Box sx={{ fontSize: 40 }}>📄</Box>
-                      </Box>
-            
-                      {/* Request Details */}
-                      <CardContent sx={{ p: 3 }}>
-                        <Grid container spacing={2}>
-                          <Grid item xs={6}>
-                            <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-                              <Typography variant="body1" fontWeight="bold" sx={{ color: "#ff9800", mr: 1 }}>🏢 Company:</Typography>
-                              <Typography variant="body1">{req.company_name}</Typography>
-                            </Box>
-                            <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-                              <Typography variant="body1" fontWeight="bold" sx={{ color: "#ff9800", mr: 1 }}>🎯 Program:</Typography>
-                              <Typography variant="body1">{req.program_title}</Typography>
-                            </Box>
-                            <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-                              <Typography variant="body1" fontWeight="bold" sx={{ color: "#ff9800", mr: 1 }}>📍 Location:</Typography>
-                              <Typography variant="body1">{req.location}</Typography>
-                            </Box>
-                          </Grid>
-            
-                          <Grid item xs={6}>
-                            <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-                              <Typography variant="body1" fontWeight="bold" sx={{ color: "#ff9800", mr: 1 }}>📅 Event Place:</Typography>
-                              <Typography variant="body1">{req.event_place}</Typography>
-                            </Box>
-                            <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-                              <Typography variant="body1" fontWeight="bold" sx={{ color: "#ff9800", mr: 1 }}>⏳ Duration:</Typography>
-                              <Typography variant="body1">{req.no_of_days} days</Typography>
-                            </Box>
-                            <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-                              <Typography variant="body1" fontWeight="bold" sx={{ color: "#ff9800", mr: 1 }}>🗓 Dates:</Typography>
-                              <Typography variant="body1">{req.start_date} → {req.end_date}</Typography>
-                            </Box>
-                          </Grid>
-                        </Grid>
-            
-                        <Divider sx={{ my: 2 }} />
-                        <Box sx={{ mt: 2 }}>{renderFile(req.toc)}</Box>
-                      </CardContent>
-            
-                      {/* Footer Actions */}
-                      <Box
-                        sx={{
-                          p: 2,
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                          background: "#fafafa",
-                          borderTop: "2px solid #ff9800",
-                        }}
-                      >
-                        <Box>
-                          <Typography><strong>👤 Requester:</strong> {req.requester}</Typography>
-                          <Typography><strong>📆 Request Date:</strong> {new Date(req.date).toLocaleDateString()}</Typography>
-                        </Box>
-                        <Box>
-                          <Button
-                            variant="contained"
-                            sx={{
-                              mr: 1,
-                              background: "linear-gradient(135deg, #4caf50, #2e7d32)",
-                              color: "white",
-                              "&:hover": { background: "#1b5e20" }
-                            }}
-                            onClick={() => handleAcceptRequest(req.id)}
-                          >
-                            ✅ Accept
-                          </Button>
-                          <Button
-                            variant="contained"
-                            sx={{
-                              background: "linear-gradient(135deg, #e53935, #b71c1c)",
-                              color: "white",
-                              "&:hover": { background: "#b71c1c" }
-                            }}
-                            onClick={() => handleDenyRequest(req.id)}
-                          >
-                            ❌ Deny
-                          </Button>
-                        </Box>
-                      </Box>
-                    </Card>
-                  ))}
-                </Box>
-              );
-                    case "calendar":
-          const filteredEvents = calendarEvents
-            .filter((event) => event.status === "Accepted")
-            .filter((event) =>
-              event.program_title.toLowerCase().includes(searchTerm.toLowerCase())
-            )
-            .filter((event) =>
-              selectedTrainer ? event.user === selectedTrainer : true
-            );
-        
-          return (
-            <Box id="calendar-section" mt={4} p={2}>
-              <Typography variant="h4" textAlign="center" mb={3} fontWeight="bold">
-                Training Calendar
-              </Typography>
-        
-              {/* Search and Trainer Filter Controls */}
-              <Box
-                display="flex"
-                justifyContent="space-between"
-                alignItems="center"
-                mb={3}
-                gap={2}
-                flexWrap="wrap"
-              >
-                <TextField
-                  variant="outlined"
-                  placeholder="Search program..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  sx={{ flex: 1, minWidth: "250px", maxWidth: "40%" }}
-                />
+            {/* Filters */}
+            <Box display="flex" flexWrap="wrap" gap={2} mb={3}>
+              <FormControl sx={{ minWidth: 200 }}>
+                <InputLabel>Location</InputLabel>
                 <Select
-                  value={selectedTrainer}
-                  onChange={(e) => setSelectedTrainer(e.target.value)}
-                  displayEmpty
-                  sx={{ flex: 1, minWidth: "200px", maxWidth: "30%" }}
+                  value={selectedLocation}
+                  onChange={(e) => setSelectedLocation(e.target.value)}
+                  label="Location"
                 >
-                  <MenuItem value="">All Trainers</MenuItem>
-                  {trainers.map((trainer) => (
-                    <MenuItem key={trainer.id} value={trainer.id}>
-                      {trainer.name}
-                    </MenuItem>
+                  <MenuItem value="">All Locations</MenuItem>
+                  {[...new Set(trainers.map((t) => t.location))].filter(Boolean).map((loc) => (
+                    <MenuItem key={loc} value={loc}>{loc}</MenuItem>
                   ))}
                 </Select>
-              </Box>
-        
-              {/* Calendar */}
-              <FullCalendar
-                plugins={[dayGridPlugin, interactionPlugin]}
-                initialView="dayGridMonth"
-                selectable={true}
-                select={handleDateSelect}
-                eventClick={handleEventClick}
-                events={filteredEvents.map((event) => ({
-                  title: `${event.program_title} (${event.status})`,
-                  start: event.start_date,
-                  end: event.end_date,
-                  color: "#42A5F5", // Blue for accepted
-                }))}
-                height="600px"
+              </FormControl>
+
+              <Autocomplete
+                multiple
+                options={[...new Set(trainers.flatMap((t) => t.skills?.map(s => s.name) || []))].filter(Boolean)}
+                value={selectedSkills}
+                onChange={(e, value) => setSelectedSkills(value)}
+                renderInput={(params) => (
+                  <TextField {...params} label="Filter Skills" placeholder="Select skills..." sx={{ minWidth: 300 }} />
+                )}
               />
             </Box>
-          );
-        
-      
-    default:
-      return null;
-  }
-};
+
+            <Grid container spacing={2}>
+              {trainers
+                .filter(t => !selectedLocation || t.location === selectedLocation)
+                .slice((page - 1) * trainersPerPage, page * trainersPerPage)
+                .map((trainer) => (
+                  <Grid item xs={12} key={trainer.id}>
+                    <Paper
+                      sx={{
+                        p: 3,
+                        bgcolor: "#fff",
+                        borderRadius: "16px",
+                        boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.05)",
+                        transition: "transform 0.2s",
+                        "&:hover": { transform: "translateY(-4px)", boxShadow: "0 12px 24px rgba(0,0,0,0.1)" }
+                      }}
+                    >
+                      <Grid container spacing={3} alignItems="center">
+                        <Grid item xs={12} sm={2}>
+                          <Avatar
+                            src={`${BASE_URL.replace(/\/$/, "")}${trainer.photoUrl}`}
+                            sx={{ width: 100, height: 100, border: '3px solid #f1f5f9' }}
+                          />
+                        </Grid>
+                        <Grid item xs={12} sm={7}>
+                          <Typography variant="h6" fontWeight="bold" sx={{ color: '#0f172a' }}>{trainer.name}</Typography>
+                          <Typography variant="body2" color="textSecondary" sx={{ mb: 1 }}>📍 {trainer.location}</Typography>
+                          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                            {trainer.skills?.map((skill, idx) => (
+                              <Chip key={idx} label={skill.name} size="small" variant="outlined" />
+                            ))}
+                          </Box>
+                        </Grid>
+                        <Grid item xs={12} sm={3}>
+                          <Box display="flex" flexDirection="column" gap={1}>
+                            <Button variant="contained" fullWidth onClick={() => {
+                              setSelectedTrainerProfile(trainer);
+                              setOpenProfileModal(true);
+                            }}>View Profile</Button>
+                          </Box>
+                        </Grid>
+                      </Grid>
+                    </Paper>
+                  </Grid>
+                ))}
+              {trainers.length === 0 && (
+                <Grid item xs={12} textAlign="center" py={8}>
+                  <Typography color="textSecondary">No trainers found.</Typography>
+                </Grid>
+              )}
+            </Grid>
+
+            <Box display="flex" justifyContent="center" mt={4}>
+              <Pagination count={totalPages} page={page} onChange={(e, v) => setPage(v)} color="primary" />
+            </Box>
+          </Box>
+        );
+    }
+  };
+
+  const navItems = [
+    { key: 'Trainer-Profiles', icon: <FiUsers />,       label: 'Trainers' },
+    { key: 'proctoring',       icon: <FiVideo />,       label: 'Proctoring' },
+  ];
 
   return (
-    <div>
-      <div style={{ padding: '20px', maxWidth: '1500px', margin: '0 auto' }}>
-        <Box sx={{ display: 'flex', gap: '20px' }}>
-          <Box sx={{ width: '250px', p: 3, bgcolor: '#1976d2', color: '#fff', borderRadius: '12px' }}>
-            <Typography variant="h6">Admin Panel</Typography>
-            {['dashboard','Trainer-Profiles', 'calendar', 'pending', 'accepted', 'denied',].map((tab) => (
-              <Typography
-                key={tab}
-                onClick={() => setSelectedTab(tab)}
-                sx={{ cursor: 'pointer', mb: 2, textTransform: 'capitalize', fontWeight: tab === selectedTab ? 'bold' : 'normal' }}
-              >
-                {tab.replace('-', ' ').toUpperCase()}
-              </Typography>
-            ))}
-          </Box>
-          <Box sx={{ flex: 1 }}>{renderContent()}</Box>
-        </Box>
+    <div className="sd-root">
+
+      {/* ── SIDEBAR (exact student style) ── */}
+      <aside className="sd-sidebar">
+        {/* Header / Brand */}
+        <div className="sd-sidebar-header">
+          <h2 className="sd-sidebar-title">
+            <b>Coding<span>Boss</span></b>
+          </h2>
+          <div style={{ color: '#64748b', fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1.5px', marginTop: '4px', paddingLeft: '4px' }}>
+            Admin Panel
+          </div>
+        </div>
+
+        {/* Nav items */}
+        <nav className="sd-nav-list">
+          {navItems.map(item => (
+            <div
+              key={item.key}
+              className={`sd-nav-item ${selectedTab === item.key ? 'active' : ''}`}
+              onClick={() => setSelectedTab(item.key)}
+            >
+              <div className="sd-nav-icon" style={{ fontSize: '1.2rem' }}>{item.icon}</div>
+              <span className="sd-nav-text">{item.label}</span>
+            </div>
+          ))}
+        </nav>
+
+        {/* Progress bar (admin stats) */}
+        <div style={{ padding: '24px', background: 'rgba(255,255,255,0.03)', borderRadius: '24px', marginTop: 'auto' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: '#94a3b8', marginBottom: '10px', fontWeight: 700 }}>
+            <span>TRAINERS ACTIVE</span>
+            <span>{trainers.length}</span>
+          </div>
+          <div style={{ height: '6px', background: 'rgba(255,255,255,0.1)', borderRadius: '10px', overflow: 'hidden' }}>
+            <div style={{ width: '100%', height: '100%', background: 'linear-gradient(90deg, #FFA003, #ff7e00)', borderRadius: '10px' }} />
+          </div>
+        </div>
+      </aside>
+
+      {/* ── MAIN CONTENT ── */}
+      <div className="sd-main-wrapper">
+        {/* Page header */}
+        <div style={{ padding: '30px 40px 10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
+
+          <div>
+            <h1 style={{ margin: 0, fontSize: '1.5rem', fontWeight: 900, color: '#0f172a' }}>
+              {navItems.find(n => n.key === selectedTab)?.icon}{' '}
+              {navItems.find(n => n.key === selectedTab)?.label || 'Admin'}
+            </h1>
+            <p style={{ margin: '4px 0 0', color: '#64748b', fontSize: '0.85rem' }}>CodingBoss Admin — Manage your platform</p>
+          </div>
+        </div>
+
+        {/* Content */}
+        <main className="sd-content-area">
+          <div className="animate-fade-in">
+            {renderContent()}
+          </div>
+        </main>
       </div>
 
     

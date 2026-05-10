@@ -47,7 +47,7 @@ const DashboardStatistics = () => {
 
   return (
     <Box sx={{ p: 3 }}>
-      <Typography variant="h4" fontWeight="bold" textAlign="center" gutterBottom>
+      <Typography variant="h4" fontWeight="bold" textAlign="left" gutterBottom>
         Dashboard Statistics
       </Typography>
 

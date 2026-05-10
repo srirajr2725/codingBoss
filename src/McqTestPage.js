@@ -37,11 +37,78 @@ const McqTestPage = () => {
   const [error, setError] = useState(null);
   const [isTestStarted, setIsTestStarted] = useState(false);
   const [cameraStream, setCameraStream] = useState(null);
+  const [lastWarningTime, setLastWarningTime] = useState(0);
+  const [prevNoseX, setPrevNoseX] = useState(null);
+  const [shakeCount, setShakeCount] = useState(0);
 
   const videoRef = useRef(null);
   const canvasRef = useRef(null); // Ref for capturing frames
 
-  // 🔥 NEW: Frame Upload Proctoring Logic
+  // 🔥 NEW: Face-API Head Rotation Detection
+  useEffect(() => {
+    const loadModels = async () => {
+      const script = document.createElement("script");
+      script.src = "https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js";
+      script.async = true;
+      script.onload = async () => {
+        const MODEL_URL = "https://justadudewhohacks.github.io/face-api.js/models";
+        await window.faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
+        await window.faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
+        startFaceTracking();
+      };
+      document.body.appendChild(script);
+    };
+
+    const startFaceTracking = () => {
+      let trackingInterval = setInterval(async () => {
+        if (isTestStarted && videoRef.current && window.faceapi) {
+          try {
+            const detections = await window.faceapi.detectSingleFace(
+              videoRef.current, 
+              new window.faceapi.TinyFaceDetectorOptions()
+            ).withFaceLandmarks();
+
+            if (!detections) {
+              console.warn("AI: Face missing!");
+              handleProctoringWarning("Face not detected! Please stay in front of the camera.");
+            } else {
+              const landmarks = detections.landmarks;
+              const nose = landmarks.getNose();
+              const noseTip = nose[3].x;
+
+              // 1. Rotation Detection
+              const leftEye = landmarks.getLeftEye();
+              const rightEye = landmarks.getRightEye();
+              const eyeCenter = (leftEye[0].x + rightEye[3].x) / 2;
+              const rotationOffset = Math.abs(eyeCenter - noseTip);
+
+              if (rotationOffset > 12) { // More sensitive
+                handleProctoringWarning("Suspicious head/eye rotation detected!");
+              }
+
+              // 2. Shake Detection (Rapid horizontal movement)
+              if (prevNoseX !== null) {
+                const diff = Math.abs(noseTip - prevNoseX);
+                if (diff > 25) { // Significant jump
+                  handleProctoringWarning("Rapid head movement/shaking detected!");
+                }
+              }
+              setPrevNoseX(noseTip);
+            }
+          } catch (err) {
+            console.error("AI Tracking Error:", err);
+          }
+        }
+      }, 2000); // Check every 2 seconds
+      return () => clearInterval(trackingInterval);
+    };
+
+    if (isTestStarted) {
+      loadModels();
+    }
+  }, [isTestStarted]);
+
+  // Existing Frame Upload Logic...
   useEffect(() => {
     let interval;
     if (isTestStarted && cameraStream) {
@@ -102,9 +169,11 @@ const McqTestPage = () => {
 
   const startProctoring = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-      setCameraStream(stream);
+      // 1. Camera Access
+      const cam = await navigator.mediaDevices.getUserMedia({ video: true });
+      setCameraStream(cam);
 
+      // 2. Fullscreen
       const elem = document.documentElement;
       if (elem.requestFullscreen) {
         await elem.requestFullscreen();
@@ -113,15 +182,13 @@ const McqTestPage = () => {
       setIsTestStarted(true);
       setTestStartTime(Date.now());
     } catch (err) {
-      toast.error("❌ Camera access and Fullscreen are required to start the test!");
+      toast.error("❌ Camera access and Fullscreen are required!");
     }
   };
 
   useEffect(() => {
     return () => {
-      if (cameraStream) {
-        cameraStream.getTracks().forEach(track => track.stop());
-      }
+      if (cameraStream) cameraStream.getTracks().forEach(track => track.stop());
       if (document.fullscreenElement) {
         document.exitFullscreen().catch(() => { });
       }
@@ -276,27 +343,26 @@ const McqTestPage = () => {
     }
   };
 
-  const handleTabSwitch = useCallback(() => {
-    if (isTestCompleted) return;
+  const handleProctoringWarning = (message) => {
+    const now = Date.now();
+    if (now - lastWarningTime < 3000) return; // Debounce 3s
+    setLastWarningTime(now);
 
     setTabSwitchCount((prev) => {
       const newCount = prev + 1;
       if (newCount >= 3) {
-        toast.error("🚫 Maximum tab switches reached. Test terminated!", {
-          position: "top-center",
-          autoClose: 4000,
-        });
-        setTimeout(() => {
-          submitTest({});
-        }, 1500);
+        toast.error("🚫 Maximum violations reached. Test terminated!", { position: "top-center", autoClose: 4000 });
+        setTimeout(() => submitTest({}), 1500);
       } else {
-        toast.warning(`⚠️ Tab switch detected (${newCount}/2 warnings)`, {
-          position: "top-center",
-          autoClose: 2000,
-        });
+        toast.warning(`⚠️ ${message} (${newCount}/2 warnings)`, { position: "top-center", autoClose: 3000 });
       }
       return newCount;
     });
+  };
+
+  const handleTabSwitch = useCallback(() => {
+    if (isTestCompleted) return;
+    handleProctoringWarning("Tab switch or focus loss detected!");
   }, [isTestCompleted]);
 
   useEffect(() => {
@@ -480,12 +546,14 @@ const McqTestPage = () => {
     <div style={{ background: '#f8fafc', minHeight: '100vh', position: 'relative' }}>
       <ToastContainer position="top-center" autoClose={3000} />
 
-      {/* CAMERA PREVIEW */}
-      <div className="camera-proctor-box">
-        <video ref={videoRef} autoPlay playsInline muted className="camera-video" />
-        <canvas ref={canvasRef} style={{ display: 'none' }} />
-        <div className="camera-status">
-          <div className="pulse"></div> PROCTORING ACTIVE
+      {/* PROCTORING DASHBOARD */}
+      <div className="proctoring-dashboard">
+        <div className="camera-proctor-box">
+          <video ref={videoRef} autoPlay playsInline muted className="camera-video" />
+          <canvas ref={canvasRef} style={{ display: 'none' }} />
+          <div className="camera-status">
+            <div className="pulse"></div> PROCTORING ACTIVE
+          </div>
         </div>
       </div>
 

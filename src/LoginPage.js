@@ -58,7 +58,7 @@ const LoginPage = ({ setIsLoggedIn, setUsername, setUserRole }) => {
         localStorage.setItem("userID", encryptedUserID);
 
         if (backendData.role === "member") navigate("/UserDashboard");
-        else if (backendData.role === "company") navigate("/trainerDashboard");
+        else if (backendData.role === "company") navigate("/teacherDashboard");
         else if (backendData.role === "edutech") navigate("/adminPanel");
         else navigate("/");
 
@@ -92,7 +92,7 @@ const LoginPage = ({ setIsLoggedIn, setUsername, setUserRole }) => {
             localStorage.setItem("userID", encryptedUserID);
 
             if (cachedRole === "member") navigate("/UserDashboard");
-            else if (cachedRole === "company") navigate("/trainerDashboard");
+            else if (cachedRole === "company") navigate("/teacherDashboard");
             else if (cachedRole === "edutech") navigate("/adminPanel");
             else navigate("/");
           } else {
@@ -125,30 +125,7 @@ const LoginPage = ({ setIsLoggedIn, setUsername, setUserRole }) => {
 
         <form onSubmit={handleSubmit}>
           
-          {/* --- ROLE SELECTOR --- */}
-          <div className="role-selector">
-            <button 
-              type="button"
-              className={`role-btn ${selectedRole === 'member' ? 'active' : ''}`} 
-              onClick={() => setSelectedRole('member')}
-            >
-              Student
-            </button>
-            <button 
-              type="button"
-              className={`role-btn ${selectedRole === 'company' ? 'active' : ''}`} 
-              onClick={() => setSelectedRole('company')}
-            >
-              Trainer
-            </button>
-            <button 
-              type="button"
-              className={`role-btn ${selectedRole === 'edutech' ? 'active' : ''}`} 
-              onClick={() => setSelectedRole('edutech')}
-            >
-              Admin
-            </button>
-          </div>
+
 
           <div className="form-group">
             <label><FaUser className="me-2" /> Email Address</label>

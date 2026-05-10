@@ -16,6 +16,7 @@ const SignUp = ({ setIsLoggedIn, setUsername, setUserRole }) => {
     password: "",
     mobile: "",
     organization: null,
+    role: "member",
   });
 
   const [organizations, setOrganizations] = useState([]);
@@ -28,15 +29,31 @@ const SignUp = ({ setIsLoggedIn, setUsername, setUserRole }) => {
     const fetchOrganizations = async () => {
       try {
         const response = await apiClient("trainer/organizations/", "GET");
-        if (Array.isArray(response)) {
+        if (Array.isArray(response) && response.length > 0) {
           setOrganizations(response.map((org) => ({ value: org.id, label: org.name })));
+        } else {
+          setOrganizations(getDefaultOrgs());
         }
       } catch {
-        setError("Unable to load organizations.");
+        // Fallback to static list if API is unavailable
+        setOrganizations(getDefaultOrgs());
       }
     };
     fetchOrganizations();
   }, []);
+
+  const getDefaultOrgs = () => [
+    { value: 1, label: 'Anna University' },
+    { value: 2, label: 'VIT University' },
+    { value: 3, label: 'SRM Institute of Science and Technology' },
+    { value: 4, label: 'PSG College of Technology' },
+    { value: 5, label: 'Amrita School of Engineering' },
+    { value: 6, label: 'Coimbatore Institute of Technology' },
+    { value: 7, label: 'Hindustan College of Engineering' },
+    { value: 8, label: 'Bannari Amman Institute of Technology' },
+    { value: 9, label: 'RMK Engineering College' },
+    { value: 10, label: 'Other' },
+  ];
 
   const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
@@ -57,11 +74,12 @@ const SignUp = ({ setIsLoggedIn, setUsername, setUserRole }) => {
 
       const response = await apiClient("quiz/create-user/", "POST", payload);
 
-      if (response?.success && response.data) {
+      if (response?.success || response?.data) {
         setSuccess("Account created successfully!");
         
-        const userToken = response.data.user_token;
-        const accessToken = response.data.access;
+        const userToken = response.data?.user_token;
+        const accessToken = response.data?.access;
+        const assignedRole = formData.role;
         
         if (userToken) {
           localStorage.setItem("user_token", userToken);
@@ -72,14 +90,15 @@ const SignUp = ({ setIsLoggedIn, setUsername, setUserRole }) => {
 
         setIsLoggedIn(true);
         setUsername(formData.email);
-        setUserRole("member");
+        setUserRole(assignedRole);
         localStorage.setItem("username", formData.email);
-        localStorage.setItem("role", "member");
+        localStorage.setItem("role", assignedRole);
 
         const encryptedPwd = CryptoJS.AES.encrypt(formData.password, "thirancoding360mgai").toString();
         localStorage.setItem("password", encryptedPwd);
 
-        setTimeout(() => navigate("/UserDashboard"), 1500);
+        const target = assignedRole === "company" ? "/trainerDashboard" : (assignedRole === "edutech" ? "/adminPanel" : "/UserDashboard");
+        setTimeout(() => navigate(target), 1500);
       } else {
         setError(response?.message || "Signup failed.");
       }
@@ -128,6 +147,23 @@ const SignUp = ({ setIsLoggedIn, setUsername, setUserRole }) => {
         {error && <div className="error-msg">{error}</div>}
 
         <form onSubmit={handleSubmit}>
+          
+          {/* --- ROLE SELECTOR --- */}
+          <div className="form-group">
+            <label><FaUser className="me-2" /> Select Your Role</label>
+            <Select 
+              options={[
+                { value: 'member', label: 'Student' },
+                { value: 'company', label: 'Trainer' },
+                { value: 'edutech', label: 'Admin' }
+              ]} 
+              defaultValue={{ value: 'member', label: 'Student' }}
+              onChange={(opt) => setFormData({...formData, role: opt.value})} 
+              className="organization-dropdown"
+              classNamePrefix="react-select"
+            />
+          </div>
+
           <div className="form-group">
             <label><FaUser className="me-2" /> Email Address</label>
             <input type="email" name="email" placeholder="name@email.com" value={formData.email} onChange={handleChange} required />
