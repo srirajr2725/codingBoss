@@ -10,12 +10,16 @@ const AuthorizedImage = ({ src, alt, ...props }) => {
 
   useEffect(() => {
     if (!src) return;
-    if (src.startsWith('data:')) {
-      setImgSrc(src);
+    
+    // Force HTTPS to prevent mixed-content blocking and 404s from ngrok
+    const secureSrc = src.replace(/^http:\/\//i, 'https://');
+
+    if (secureSrc.startsWith('data:')) {
+      setImgSrc(secureSrc);
       return;
     }
     let isMounted = true;
-    fetch(src, {
+    fetch(secureSrc, {
       headers: { 'ngrok-skip-browser-warning': 'true' }
     })
       .then(res => {
