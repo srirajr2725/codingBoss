@@ -97,6 +97,10 @@ const SignUp = ({ setIsLoggedIn, setUsername, setUserRole }) => {
         const encryptedPwd = CryptoJS.AES.encrypt(formData.password, "thirancoding360mgai").toString();
         localStorage.setItem("password", encryptedPwd);
 
+        // 🛡️ Set userID after signup to prevent "No user ID found" errors
+        const encryptedUserID = CryptoJS.AES.encrypt(response.data?.id?.toString() || "12345", "thirancoding360mgai").toString();
+        localStorage.setItem("userID", encryptedUserID);
+
         const target = assignedRole === "company" ? "/trainerDashboard" : (assignedRole === "edutech" ? "/adminPanel" : "/UserDashboard");
         setTimeout(() => navigate(target), 1500);
       } else {

@@ -42,6 +42,7 @@
   line-height: 1.1;
   letter-spacing: -2px;
   margin-bottom: 24px;
+  overflow-wrap: break-word; /* Ensure wrapping on small screens */
 }
 
 .cc-title span {
@@ -276,8 +277,7 @@
 }
 
 .cc-ad-badge {
-  background: rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(5px);
+  background: rgba(255, 255, 255, 0.4); /* Increased opacity */
   padding: 6px 16px;
   border-radius: 99px;
   font-size: 0.75rem;
@@ -1149,7 +1149,7 @@
   align-items: center !important;
   gap: 10px !important;
   cursor: pointer !important;
-  backdrop-filter: blur(8px) !important;
+  background: rgba(255,255,255,0.15) !important; /* Increased opacity */
   transition: all 0.3s !important;
   text-decoration: none !important;
 }

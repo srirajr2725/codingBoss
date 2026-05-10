@@ -25,12 +25,14 @@ import CryptoJS from 'crypto-js';
 import ProctoringRecords from './ProctoringRecords';
 import '../StudentDashboard.css';
 import './AdminPanel.css';
-import { FiGrid, FiUsers, FiCalendar, FiClock, FiCheckCircle, FiXCircle, FiVideo } from 'react-icons/fi';
+import { FiGrid, FiUsers, FiCalendar, FiClock, FiCheckCircle, FiXCircle, FiVideo, FiLogOut } from 'react-icons/fi';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 
 
 const AdminPanel = ({ isLoggedIn, setIsLoggedIn, setUserRole, username, handleLogout, userRole }) => {
-  const [selectedTab, setSelectedTab] = useState('Trainer-Profiles');
+  const [selectedTab, setSelectedTab] = useState('Users');
   const [searchTerm, setSearchTerm] = useState("");
   const [openBookingModal, setOpenBookingModal] = useState(false);
   const [showAll, setShowAll] = useState(false);
@@ -74,6 +76,12 @@ const [deniedRequests, setDeniedRequests] = useState([]);
    const [page, setPage] = useState(1);
    const trainersPerPage = 5;
    const totalPages = Math.ceil(trainers.length / trainersPerPage);
+
+   // User Management States
+   const [users, setUsers] = useState([]);
+   const [showUserModal, setShowUserModal] = useState(false);
+   const [userData, setUserData] = useState({ email: '', password: '', role: 'member' });
+
    
 
    const resetBookingForm = () => {
@@ -269,7 +277,35 @@ const [deniedRequests, setDeniedRequests] = useState([]);
         };
       
         fetchTrainers();
+        fetchUsers();
       }, []);
+
+      const fetchUsers = async () => {
+        try {
+          const data = await apiClient("quiz/users/", "GET");
+          setUsers(Array.isArray(data) ? data : []);
+        } catch (err) {
+          console.error("Failed to fetch users", err);
+        }
+      };
+
+      const handleCreateUser = async (e) => {
+        e.preventDefault();
+        try {
+          const payload = { 
+            email: userData.email, 
+            password: userData.password,
+            role: userData.role
+          };
+          await apiClient("quiz/create-user/", "POST", payload);
+          toast.success("✅ User created successfully!");
+          setShowUserModal(false);
+          setUserData({ email: '', password: '', role: 'member' });
+          fetchUsers();
+        } catch (err) {
+          toast.error(err.message || "❌ Error creating user.");
+        }
+      };
       
 
   // Fetch events for selected trainer
@@ -790,16 +826,78 @@ const handleAcceptRequest = async (id) => {
             </Box>
           </Box>
         );
+      case 'Users':
+        return (
+          <Box p={4}>
+            <Box display="flex" justifyContent="space-between" mb={3}>
+              <Typography variant="h4" fontWeight="800">User Management</Typography>
+              <Button variant="contained" color="primary" onClick={() => setShowUserModal(true)}>
+                Create New User
+              </Button>
+            </Box>
+            <Paper sx={{ borderRadius: '16px', overflow: 'hidden' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead style={{ background: '#f8fafc' }}>
+                  <tr>
+                    <th style={{ padding: '16px', textAlign: 'left' }}>Email</th>
+                    <th style={{ padding: '16px', textAlign: 'left' }}>Role</th>
+                    <th style={{ padding: '16px', textAlign: 'left' }}>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[...users].reverse().map((u, i) => (
+                    <tr key={i} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                      <td style={{ padding: '16px' }}>{u.email}</td>
+                      <td style={{ padding: '16px' }}>
+                        <Chip 
+                          label={u.role || 'member'} 
+                          size="small" 
+                          color={u.role === 'admin' ? 'error' : u.role === 'staff' ? 'primary' : 'default'}
+                        />
+                      </td>
+                      <td style={{ padding: '16px' }}>Active</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </Paper>
+
+            {/* Create User Modal */}
+            <Dialog open={showUserModal} onClose={() => setShowUserModal(false)}>
+              <DialogTitle>Create New System User</DialogTitle>
+              <DialogContent>
+                <Box pt={1} display="flex" flexDirection="column" gap={2}>
+                  <TextField label="Email" fullWidth value={userData.email} onChange={e => setUserData({...userData, email: e.target.value})} />
+                  <TextField label="Password" type="password" fullWidth value={userData.password} onChange={e => setUserData({...userData, password: e.target.value})} />
+                  <FormControl fullWidth>
+                    <InputLabel>Role</InputLabel>
+                    <Select value={userData.role} label="Role" onChange={e => setUserData({...userData, role: e.target.value})}>
+                      <MenuItem value="member">Member (Student)</MenuItem>
+                      <MenuItem value="staff">Staff (Teacher)</MenuItem>
+                      <MenuItem value="doctor">Doctor (Proctor)</MenuItem>
+                      <MenuItem value="admin">Admin</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Box>
+              </DialogContent>
+              <DialogActions>
+                <Button onClick={() => setShowUserModal(false)}>Cancel</Button>
+                <Button variant="contained" onClick={handleCreateUser}>Create Account</Button>
+              </DialogActions>
+            </Dialog>
+          </Box>
+        );
     }
   };
 
   const navItems = [
-    { key: 'Trainer-Profiles', icon: <FiUsers />,       label: 'Trainers' },
+    { key: 'Users',            icon: <FiGrid />,        label: 'Users' },
     { key: 'proctoring',       icon: <FiVideo />,       label: 'Proctoring' },
   ];
 
   return (
     <div className="sd-root">
+      <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} />
 
       {/* ── SIDEBAR (exact student style) ── */}
       <aside className="sd-sidebar">
@@ -830,12 +928,45 @@ const handleAcceptRequest = async (id) => {
         {/* Progress bar (admin stats) */}
         <div style={{ padding: '24px', background: 'rgba(255,255,255,0.03)', borderRadius: '24px', marginTop: 'auto' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: '#94a3b8', marginBottom: '10px', fontWeight: 700 }}>
-            <span>TRAINERS ACTIVE</span>
-            <span>{trainers.length}</span>
+            <span>TOTAL USERS</span>
+            <span>{users.length}</span>
           </div>
           <div style={{ height: '6px', background: 'rgba(255,255,255,0.1)', borderRadius: '10px', overflow: 'hidden' }}>
             <div style={{ width: '100%', height: '100%', background: 'linear-gradient(90deg, #FFA003, #ff7e00)', borderRadius: '10px' }} />
           </div>
+        </div>
+
+        {/* Sidebar Footer */}
+        <div style={{ padding: '24px', borderTop: '1px solid rgba(255,255,255,0.05)', marginTop: 'auto' }}>
+          <button 
+            onClick={handleLogout}
+            style={{ 
+              width: '100%', 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '12px', 
+              padding: '12px 16px', 
+              background: 'rgba(239, 68, 68, 0.1)', 
+              color: '#ef4444', 
+              border: '1px solid rgba(239, 68, 68, 0.2)', 
+              borderRadius: '12px', 
+              fontSize: '0.9rem', 
+              fontWeight: 700, 
+              cursor: 'pointer',
+              transition: 'all 0.2s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = '#ef4444';
+              e.currentTarget.style.color = '#fff';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)';
+              e.currentTarget.style.color = '#ef4444';
+            }}
+          >
+            <FiLogOut size={18} />
+            Logout
+          </button>
         </div>
       </aside>
 

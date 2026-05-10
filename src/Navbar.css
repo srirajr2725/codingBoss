@@ -7,10 +7,17 @@
   position: sticky;
   top: 0;
   z-index: 1000;
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(20px);
-  border-bottom: 1px solid #f1f5f9;
-  padding: 8px 0;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 1px solid rgba(226, 232, 240, 0.6);
+  padding: 12px 0;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.navigation-container:hover {
+  background: rgba(255, 255, 255, 0.95);
+  border-bottom-color: #FFA003;
 }
 
 .custom-navbar {
@@ -22,67 +29,90 @@
 .brand-name {
   display: flex;
   align-items: center;
-  font-size: 1.5rem !important;
+  font-size: 1.6rem !important;
   font-weight: 900 !important;
   color: #0f172a !important;
-  letter-spacing: -1px;
+  letter-spacing: -1.5px;
+  transition: all 0.3s;
+}
+
+.brand-name:hover {
+  transform: scale(1.02);
+  filter: drop-shadow(0 0 15px rgba(255, 160, 3, 0.1));
 }
 
 .brand-name .flash {
   color: #FFA003;
+  text-shadow: 0 0 20px rgba(255, 160, 3, 0.3);
+}
+
+/* --- USER SECTION --- */
+.user-profile-section {
+  background: rgba(15, 23, 42, 0.03);
+  padding: 6px 16px;
+  border-radius: 50px;
+  border: 1px solid rgba(15, 23, 42, 0.05);
+  transition: all 0.3s;
+}
+
+.user-profile-section:hover {
+  background: rgba(15, 23, 42, 0.05);
+  border-color: #FFA003;
+}
+
+.user-profile-section b {
+  color: #0f172a;
+  font-weight: 800;
+  font-size: 0.9rem;
 }
 
 /* --- BUTTONS --- */
 .get-started-btn {
-  border-radius: 12px !important;
-  padding: 10px 24px !important;
-  font-weight: 800 !important;
-  font-size: 0.9rem !important;
+  border-radius: 14px !important;
+  padding: 12px 28px !important;
+  font-weight: 900 !important;
+  font-size: 0.95rem !important;
   text-transform: none !important;
-  transition: all 0.3s !important;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.1) !important;
 }
 
 .btn-warning {
-  background: #0f172a !important;
-  border-color: #0f172a !important;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%) !important;
+  border: none !important;
   color: white !important;
 }
 
 .btn-warning:hover {
-  background: #FFA003 !important;
-  border-color: #FFA003 !important;
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(255, 160, 3, 0.2);
-}
-
-.btn-outline-warning {
-  border-color: #e2e8f0 !important;
-  color: #64748b !important;
-}
-
-.btn-outline-warning:hover {
-  background: #f8fafc !important;
-  border-color: #0f172a !important;
-  color: #0f172a !important;
+  background: linear-gradient(135deg, #FFA003 0%, #ff7e00 100%) !important;
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 12px 24px rgba(255, 160, 3, 0.3) !important;
 }
 
 /* --- PROGRESS CIRCLE --- */
 .progress-circle-outline {
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   background: conic-gradient(#FFA003 calc(var(--progress) * 1%), #f1f5f9 0);
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+
+.progress-circle-outline:hover {
+  transform: rotate(15deg) scale(1.1);
+  box-shadow: 0 8px 20px rgba(255, 160, 3, 0.2);
 }
 
 .progress-circle-outline::after {
   content: '';
   position: absolute;
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   background: white;
   border-radius: 50%;
 }
@@ -90,7 +120,32 @@
 .progress-text {
   position: relative;
   z-index: 10;
-  font-size: 0.6rem;
+  font-size: 0.65rem;
   font-weight: 900;
   color: #0f172a;
+}
+
+/* --- DROPDOWN PREMIUM --- */
+.dropdown-menu {
+  border: none !important;
+  border-radius: 20px !important;
+  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.15) !important;
+  padding: 12px !important;
+  margin-top: 15px !important;
+  background: rgba(255, 255, 255, 0.98) !important;
+  backdrop-filter: blur(10px);
+}
+
+.dropdown-item {
+  border-radius: 12px !important;
+  padding: 12px 20px !important;
+  font-weight: 700 !important;
+  color: #0f172a !important;
+  transition: all 0.2s !important;
+}
+
+.dropdown-item:hover {
+  background: #f8fafc !important;
+  color: #FFA003 !important;
+  transform: translateX(5px);
 }

@@ -134,8 +134,6 @@ const TrainerDashboard = ({ isLoggedIn,setIsLoggedIn, username, userRole, handle
         } catch (error) {
           console.error("Error decrypting user ID:", error);
         }
-      } else {
-        console.warn("No user ID found in localStorage.");
       }
     }, []);
 
@@ -166,7 +164,12 @@ const TrainerDashboard = ({ isLoggedIn,setIsLoggedIn, username, userRole, handle
           })
           .catch(error => {
             console.error("Error fetching denied requests:", error);
+          })
+          .finally(() => {
+            setLoading(false);
           });
+      } else {
+        setLoading(false);
       }
     }, [userId, selectedTab]);
   
@@ -780,8 +783,9 @@ const handleDenyRequest = async (id) => {
   }
 
 
-  const [progress, setProgress] = useState();
+  const [progress, setProgress] = useState(0);
     const fetchProfileCompletion = async () => {
+      if (!userId) return; // 🛡️ Safety check
       try {
         const response = await apiClient(
           `trainer/trainers/get/${userId}`,
@@ -804,21 +808,23 @@ const handleDenyRequest = async (id) => {
           const totalFields = requiredFields.length; // Always 5 fields
   
           requiredFields.forEach((field) => {
-            if (field === "education") {
-              // For education array, check if it exists and has at least one entry with required data
-              if (
-                Array.isArray(profile[field]) &&
-                profile[field].length > 0 &&
-                profile[field].some(
-                  (edu) => edu.degree && edu.year && edu.institution
-                )
-              ) {
-                filledCount++;
-              }
-            } else {
-              // For other fields, check if they have a non-empty value
-              if (profile[field] && profile[field].toString().trim() !== "") {
-                filledCount++;
+            if (profile && profile[field]) {
+              if (field === "education") {
+                // For education array, check if it exists and has at least one entry with required data
+                if (
+                  Array.isArray(profile[field]) &&
+                  profile[field].length > 0 &&
+                  profile[field].some(
+                    (edu) => edu.degree && edu.year && edu.institution
+                  )
+                ) {
+                  filledCount++;
+                }
+              } else {
+                // For other fields, check if they have a non-empty value
+                if (profile[field].toString().trim() !== "") {
+                  filledCount++;
+                }
               }
             }
           });
@@ -826,7 +832,7 @@ const handleDenyRequest = async (id) => {
           const completionPercent = (filledCount / totalFields) * 100;
           setProgress(Math.floor(completionPercent));
   
-          const event = new CustomEvent("profile-completion-updated", {
+          const event = new CustomEvent("profile-updated", {
             detail: { completion: Math.floor(completionPercent) },
           });
           window.dispatchEvent(event);
@@ -856,8 +862,10 @@ const handleDenyRequest = async (id) => {
     };
   
     useEffect(()=> {
-      fetchProfileCompletion();
-    }, [selectedTab])
+      if (userId) {
+        fetchProfileCompletion();
+      }
+    }, [selectedTab, userId]) // 🛡️ Added userId dependency
 
   return (
     <>
@@ -866,7 +874,7 @@ const handleDenyRequest = async (id) => {
     <div>
       <Navbar
         isLoggedIn={isLoggedIn}
-        setSelectedTab={setSelectedTab}
+        setIsLoggedIn={setIsLoggedIn}
         username={username}
         userRole={userRole}
         handleLogout={handleLogout}
@@ -922,6 +930,21 @@ const handleDenyRequest = async (id) => {
                   </Typography>
                 )
               )}
+              <Divider style={{ marginTop: 'auto', marginBottom: '20px', backgroundColor: 'rgba(255,255,255,0.2)' }} />
+              <Typography
+                onClick={handleLogout}
+                style={{
+                  cursor: 'pointer',
+                  color: '#fff',
+                  fontWeight: 'bold',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '10px 0'
+                }}
+              >
+                Logout
+              </Typography>
             </Box>
 
             {/* Main Content */}

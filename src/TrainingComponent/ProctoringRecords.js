@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { FiRefreshCw, FiUser, FiAlertTriangle, FiCamera, FiX, FiClock, FiLayers } from 'react-icons/fi';
 import './ProctoringRecords.css';
 
-const API_URL = 'https://copious-frill-parrot.ngrok-free.dev/exam/upload-frame/';
+const API_URL = 'https://unlanded-isela-unmunificently.ngrok-free.dev/api/upload-frame/';
 
 const ProctoringRecords = () => {
   const [records, setRecords] = useState([]);

@@ -47,7 +47,7 @@ const Dashboard = ({
   handleLogout
 }) => {
   const navigate = useNavigate();
-  const isMobile = useMediaQuery('(max-width:600px)');
+  const isMobile = useMediaQuery('(max-width:1024px)'); // Sidebar collapses at 1024px
 
   const defaultAccess = [
     { label: 'Start Learn', locked: false, key: 'startlearn', icon: <School /> },
@@ -69,7 +69,6 @@ const Dashboard = ({
   const [loading, setLoading] = useState(true);
 
   const fetchAccess = useCallback(async (email) => {
-    // Force everything to be unlocked regardless of API
     setAccess(defaultAccess);
     setLoading(false);
   }, []);
@@ -114,54 +113,51 @@ const Dashboard = ({
 
   return (
     <div className="sd-root">
-      <Navbar
-        isLoggedIn={isLoggedIn}
-        setIsLoggedIn={setIsLoggedIn}
-        username={username}
-        userRole={userRole}
-        handleLogout={handleLogout}
-        progress={progress}
-        setProgress={setProgress}
-      />
-
       {/* ULTRA SIDEBAR */}
-      {!isMobile && (
-        <aside className="sd-sidebar">
-          <div className="sd-sidebar-header">
-            <h2 className="sd-sidebar-title">
-              <img src={logo} alt="Logo" style={{ height: '40px', marginRight: '8px' }} />
-              <b>Coding<span>Boss</span></b>
-            </h2>
-          </div>
-          <nav className="sd-nav-list">
-            {access.map(tab => (
-              <div
-                key={tab.label}
-                className={`sd-nav-item ${selectedTab === tab.label ? 'active' : ''} ${tab.locked ? 'locked' : ''}`}
-                onClick={() => !tab.locked && setSelectedTab(tab.label)}
-              >
-                <div className="sd-nav-icon">
-                  {tab.locked ? <Lock style={{ fontSize: '1.1rem' }} /> : tab.icon}
-                </div>
-                <span className="sd-nav-text">{tab.label}</span>
+      <aside className="sd-sidebar">
+        <div className="sd-sidebar-header">
+          <h2 className="sd-sidebar-title">
+            <img src={logo} alt="Logo" style={{ height: '40px', marginRight: '8px' }} />
+            <b>Coding<span>Boss</span></b>
+          </h2>
+        </div>
+        <nav className="sd-nav-list">
+          {access.map(tab => (
+            <div
+              key={tab.label}
+              className={`sd-nav-item ${selectedTab === tab.label ? 'active' : ''} ${tab.locked ? 'locked' : ''}`}
+              onClick={() => !tab.locked && setSelectedTab(tab.label)}
+            >
+              <div className="sd-nav-icon">
+                {tab.locked ? <Lock style={{ fontSize: '1.1rem' }} /> : tab.icon}
               </div>
-            ))}
-          </nav>
+              <span className="sd-nav-text">{tab.label}</span>
+            </div>
+          ))}
+        </nav>
 
-          <div style={{ padding: '24px', background: 'rgba(255,255,255,0.03)', borderRadius: '24px', marginTop: 'auto' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: '#94a3b8', marginBottom: '10px', fontWeight: 700 }}>
-              <span>OVERALL PROGRESS</span>
-              <span>{progress || 0}%</span>
-            </div>
-            <div style={{ height: '6px', background: 'rgba(255,255,255,0.1)', borderRadius: '10px', overflow: 'hidden' }}>
-              <div style={{ width: `${progress || 0}%`, height: '100%', background: 'linear-gradient(90deg, #FFA003, #ff7e00)', borderRadius: '10px' }}></div>
-            </div>
+        <div style={{ padding: '24px', background: 'rgba(255,255,255,0.03)', borderRadius: '24px', marginTop: 'auto' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: '#94a3b8', marginBottom: '10px', fontWeight: 700 }}>
+            <span>OVERALL PROGRESS</span>
+            <span>{progress || 0}%</span>
           </div>
-        </aside>
-      )}
+          <div style={{ height: '6px', background: 'rgba(255,255,255,0.1)', borderRadius: '10px', overflow: 'hidden' }}>
+            <div style={{ width: `${progress || 0}%`, height: '100%', background: 'linear-gradient(90deg, #FFA003, #ff7e00)', borderRadius: '10px' }}></div>
+          </div>
+        </div>
+      </aside>
 
       {/* ULTRA MAIN WRAPPER */}
       <div className="sd-main-wrapper">
+        <Navbar
+          isLoggedIn={isLoggedIn}
+          setIsLoggedIn={setIsLoggedIn}
+          username={username}
+          userRole={userRole}
+          handleLogout={handleLogout}
+          progress={progress}
+          setProgress={setProgress}
+        />
         <div className="sd-topbar-placeholder"></div>
         <main className="sd-content-area">
           <div className="animate-fade-in">

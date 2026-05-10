@@ -4,11 +4,11 @@ import {
   FiMonitor, FiPower, FiClock, FiSettings, FiLogOut, FiGrid
 } from 'react-icons/fi';
 import apiClient from '../utils/apiClient';
-import './DoctorDashboard.css'; // Reuse the ultra-modern proctoring styles
+import './DoctorDashboard.css';
 
 const API_URL = 'https://unlanded-isela-unmunificently.ngrok-free.dev/api/upload-frame/';
 
-const TeacherDashboard = ({ handleLogout, username }) => {
+const DoctorDashboard = ({ handleLogout, username }) => {
   const [activeTests, setActiveTests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedStudent, setSelectedStudent] = useState(null);
@@ -47,16 +47,19 @@ const TeacherDashboard = ({ handleLogout, username }) => {
           acc[key] = {
             id: key,
             name: r.student_name || `Student #${key}`,
-            test: 'Active Exam', 
+            test: 'Active Exam', // Could be dynamic if backend provides test name
             status: r.flagged ? 'Warning' : 'Active',
             camera: 'Active',
+            request: null, // This would need a specific backend flag for "Request Inactive"
             latestFrame: r.image,
             timestamp: r.timestamp,
             allFrames: []
           };
         }
         acc[key].allFrames.push(r);
+        // If any frame is flagged, the status is Warning
         if (r.flagged) acc[key].status = 'Warning';
+        // Always keep the latest image
         if (new Date(r.timestamp) > new Date(acc[key].timestamp)) {
           acc[key].latestFrame = r.image;
           acc[key].timestamp = r.timestamp;
@@ -84,27 +87,28 @@ const TeacherDashboard = ({ handleLogout, username }) => {
       setActiveTests(prev => prev.map(s => 
         s.id === studentId ? { ...s, camera: 'Inactive' } : s
       ));
+      // In a real app, you would send a POST to the backend to update the student's status
     }
   };
 
   return (
     <div className="ultra-dashboard">
-      {/* Sidebar - Consistent with Doctor but labeled Teacher */}
+      {/* Sidebar - Ultra Sleek */}
       <aside className="ultra-sidebar">
         <div className="ultra-logo">
           <div className="logo-icon"><FiMonitor /></div>
           <div className="logo-text">
             <h3>Coding<span>Boss</span></h3>
-            <span className="role-tag">Teacher Portal</span>
+            <span className="role-tag">Ultra Proctor</span>
           </div>
         </div>
 
         <nav className="ultra-nav">
-          <div className="nav-item active"><FiGrid /> Proctoring Center</div>
+          <div className="nav-item active"><FiGrid /> Command Center</div>
         </nav>
 
         <div className="user-profile-brief">
-          <div className="u-avatar">Tr</div>
+          <div className="u-avatar">Dr</div>
           <div className="u-info">
             <div className="u-name">{username.split('@')[0]}</div>
             <div className="u-status"><span className="online-dot"></span> Online</div>
@@ -117,11 +121,11 @@ const TeacherDashboard = ({ handleLogout, username }) => {
       <main className="ultra-main">
         <header className="ultra-header">
           <div className="header-left">
-            <h1 className="ultra-title">Teacher Proctoring Center</h1>
+            <h1 className="ultra-title">Proctoring Command Center</h1>
             <div className="system-status-pills">
               <span className="pill green">System: Optimal</span>
-              <span className="pill blue">Active Sessions: {activeTests.length}</span>
-              <span className="pill amber">Network: Stable</span>
+              <span className="pill blue">Nodes: {activeTests.length} Active</span>
+              <span className="pill amber">Network: {refreshing ? 'Syncing...' : 'Stable'}</span>
             </div>
           </div>
           <div className="header-actions">
@@ -142,8 +146,8 @@ const TeacherDashboard = ({ handleLogout, username }) => {
           {!loading && activeTests.length === 0 && (
             <div className="ultra-empty-state">
               <FiCamera size={48} />
-              <h3>No Active Student Sessions</h3>
-              <p>Proctoring feeds will appear here once students begin their exams.</p>
+              <h3>No Active Sessions</h3>
+              <p>Waiting for students to begin their exams...</p>
             </div>
           )}
 
@@ -231,4 +235,4 @@ const TeacherDashboard = ({ handleLogout, username }) => {
   );
 };
 
-export default TeacherDashboard;
+export default DoctorDashboard;

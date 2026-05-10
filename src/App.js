@@ -34,6 +34,7 @@ import ProjectForm from "./ProjectForm.js";
 import AdminPanel from "./TrainingComponent/AdminPanel.js";
 import TrainerDashboard from "./TrainingComponent/TrainerDashboard.js";
 import TeacherDashboard from "./TrainingComponent/TeacherDashboard.js";
+import DoctorDashboard from "./TrainingComponent/DoctorDashboard.js";
 import ProctoringRecords from "./TrainingComponent/ProctoringRecords.js";
 import LogoSection from "./LogoSection.js";
 import Frontcourse from "./Frontcourse.js";
@@ -120,7 +121,10 @@ function AppWrapper() {
 
   const renderHome = () => {
     if (isLoggedIn) {
-      return <Navigate to="/UserDashboard" replace />;
+      if (userRole === "admin") return <Navigate to="/adminPanel" replace />;
+      if (userRole === "staff") return <Navigate to="/teacherDashboard" replace />;
+      if (userRole === "doctor") return <Navigate to="/doctorDashboard" replace />;
+      return <Navigate to="/UserDashboard" replace />; // Default for member
     }
     return (
       <>
@@ -141,11 +145,17 @@ function AppWrapper() {
   return (
     <>
       <Routes>
-        <Route path="/signup" element={<SignUp {...{ setIsLoggedIn, setUsername, setUserRole }} />} />
+        {/* Authentication */}
         <Route path="/LoginPage" element={<LoginPage {...{ setIsLoggedIn, setUsername, setUserRole }} />} />
         <Route path="/" element={renderHome()} />
-        <Route path="/SignUp" element={<Navigate to="/signup" replace />} />
 
+        {/* Dashboards */}
+        <Route path="/UserDashboard" element={isLoggedIn ? <Admindashboardg {...{ isLoggedIn, setIsLoggedIn, setUserRole, username, handleLogout, userRole }} /> : <Navigate to="/LoginPage" replace />} />
+        <Route path="/teacherDashboard" element={isLoggedIn ? <TeacherDashboard {...{ isLoggedIn, setIsLoggedIn, setUserRole, username, handleLogout, userRole }} /> : <Navigate to="/LoginPage" replace />} />
+        <Route path="/doctorDashboard" element={isLoggedIn ? <DoctorDashboard {...{ isLoggedIn, setIsLoggedIn, setUserRole, username, handleLogout, userRole }} /> : <Navigate to="/LoginPage" replace />} />
+        <Route path="/adminPanel" element={isLoggedIn ? <AdminPanel {...{ isLoggedIn, setIsLoggedIn, setUserRole, username, handleLogout, userRole }} /> : <Navigate to="/LoginPage" replace />} />
+
+        {/* Existing Routes... */}
         <Route path="/Status" element={isLoggedIn ? <Status {...{ isLoggedIn, username, userRole, handleLogout, setAccess }} /> : <Navigate to="/LoginPage" replace />} />
         <Route path="/CourseCard" element={isLoggedIn ? <CourseCard {...{ isLoggedIn, username, access, handleLogout }} /> : <Navigate to="/LoginPage" replace />} />
         <Route path="/McqTestPage" element={isLoggedIn ? <McqTestPage {...{ isLoggedIn, username, access, handleLogout }} /> : <Navigate to="/LoginPage" replace />} />
@@ -156,28 +166,22 @@ function AppWrapper() {
         <Route path="/CourseDjango" element={isLoggedIn ? <CourseDjango {...{ isLoggedIn, username, access, handleLogout }} /> : <Navigate to="/LoginPage" replace />} />
 
         <Route path="/Dashboard" element={isLoggedIn ? <Dashboard {...{ isLoggedIn, setIsLoggedIn, setUserRole, username, handleLogout }} /> : <Navigate to="/LoginPage" replace />} />
-        <Route path="/adminDashboard" element={isLoggedIn ? <Userdashboard {...{ isLoggedIn, setIsLoggedIn, setUserRole, username, handleLogout, userRole }} /> : <Navigate to="/LoginPage" replace />} />
-        <Route path="/UserDashboard" element={isLoggedIn ? <Admindashboardg {...{ isLoggedIn, setIsLoggedIn, setUserRole, username, handleLogout, userRole }} /> : <Navigate to="/LoginPage" replace />} />
-
         <Route path="/TestPage" element={isLoggedIn ? <TestPage {...{ isLoggedIn, setIsLoggedIn, setUserRole, username, handleLogout }} /> : <Navigate to="/LoginPage" replace />} />
         <Route path="/Uploadquestions" element={isLoggedIn ? <UploadQuestions {...{ isLoggedIn, setIsLoggedIn, setUserRole, username, handleLogout }} /> : <Navigate to="/LoginPage" replace />} />
         <Route path="/Company" element={isLoggedIn ? <Company {...{ isLoggedIn, setIsLoggedIn, setUserRole, username, handleLogout }} /> : <Navigate to="/LoginPage" replace />} />
         <Route path="/assignments" element={isLoggedIn ? <Assignments {...{ isLoggedIn, setIsLoggedIn, setUserRole, username, handleLogout }} /> : <Navigate to="/LoginPage" replace />} />
         <Route path="/instructions" element={isLoggedIn ? <InstructionPage {...{ isLoggedIn, setIsLoggedIn, setUserRole, username, handleLogout }} /> : <Navigate to="/LoginPage" replace />} />
         <Route path="/TestResults" element={isLoggedIn ? <ResultsPage {...{ isLoggedIn, setIsLoggedIn, setUserRole, username, handleLogout }} /> : <Navigate to="/LoginPage" replace />} />
-        <Route path="/TrainerDashboard" element={isLoggedIn ? <TrainerDashboard {...{ isLoggedIn, setIsLoggedIn, setUserRole, username, handleLogout, userRole }} /> : <Navigate to="/LoginPage" replace />} />
-        <Route path="/AdminPanel" element={isLoggedIn ? <AdminPanel {...{ isLoggedIn, setIsLoggedIn, setUserRole, username, handleLogout, userRole }} /> : <Navigate to="/LoginPage" replace />} />
-        <Route path="/teacherDashboard" element={isLoggedIn ? <TeacherDashboard {...{ isLoggedIn, username, handleLogout, userRole }} /> : <Navigate to="/LoginPage" replace />} />
-        <Route path="/adminPanel" element={isLoggedIn ? <AdminPanel {...{ isLoggedIn, setIsLoggedIn, setUserRole, username, handleLogout, userRole }} /> : <Navigate to="/LoginPage" replace />} />
         <Route path="/proctoringRecords" element={isLoggedIn ? <ProctoringRecords /> : <Navigate to="/LoginPage" replace />} />
         <Route path="/projects/:projectName" element={isLoggedIn ? <ProjectForm /> : <Navigate to="/LoginPage" replace />} />
         <Route path="/QuestionPage" element={isLoggedIn ? <QuestionPage {...{ isLoggedIn, setIsLoggedIn, username, userRole, handleLogout }} /> : <Navigate to="/LoginPage" replace />} />
         <Route path="/courses" element={isLoggedIn ? <Learn /> : <Navigate to="/LoginPage" replace />} />
 
 
+
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-      {isLoggedIn && <GlobalAIAssistant />}
+      {isLoggedIn && userRole === 'member' && <GlobalAIAssistant />}
     </>
   );
 }

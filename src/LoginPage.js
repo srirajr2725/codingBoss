@@ -11,7 +11,6 @@ const LoginPage = ({ setIsLoggedIn, setUsername, setUserRole }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [selectedRole, setSelectedRole] = useState("member");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -32,11 +31,22 @@ const LoginPage = ({ setIsLoggedIn, setUsername, setUserRole }) => {
         backendSuccess = true;
         backendData = response;
       } catch (err) {
-        apiErrorMsg = err?.status === 401 ? "❌ Invalid email or password. Please check your credentials." : (err.message || "Server error.");
+        apiErrorMsg = err?.status === 401 ? "❌ Invalid credentials." : (err.message || "Server error.");
+        
+        // 2. Hardcoded Fallback ONLY if backend fails and it's the team email
+        if (email.toLowerCase() === "thiran@gmail.com" && password === "thiran@360") {
+          setIsLoggedIn(true);
+          setUsername(email);
+          setUserRole("admin");
+          localStorage.setItem("username", email);
+          localStorage.setItem("role", "admin");
+          localStorage.setItem("token", "admin_master_token");
+          navigate("/adminPanel");
+          return;
+        }
       }
 
       if (backendSuccess) {
-        // --- REAL BACKEND LOGIN ---
         setIsLoggedIn(true);
         setUsername(email);
         setUserRole(backendData.role);
@@ -44,26 +54,20 @@ const LoginPage = ({ setIsLoggedIn, setUsername, setUserRole }) => {
         localStorage.setItem("username", email);
         localStorage.setItem("role", backendData.role);
         localStorage.setItem("token", backendData.access || backendData.token);
-
-        const userCode = backendData?.user_token || backendData?.data?.user_token;
-        if (userCode) {
-          localStorage.setItem("user_token", userCode);
-          localStorage.setItem(`user_token_${email.toLowerCase()}`, userCode);
+        if (backendData.user_id) {
+          const encryptedUserID = CryptoJS.AES.encrypt(backendData.user_id.toString(), "thirancoding360mgai").toString();
+          localStorage.setItem("userID", encryptedUserID);
         }
 
-        const encryptedPwd = CryptoJS.AES.encrypt(password, "thirancoding360mgai").toString();
-        localStorage.setItem("password", encryptedPwd);
-
-        const encryptedUserID = CryptoJS.AES.encrypt(backendData.user_id?.toString() || "12345", "thirancoding360mgai").toString();
-        localStorage.setItem("userID", encryptedUserID);
-
-        if (backendData.role === "member") navigate("/UserDashboard");
-        else if (backendData.role === "company") navigate("/teacherDashboard");
-        else if (backendData.role === "edutech") navigate("/adminPanel");
+        // --- NEW ROLE-BASED ROUTING ---
+        if (backendData.role === "admin") navigate("/adminPanel");
+        else if (backendData.role === "member") navigate("/UserDashboard");
+        else if (backendData.role === "staff") navigate("/teacherDashboard");
+        else if (backendData.role === "doctor") navigate("/doctorDashboard");
         else navigate("/");
 
       } else {
-        // 2. Fallback to Strict Local Mock Authentication
+        // 2. Fallback to Local Cache (for persistence)
         const storedEncryptedPwd = localStorage.getItem("password");
         const storedUsername = localStorage.getItem("username");
 
@@ -72,35 +76,21 @@ const LoginPage = ({ setIsLoggedIn, setUsername, setUserRole }) => {
           const decryptedPwd = decryptedBytes.toString(CryptoJS.enc.Utf8);
 
           if (decryptedPwd === password) {
-            // --- PERFECT LOCAL MATCH (BYPASS BACKEND FAILURE) ---
-            // Force the selected role so testers can freely switch between dashboards
-            const cachedRole = selectedRole;
-            const cachedToken = localStorage.getItem("token") || "mock_token";
-            const cachedUserToken = localStorage.getItem("user_token") || "mock_user_token";
-
+            const cachedRole = localStorage.getItem("role") || "member";
             setIsLoggedIn(true);
             setUsername(email);
             setUserRole(cachedRole);
 
-            localStorage.setItem("username", email);
-            localStorage.setItem("role", cachedRole);
-            localStorage.setItem("token", cachedToken);
-            localStorage.setItem("user_token", cachedUserToken);
-            localStorage.setItem(`user_token_${email.toLowerCase()}`, cachedUserToken);
-
-            const encryptedUserID = CryptoJS.AES.encrypt("12345", "thirancoding360mgai").toString();
-            localStorage.setItem("userID", encryptedUserID);
-
-            if (cachedRole === "member") navigate("/UserDashboard");
-            else if (cachedRole === "company") navigate("/teacherDashboard");
-            else if (cachedRole === "edutech") navigate("/adminPanel");
+            if (cachedRole === "admin") navigate("/adminPanel");
+            else if (cachedRole === "member") navigate("/UserDashboard");
+            else if (cachedRole === "staff") navigate("/teacherDashboard");
+            else if (cachedRole === "doctor") navigate("/doctorDashboard");
             else navigate("/");
           } else {
-            setError("❌ Incorrect password. Please use the exact password you registered with.");
+            setError("❌ Incorrect password.");
           }
         } else {
-          // If neither backend nor local works, display the original backend error.
-          setError(apiErrorMsg || "❌ Account not found. Please Sign Up first to create an account.");
+          setError(apiErrorMsg || "❌ Account not found. Contact Admin for credentials.");
         }
       }
     } finally {
@@ -120,18 +110,15 @@ const LoginPage = ({ setIsLoggedIn, setUsername, setUserRole }) => {
       </div>
 
       <div className="login-form">
-        <h2>Welcome Back</h2>
+        <h2>Role-Based Login</h2>
         {error && <div className="error-msg">{error}</div>}
 
         <form onSubmit={handleSubmit}>
-          
-
-
           <div className="form-group">
             <label><FaUser className="me-2" /> Email Address</label>
             <input
               type="email"
-              placeholder="name@company.com"
+              placeholder="name@codingboss.in"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -155,12 +142,12 @@ const LoginPage = ({ setIsLoggedIn, setUsername, setUserRole }) => {
           </div>
 
           <button type="submit" className="login-btn" disabled={loading}>
-            {loading ? "Authenticating..." : "Login to Workspace"}
+            {loading ? "Verifying..." : "Secure Login"}
           </button>
         </form>
 
         <p className="signup-text">
-          New to CodingBoss? <Link to="/signup">Create Account</Link>
+          Access restricted to authorized personnel only.
         </p>
       </div>
     </div>

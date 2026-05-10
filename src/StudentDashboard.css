@@ -5,24 +5,24 @@
 
 .sd-root {
   background: #f8fafc;
-  min-height: 100vh;
+  height: 100vh;
+  width: 100%;
   display: flex;
-  overflow-x: hidden;
+  overflow: hidden; 
 }
 
 .sd-sidebar {
-  position: fixed;
-  left: 0;
-  top: 0;
-  bottom: 0;
   width: 280px;
-  background: #0f172a; /* Deep Obsidian */
+  min-width: 280px;
+  background: #0f172a;
+  /* Deep Obsidian */
   padding: 32px 16px;
   display: flex;
   flex-direction: column;
   box-shadow: 10px 0 30px rgba(0, 0, 0, 0.05);
   z-index: 1100;
   transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  height: 100vh;
 }
 
 .sd-sidebar-header {
@@ -44,11 +44,13 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  color: #ffffff; /* coding - white for visibility on dark */
+  color: #ffffff;
+  /* coding - white for visibility on dark */
 }
 
 .sd-sidebar-title span {
-  color: #FFA003; /* boss - orange */
+  color: #FFA003;
+  /* boss - orange */
 }
 
 .sd-nav-list {
@@ -77,7 +79,8 @@
 }
 
 .sd-nav-item.active {
-  background: #FFA003; /* Orange accent */
+  background: #FFA003;
+  /* Orange accent */
   color: white;
   box-shadow: 0 8px 20px rgba(255, 160, 3, 0.2);
 }
@@ -96,11 +99,12 @@
 /* MAIN AREA */
 .sd-main-wrapper {
   flex: 1;
-  margin-left: 280px;
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
-  width: calc(100% - 280px);
+  height: 100vh;
+  overflow-y: auto; 
+  overflow-x: hidden;
+  position: relative;
 }
 
 .sd-topbar-placeholder {
@@ -115,14 +119,14 @@
 /* Progress area in sidebar */
 .sd-progress-box {
   padding: 24px;
-  background: rgba(255,255,255,0.03);
+  background: rgba(255, 255, 255, 0.03);
   border-radius: 24px;
   marginTop: auto;
 }
 
 .sd-progress-bar {
   height: 6px;
-  background: rgba(255,255,255,0.1);
+  background: rgba(255, 255, 255, 0.1);
   border-radius: 10px;
   overflow: hidden;
 }
@@ -135,36 +139,37 @@
 
 /* Update Navbar for Dashboard */
 .sd-root .navigation-container {
-    position: fixed;
-    top: 15px;
-    left: 280px;
-    right: 0;
-    width: auto;
-    transform: none;
-    max-width: none;
-    padding: 0 20px;
-    display: flex;
-    justify-content: flex-start;
+  position: sticky;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background: #ffffff;
+  z-index: 1000;
+  border-bottom: 1px solid #f1f5f9;
+  padding: 12px 0;
+  display: flex;
+  justify-content: flex-start;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.02);
 }
 
-.sd-root .custom-navbar {
-    width: 100%;
-    max-width: none;
+.sd-topbar-placeholder {
+  display: none; /* No longer needed with sticky navbar */
 }
-
 @media (max-width: 1024px) {
   .sd-sidebar {
     width: 80px;
   }
-  .sd-nav-text, .sd-sidebar-title b span, .sd-sidebar-title b b {
+
+  .sd-nav-text,
+  .sd-sidebar-title b span,
+  .sd-sidebar-title b b {
     display: none;
   }
+
   .sd-main-wrapper {
     margin-left: 80px;
     width: calc(100% - 80px);
-  }
-  .sd-root .navigation-container {
-    left: 80px;
   }
 }
 
@@ -172,12 +177,9 @@
   .sd-sidebar {
     display: none;
   }
+
   .sd-main-wrapper {
     margin-left: 0;
     width: 100%;
-  }
-  .sd-root .navigation-container {
-    left: 0;
-    padding: 0 10px;
   }
 }

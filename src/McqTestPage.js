@@ -5,12 +5,12 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import CryptoJS from 'crypto-js';
 import { Alert, Spinner, Container } from 'react-bootstrap';
 import { toast, ToastContainer } from 'react-toastify';
-import { FaShieldAlt, FaLock } from 'react-icons/fa';
+import { FaShieldAlt, FaLock, FaExclamationTriangle } from 'react-icons/fa';
 import 'react-toastify/dist/ReactToastify.css';
 
-// 🔥 FIX: Adjusted imports to point to folders inside src/
 import MCQQuiz from './MCQQuiz';
 import apiClient from './utils/apiClient';
+import './Proctoring.css';
 
 const getDecryptedUserId = () => {
   try {
@@ -29,539 +29,228 @@ const McqTestPage = () => {
   const navigate = useNavigate();
 
   const [questions, setQuestions] = useState([]);
-  const [questionStatus, setQuestionStatus] = useState({});
   const [testStartTime, setTestStartTime] = useState(null);
   const [isTestCompleted, setIsTestCompleted] = useState(false);
   const [completionLoading, setCompletionLoading] = useState(false);
   const [tabSwitchCount, setTabSwitchCount] = useState(0);
   const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [isTestStarted, setIsTestStarted] = useState(false);
   const [cameraStream, setCameraStream] = useState(null);
-  const [lastWarningTime, setLastWarningTime] = useState(0);
-  const [prevNoseX, setPrevNoseX] = useState(null);
-  const [shakeCount, setShakeCount] = useState(0);
-
+  
   const videoRef = useRef(null);
-  const canvasRef = useRef(null); // Ref for capturing frames
+  const canvasRef = useRef(null);
+  const isTrackingRef = useRef(false);
+  const lastWarningTimeRef = useRef(0);
+  const isUploadingRef = useRef(false);
 
-  // 🔥 NEW: Face-API Head Rotation Detection
+  const [showViolationOverlay, setShowViolationOverlay] = useState(false);
+  const [violationMessage, setViolationMessage] = useState("");
+
+  const triggerWarning = (msg) => {
+    const now = Date.now();
+    if (now - lastWarningTimeRef.current < 4000) return;
+    lastWarningTimeRef.current = now;
+
+    console.warn("AI PROCTOR ALERT:", msg);
+    setViolationMessage(msg);
+    setShowViolationOverlay(true);
+    setTimeout(() => setShowViolationOverlay(false), 2500);
+    
+    setTabSwitchCount(prev => {
+      const next = prev + 1;
+      if (next >= 3) { // 2 Warnings, 3rd is Terminate
+        toast.error("🚫 DISQUALIFIED! Too many violations.");
+        setTimeout(() => submitTest({}), 1000);
+      } else {
+        toast.error(`⚠️ WARNING (${next}/2): ${msg}`);
+      }
+      return next;
+    });
+  };
+
+  // 🔥 ENGINE: FACE TRACKING
   useEffect(() => {
-    const loadModels = async () => {
-      const script = document.createElement("script");
-      script.src = "https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js";
-      script.async = true;
-      script.onload = async () => {
-        const MODEL_URL = "https://justadudewhohacks.github.io/face-api.js/models";
-        await window.faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
-        await window.faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
-        startFaceTracking();
-      };
-      document.body.appendChild(script);
-    };
+    let timeoutId;
 
-    const startFaceTracking = () => {
-      let trackingInterval = setInterval(async () => {
-        if (isTestStarted && videoRef.current && window.faceapi) {
-          try {
-            const detections = await window.faceapi.detectSingleFace(
-              videoRef.current, 
-              new window.faceapi.TinyFaceDetectorOptions()
-            ).withFaceLandmarks();
+    const startFaceTracking = async () => {
+      if (!isTestStarted || !videoRef.current || !window.faceapi || isTrackingRef.current || document.hidden) {
+        timeoutId = setTimeout(startFaceTracking, 1000);
+        return;
+      }
 
-            if (!detections) {
-              console.warn("AI: Face missing!");
-              handleProctoringWarning("Face not detected! Please stay in front of the camera.");
-            } else {
-              const landmarks = detections.landmarks;
-              const nose = landmarks.getNose();
-              const noseTip = nose[3].x;
+      isTrackingRef.current = true;
+      try {
+        const detections = await window.faceapi.detectSingleFace(
+          videoRef.current,
+          new window.faceapi.TinyFaceDetectorOptions({ inputSize: 128, scoreThreshold: 0.3 })
+        ).withFaceLandmarks();
 
-              // 1. Rotation Detection
-              const leftEye = landmarks.getLeftEye();
-              const rightEye = landmarks.getRightEye();
-              const eyeCenter = (leftEye[0].x + rightEye[3].x) / 2;
-              const rotationOffset = Math.abs(eyeCenter - noseTip);
+        if (!detections) {
+          console.log("PROCTOR: No face found");
+          triggerWarning("Face not detected!");
+        } else {
+          const landmarks = detections.landmarks;
+          const nose = landmarks.getNose()[3];
+          const leftEye = landmarks.getLeftEye()[0];
+          const rightEye = landmarks.getRightEye()[3];
+          
+          const eyeCenterX = (leftEye.x + rightEye.x) / 2;
+          const diff = Math.abs(eyeCenterX - nose.x);
+          
+          console.log("PROCTOR DEBUG:", { diff, eyeWidth: (rightEye.x - leftEye.x) });
 
-              if (rotationOffset > 12) { // More sensitive
-                handleProctoringWarning("Suspicious head/eye rotation detected!");
-              }
+          // Sensitive rotation detection
+          if (diff > 10) { 
+            triggerWarning("Looking away detected!");
+          }
 
-              // 2. Shake Detection (Rapid horizontal movement)
-              if (prevNoseX !== null) {
-                const diff = Math.abs(noseTip - prevNoseX);
-                if (diff > 25) { // Significant jump
-                  handleProctoringWarning("Rapid head movement/shaking detected!");
-                }
-              }
-              setPrevNoseX(noseTip);
-            }
-          } catch (err) {
-            console.error("AI Tracking Error:", err);
+          // Gaze detection
+          const eyeWidth = rightEye.x - leftEye.x;
+          if (eyeWidth < 30) {
+            triggerWarning("Please focus on the screen!");
           }
         }
-      }, 2000); // Check every 2 seconds
-      return () => clearInterval(trackingInterval);
+      } catch (err) {
+        console.error("PROCTOR ERROR:", err);
+      } finally {
+        isTrackingRef.current = false;
+        timeoutId = setTimeout(startFaceTracking, 2000);
+      }
     };
 
     if (isTestStarted) {
-      loadModels();
+      if (!window.faceapi) {
+        const script = document.createElement("script");
+        script.src = "https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js";
+        script.async = true;
+        script.onload = async () => {
+          try {
+            const MODEL_URL = "https://justadudewhohacks.github.io/face-api.js/models";
+            await Promise.all([
+              window.faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
+              window.faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL)
+            ]);
+            console.log("AI Proctor Engine Loaded");
+            startFaceTracking();
+          } catch (e) { console.error("Model load error", e); }
+        };
+        document.body.appendChild(script);
+      } else {
+        startFaceTracking();
+      }
     }
+    return () => clearTimeout(timeoutId);
   }, [isTestStarted]);
 
-  // Existing Frame Upload Logic...
+  // 🔥 ENGINE: FRAME UPLOAD
   useEffect(() => {
-    let interval;
+    let intervalId;
     if (isTestStarted && cameraStream) {
-      interval = setInterval(async () => {
-        if (videoRef.current && canvasRef.current) {
+      intervalId = setInterval(async () => {
+        if (isUploadingRef.current || !videoRef.current || !canvasRef.current) return;
+        isUploadingRef.current = true;
+        try {
           const canvas = canvasRef.current;
-          const video = videoRef.current;
-          const context = canvas.getContext('2d');
-
-          // Set optimized canvas dimensions for proctoring (reduces payload size)
-          canvas.width = 320;
-          canvas.height = 240;
-
-          // Draw frame with scaling
-          context.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-          // Use full base64 data URL (required by backend)
-          const imageData = canvas.toDataURL('image/jpeg', 0.1);
-
-          try {
-            const res = await fetch('https://copious-frill-parrot.ngrok-free.dev/exam/upload-frame/', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'ngrok-skip-browser-warning': 'true' // Required to bypass ngrok browser warning
-              },
-              body: JSON.stringify({
-                student_id: 1,
-                image: imageData
-              })
-            });
-            if (!res.ok) {
-              const errText = await res.text();
-              console.error('Upload failed:', res.status, errText);
-            } else {
-              console.log('Frame uploaded successfully', res.status);
-            }
-          } catch (error) {
-            console.error('Error uploading frame:', error);
-          }
-        }
-      }, 10000); // Upload every 10 seconds
+          canvas.width = 240; canvas.height = 180;
+          canvas.getContext('2d', { alpha: false }).drawImage(videoRef.current, 0, 0, 240, 180);
+          await fetch('https://unlanded-isela-unmunificently.ngrok-free.dev/api/upload-frame/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true' },
+            body: JSON.stringify({ student_id: Number(getDecryptedUserId() || 1), image: canvas.toDataURL('image/jpeg', 0.1) })
+          });
+        } catch (e) {} finally { isUploadingRef.current = false; }
+      }, 15000);
     }
-    return () => clearInterval(interval);
+    return () => clearInterval(intervalId);
   }, [isTestStarted, cameraStream]);
 
-  // Required by MCQQuiz component to track answer progress
-  const updateQuestionStatus = (questionId, status) => {
-    setQuestionStatus((prev) => ({ ...prev, [questionId]: status }));
-  };
-
-  // 🔥 FIX: Ensure video stream is attached after the video element is rendered
   useEffect(() => {
-    if (isTestStarted && cameraStream && videoRef.current) {
-      videoRef.current.srcObject = cameraStream;
-    }
+    if (isTestStarted && cameraStream && videoRef.current) videoRef.current.srcObject = cameraStream;
   }, [isTestStarted, cameraStream]);
 
   const startProctoring = async () => {
     try {
-      // 1. Camera Access
-      const cam = await navigator.mediaDevices.getUserMedia({ video: true });
+      const cam = await navigator.mediaDevices.getUserMedia({ video: { width: 320, height: 240 } });
       setCameraStream(cam);
-
-      // 2. Fullscreen
-      const elem = document.documentElement;
-      if (elem.requestFullscreen) {
-        await elem.requestFullscreen();
-      }
-
+      if (document.documentElement.requestFullscreen) await document.documentElement.requestFullscreen();
       setIsTestStarted(true);
       setTestStartTime(Date.now());
-    } catch (err) {
-      toast.error("❌ Camera access and Fullscreen are required!");
-    }
+    } catch (err) { toast.error("❌ Camera and Fullscreen required!"); }
   };
 
   useEffect(() => {
-    return () => {
-      if (cameraStream) cameraStream.getTracks().forEach(track => track.stop());
-      if (document.fullscreenElement) {
-        document.exitFullscreen().catch(() => { });
-      }
-    };
-  }, [cameraStream]);
-
-  useEffect(() => {
     const fetchQuestions = async () => {
-      // 🚨 CRITICAL: If state is missing (e.g. on refresh), redirect back
-      if (!subtype) {
-        console.warn('Test metadata missing, redirecting to explorer...');
-        navigate('/TestPage', { replace: true });
-        return;
-      }
-
+      if (!subtype) { navigate('/TestPage', { replace: true }); return; }
       try {
-        setError(null);
-        const currentUserId = getDecryptedUserId();
-
-        if (currentUserId) {
-          // Check Local Storage Lock
-          const localTestKey = `mcq_completed_${currentUserId}_${subtype}_${filterCategory || 'Technical'}`;
-          if (localStorage.getItem(localTestKey)) {
-            setIsTestCompleted(true);
-            return;
-          }
-
-          // Check Backend Lock
-          try {
-            const checkResponse = await apiClient(
-              `compiler/check-test-completed/?user_id=${currentUserId}&subtype=${subtype}&type=${filterCategory || 'Technical'}`,
-              'GET'
-            );
-            if (checkResponse.is_completed || checkResponse.completed) {
-              setIsTestCompleted(true);
-              localStorage.setItem(localTestKey, 'true');
-              return;
-            }
-          } catch (err) {
-            console.error('Completion check failed:', err);
-          }
+        const userId = getDecryptedUserId();
+        if (userId && localStorage.getItem(`mcq_completed_${userId}_${subtype}_${filterCategory || 'Technical'}`)) {
+          setIsTestCompleted(true); return;
         }
-
-        // Fetch Questions
-        const data = await apiClient(
-          `compiler/filter-by-subtype/?subtype=${subtype}`,
-          'GET'
-        );
-        if (Array.isArray(data)) {
-          if (data.length === 0) {
-            setError('No questions available for this category.');
-          } else {
-            setQuestions(data);
-            setTestStartTime(Date.now());
-          }
-        } else {
-          setError('Invalid data received from server.');
-        }
-      } catch (err) {
-        console.error('Error fetching MCQ data:', err);
-        setError('Failed to load questions. Please check your connection or try again later.');
-      }
+        const data = await apiClient(`compiler/filter-by-subtype/?subtype=${subtype}`, 'GET');
+        if (Array.isArray(data) && data.length > 0) { setQuestions(data); setTestStartTime(Date.now()); }
+        else setError('No questions found.');
+      } catch (err) { setError('Connection error.'); } finally { setLoading(false); }
     };
-
     fetchQuestions();
   }, [subtype, filterCategory, navigate]);
 
   const submitTest = async (answers) => {
     setCompletionLoading(true);
-    const currentUserId = getDecryptedUserId();
-    const token =
-      localStorage.getItem("token") ||
-      localStorage.getItem("user_token") ||
-      localStorage.getItem("access_token");
-
-    if (!token) {
-      toast.error("⚠️ Authentication missing. Please log in again.");
-      setCompletionLoading(false);
-      setTimeout(() => navigate('/LoginPage'), 2000);
-      return;
-    }
-
     try {
-      // 1. Evaluate Answers (apiClient handles the auth header)
-      const response = await apiClient(
-        'compiler/evaluate/',
-        'POST',
-        {
-          user_id: Number(currentUserId),
-          type: filterCategory || 'Technical',
-          subtype: subtype,
-          answers: answers,
-        }
-      );
-
+      const response = await apiClient('compiler/evaluate/', 'POST', {
+        user_id: Number(getDecryptedUserId()),
+        type: filterCategory || 'Technical',
+        subtype: subtype,
+        answers: answers,
+      });
       if (response) {
-        toast.success("✅ Test Submitted Successfully!");
-
-        const correctAnswers = response.correct_answers || response.score || 0;
-        const totalQuestions = questions.length;
-        const timeTaken = testStartTime
-          ? Math.round((Date.now() - testStartTime) / 60000)
-          : 0;
-
-        const results = {
-          testType: 'MCQ',
-          score: correctAnswers,
-          maxScore: totalQuestions,
-          percentage: Math.round((correctAnswers / (totalQuestions || 1)) * 100),
-          totalQuestions,
-          correctAnswers,
-          incorrectAnswers: Math.max(0, totalQuestions - correctAnswers),
-          unattempted: 0,
-          timeTaken,
-          category: filterCategory,
-          subtype,
-          completedAt: new Date().toISOString(),
-        };
-
-        localStorage.setItem('testResults', JSON.stringify(results));
-        localStorage.setItem('submitMessage', 'Test Submitted Successfully!');
-
-        // Lock test locally
-        const localTestKey = `mcq_completed_${currentUserId}_${subtype}_${filterCategory || 'Technical'}`;
-        localStorage.setItem(localTestKey, 'true');
-
-        // Backup backend completion mark
-        try {
-          await apiClient(
-            'compiler/mark-test-completed/',
-            'POST',
-            {
-              user_id: currentUserId,
-              subtype: subtype,
-              type: filterCategory || 'Technical',
-              score: correctAnswers,
-              total_questions: totalQuestions,
-            }
-          );
-        } catch (err) {
-          console.log('Backend mark-completed fallback failed.');
-        }
-
-        setTimeout(() => navigate('/UserDashboard', { replace: true }), 1500);
+        toast.success("Test Submitted!");
+        localStorage.setItem(`mcq_completed_${getDecryptedUserId()}_${subtype}_${filterCategory || 'Technical'}`, 'true');
+        setTimeout(() => navigate('/UserDashboard', { replace: true }), 1000);
       }
-    } catch (error) {
-      console.error('Error submitting MCQ data:', error);
-      toast.error("❌ Results could not be saved. Returning to dashboard...");
-      setTimeout(() => navigate('/UserDashboard', { replace: true }), 2000);
-    } finally {
-      setCompletionLoading(false);
-    }
+    } catch (error) { toast.error("Submission failed."); } finally { setCompletionLoading(false); }
   };
 
-  const handleProctoringWarning = (message) => {
-    const now = Date.now();
-    if (now - lastWarningTime < 3000) return; // Debounce 3s
-    setLastWarningTime(now);
+  if (isTestCompleted) return <Container className="mt-5 text-center"><Alert variant="danger"><h4>🚫 Test already attended</h4></Alert></Container>;
+  if (completionLoading || loading) return <div className="text-center mt-5"><Spinner animation="border" /></div>;
+  if (error) return <div className="text-center mt-5"><h3>⚠️ {error}</h3></div>;
 
-    setTabSwitchCount((prev) => {
-      const newCount = prev + 1;
-      if (newCount >= 3) {
-        toast.error("🚫 Maximum violations reached. Test terminated!", { position: "top-center", autoClose: 4000 });
-        setTimeout(() => submitTest({}), 1500);
-      } else {
-        toast.warning(`⚠️ ${message} (${newCount}/2 warnings)`, { position: "top-center", autoClose: 3000 });
-      }
-      return newCount;
-    });
-  };
-
-  const handleTabSwitch = useCallback(() => {
-    if (isTestCompleted) return;
-    handleProctoringWarning("Tab switch or focus loss detected!");
-  }, [isTestCompleted]);
-
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (document.hidden && !isTestCompleted) {
-        handleTabSwitch();
-      }
-    };
-
-    const handleFocusLost = () => {
-      if (!isTestCompleted) {
-        handleTabSwitch();
-      }
-    };
-
-    window.addEventListener("blur", handleFocusLost);
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-
-    return () => {
-      window.removeEventListener("blur", handleFocusLost);
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-    };
-  }, [handleTabSwitch, isTestCompleted]);
-
-  useEffect(() => {
-    const preventClipboard = (e) => {
-      if (!isTestCompleted) {
-        e.preventDefault();
-        e.stopPropagation();
-        toast.error("❌ Copy / Paste / Cut is disabled during the test!");
-        return false;
-      }
-    };
-
-    const preventRightClick = (e) => {
-      if (!isTestCompleted) {
-        e.preventDefault();
-        toast.error("❌ Right click is disabled during the test!");
-        return false;
-      }
-    };
-
-    const preventKeyboardShortcuts = (e) => {
-      if (isTestCompleted) return;
-      if (
-        (e.ctrlKey || e.metaKey) &&
-        (
-          e.key.toLowerCase() === "c" ||
-          e.key.toLowerCase() === "v" ||
-          e.key.toLowerCase() === "x" ||
-          e.key.toLowerCase() === "a" ||
-          e.key.toLowerCase() === "s" ||
-          e.key.toLowerCase() === "u"
-        )
-      ) {
-        e.preventDefault();
-        e.stopPropagation();
-        toast.error("❌ Shortcut disabled during the test!");
-        return false;
-      }
-      if (e.key === "F12") {
-        e.preventDefault();
-        toast.error("❌ Developer tools disabled during test!");
-        return false;
-      }
-    };
-
-    const disableSelection = () => {
-      if (!isTestCompleted) {
-        document.body.style.userSelect = "none";
-      }
-    };
-
-    const enableSelection = () => {
-      document.body.style.userSelect = "auto";
-    };
-
-    disableSelection();
-    window.addEventListener("keydown", preventKeyboardShortcuts, true);
-    window.addEventListener("copy", preventClipboard, true);
-    window.addEventListener("cut", preventClipboard, true);
-    window.addEventListener("paste", preventClipboard, true);
-    window.addEventListener("contextmenu", preventRightClick, true);
-
-    return () => {
-      enableSelection();
-      window.removeEventListener("keydown", preventKeyboardShortcuts, true);
-      window.removeEventListener("copy", preventClipboard, true);
-      window.removeEventListener("cut", preventClipboard, true);
-      window.removeEventListener("paste", preventClipboard, true);
-      window.removeEventListener("contextmenu", preventRightClick, true);
-    };
-  }, [isTestCompleted]);
-
-  if (isTestCompleted) {
-    return (
-      <Container className="mt-5 p-4" style={{ backgroundColor: '#fff5f5', borderRadius: '12px', border: '1px solid #feb2b2' }}>
-        <Alert variant="danger" style={{ border: 'none', background: 'transparent' }}>
-          <Alert.Heading className="d-flex align-items-center gap-2">
-            <span style={{ fontSize: '1.5rem' }}>🚫</span> You are already attended
-          </Alert.Heading>
-          <hr />
-          <p className="mb-4">
-            You are already attended this <strong>{subtype}</strong> test.
-            Multiple attempts are not allowed.
-          </p>
-          <div className="d-flex justify-content-end">
-            <button
-              className="btn btn-danger px-4"
-              style={{ borderRadius: '8px', fontWeight: 'bold' }}
-              onClick={() => navigate('/UserDashboard', { replace: true })}
-            >
-              Return to Dashboard
-            </button>
-          </div>
-        </Alert>
-      </Container>
-    );
-  }
-
-  if (completionLoading) {
-    return (
-      <Container className="text-center mt-5">
-        <Spinner animation="border" />
-        <p>Processing your test results...</p>
-      </Container>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex-center flex-column text-center p-4">
-        <div style={{ fontSize: '4rem', color: '#ef4444', marginBottom: '24px' }}>⚠️</div>
-        <h3 style={{ fontWeight: 800, color: '#0f172a' }}>Assessment Error</h3>
-        <p style={{ color: '#64748b', maxWidth: '400px', marginBottom: '32px' }}>{error}</p>
-        <button
-          className="btn btn-dark px-4 py-2"
-          style={{ borderRadius: '12px', fontWeight: 800 }}
-          onClick={() => navigate('/TestPage', { replace: true })}
-        >
-          Return to Explorer
-        </button>
+  if (!isTestStarted) return (
+    <div className="ide-lock-screen">
+      <div className="ide-lock-card text-center">
+        <FaShieldAlt style={{ fontSize: '3.5rem', color: '#FFA003', marginBottom: '20px' }} />
+        <h2 style={{ fontWeight: 800 }}>Proctoring Enabled</h2>
+        <p className="text-muted">Stay focused. Looking away or leaving the camera will result in disqualification.</p>
+        <button className="btn btn-dark w-100 py-3 mt-4" style={{ borderRadius: '12px', fontWeight: 800 }} onClick={startProctoring}>Start Assessment</button>
       </div>
-    );
-  }
-
-  if (questions.length === 0) {
-    return (
-      <div className="flex-center flex-column">
-        <Spinner animation="border" variant="primary" />
-        <p className="mt-3" style={{ fontWeight: 600, color: '#64748b' }}>Syncing questions...</p>
-      </div>
-    );
-  }
-
-  if (!isTestStarted) {
-    return (
-      <div className="ide-lock-screen">
-        <div className="ide-lock-card text-center">
-          <div className="ide-lock-icon" style={{ fontSize: '3rem', color: '#FFA003', marginBottom: '24px' }}>
-            <FaShieldAlt />
-          </div>
-          <h2 style={{ fontWeight: 800, marginBottom: '16px' }}>Secure Assessment Portal</h2>
-          <p style={{ color: '#64748b', marginBottom: '32px' }}>
-            To ensure the integrity of this evaluation, you must enable your camera and enter fullscreen mode.
-            All tab switches and browser interactions are strictly monitored.
-          </p>
-          <button
-            className="btn btn-dark w-100 py-3"
-            style={{ borderRadius: '12px', fontWeight: 800, fontSize: '1.1rem' }}
-            onClick={startProctoring}
-          >
-            Initialize Secure Environment
-          </button>
-        </div>
-      </div>
-    );
-  }
+    </div>
+  );
 
   return (
     <div style={{ background: '#f8fafc', minHeight: '100vh', position: 'relative' }}>
       <ToastContainer position="top-center" autoClose={3000} />
+      
+      {showViolationOverlay && (
+        <div className="security-alert-overlay">
+          <div className="alert-flash-red"></div>
+          <div className="alert-content">
+            <FaExclamationTriangle size={60} color="#ff4d4d" className="mb-4" />
+            <h2 className="alert-title">SECURITY WARNING</h2>
+            <p className="alert-msg">{violationMessage}</p>
+            <div className="alert-violation-tag">ACTION REQUIRED</div>
+          </div>
+        </div>
+      )}
 
-      {/* PROCTORING DASHBOARD */}
       <div className="proctoring-dashboard">
         <div className="camera-proctor-box">
           <video ref={videoRef} autoPlay playsInline muted className="camera-video" />
           <canvas ref={canvasRef} style={{ display: 'none' }} />
-          <div className="camera-status">
-            <div className="pulse"></div> PROCTORING ACTIVE
-          </div>
+          <div className="camera-status"><div className="pulse"></div> LIVE PROCTOR</div>
         </div>
       </div>
-
-      <MCQQuiz
-        questions={questions}
-        updateQuestionStatus={updateQuestionStatus}
-        submitTest={submitTest}
-      />
+      <MCQQuiz questions={questions} updateQuestionStatus={() => {}} submitTest={submitTest} />
     </div>
   );
 };

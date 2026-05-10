@@ -39,6 +39,7 @@ const NavbarComponent = ({ isLoggedIn, setIsLoggedIn, userRole, handleLogout, pr
     }, [isLoggedIn, userRole, userid]);
 
     const fetchProfileCompletion = async () => {
+        if (!userid) return; // 🛡️ Safety check
         try {
             const response = await apiClient(
                 `trainer/trainers/get/${userid}`,
@@ -52,14 +53,16 @@ const NavbarComponent = ({ isLoggedIn, setIsLoggedIn, userRole, handleLogout, pr
                 const requiredFields = ["name", "education", "resume", "current_location", "native_location"];
                 let filledCount = 0;
                 requiredFields.forEach((field) => {
-                    if (field === "education") {
-                        if (Array.isArray(profile[field]) && profile[field].length > 0 &&
-                            profile[field].some((edu) => edu.degree && edu.year && edu.institution)) {
-                            filledCount++;
-                        }
-                    } else {
-                        if (profile[field] && profile[field].toString().trim() !== "") {
-                            filledCount++;
+                    if (profile && profile[field]) {
+                        if (field === "education") {
+                            if (Array.isArray(profile[field]) && profile[field].length > 0 &&
+                                profile[field].some((edu) => edu.degree && edu.year && edu.institution)) {
+                                filledCount++;
+                            }
+                        } else {
+                            if (profile[field].toString().trim() !== "") {
+                                filledCount++;
+                            }
                         }
                     }
                 });
@@ -80,21 +83,25 @@ const NavbarComponent = ({ isLoggedIn, setIsLoggedIn, userRole, handleLogout, pr
     }, [isLoggedIn, userRole, userid]);
 
     const handleLogoClick = () => {
-        const currentRole = userRole || localStorage.getItem('userRole');
+        const currentRole = userRole || localStorage.getItem('role');
         const checkLogin = isLoggedIn || !!localStorage.getItem('username');
 
         if (checkLogin) {
-            if (currentRole === 'college') navigate('/UserDashboard');
-            else if (currentRole === 'company') navigate('/TrainerDashboard');
+            if (currentRole === 'admin') navigate('/adminPanel');
+            else if (currentRole === 'staff') navigate('/teacherDashboard');
+            else if (currentRole === 'doctor') navigate('/doctorDashboard');
             else navigate('/UserDashboard');
         } else {
-            navigate('/UserDashboard');
+            navigate('/');
         }
     };
 
     const handleProfileClick = () => {
-        if (userRole === 'college') navigate('/UserDashboard');
-        else if (userRole === 'company') navigate('/TrainerDashboard');
+        const currentRole = userRole || localStorage.getItem('role');
+        if (currentRole === 'admin') navigate('/adminPanel');
+        else if (currentRole === 'staff') navigate('/teacherDashboard');
+        else if (currentRole === 'doctor') navigate('/doctorDashboard');
+        else navigate('/UserDashboard');
     };
 
     const displayProgress = typeof progress === 'number' ? progress : localProgress;
@@ -138,14 +145,9 @@ const NavbarComponent = ({ isLoggedIn, setIsLoggedIn, userRole, handleLogout, pr
                             </Nav>
                         ) : (
                             <div className="d-flex justify-content-center align-items-center">
-                                <Link to="/signup" className="me-2">
-                                    <Button variant="outline-warning" className="get-started-btn my-3 mt-lg-0 my-lg-0">
-                                        <b>Sign Up</b>
-                                    </Button>
-                                </Link>
                                 <Link to="/LoginPage">
                                     <Button variant="warning" className="get-started-btn my-3 mt-lg-0 my-lg-0">
-                                        <b>Login</b>
+                                        <b>Secure Login</b>
                                     </Button>
                                 </Link>
                             </div>
