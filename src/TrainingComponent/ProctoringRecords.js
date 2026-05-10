@@ -4,6 +4,37 @@ import './ProctoringRecords.css';
 
 const API_URL = 'https://unlanded-isela-unmunificently.ngrok-free.dev/api/upload-frame/';
 
+const AuthorizedImage = ({ src, alt, ...props }) => {
+  const [imgSrc, setImgSrc] = useState(null);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    if (!src) return;
+    if (src.startsWith('data:')) {
+      setImgSrc(src);
+      return;
+    }
+    let isMounted = true;
+    fetch(src, {
+      headers: { 'ngrok-skip-browser-warning': 'true' }
+    })
+      .then(res => {
+        if (!res.ok) throw new Error('Fetch failed');
+        return res.blob();
+      })
+      .then(blob => {
+        if (isMounted) setImgSrc(URL.createObjectURL(blob));
+      })
+      .catch(() => {
+        if (isMounted) setError(true);
+      });
+    return () => { isMounted = false; };
+  }, [src]);
+
+  if (error || !imgSrc) return null;
+  return <img src={imgSrc} alt={alt} {...props} />;
+};
+
 const ProctoringRecords = () => {
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -167,7 +198,7 @@ const ProctoringRecords = () => {
               <div className="pr-card-img">
                 <div className="pr-live-badge"><div className="pr-live-dot"></div> LIVE</div>
                 {record.latest_frame_url || record.image ? (
-                  <img
+                  <AuthorizedImage
                     src={record.latest_frame_url || (record.image.startsWith('data:') ? record.image : `data:image/jpeg;base64,${record.image}`)}
                     alt={`Student ${record.student_name}`}
                     onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }}
@@ -211,7 +242,7 @@ const ProctoringRecords = () => {
               <span><FiCamera style={{ marginRight: 6, color: '#94a3b8' }} /> Latest Frame: {formatTime(selectedFrame.latest_frame_created_at || selectedFrame.timestamp)}</span>
             </div>
             {selectedFrame.latest_frame_url || selectedFrame.image ? (
-              <img
+              <AuthorizedImage
                 src={selectedFrame.latest_frame_url || (selectedFrame.image.startsWith('data:') ? selectedFrame.image : `data:image/jpeg;base64,${selectedFrame.image}`)}
                 alt="Enlarged Frame"
                 style={{ width: '100%', borderRadius: '16px', marginTop: '16px', border: '2px solid #e2e8f0', boxShadow: '0 8px 24px rgba(0,0,0,0.1)' }}
