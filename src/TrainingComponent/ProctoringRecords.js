@@ -33,11 +33,15 @@ const ProctoringRecords = () => {
       });
       if (!res.ok) throw new Error(`Server responded with ${res.status}`);
       const data = await res.json();
-      // Support various response shapes
-      const list = Array.isArray(data)
-        ? data
-        : data.results || data.frames || data.data || [];
-      // Only keep records that have a student_id (meaning they attended a test)
+      // Support the new sessions format
+      let list = [];
+      if (data && data.sessions) {
+        list = data.sessions;
+      } else {
+        list = Array.isArray(data) ? data : data.results || data.frames || data.data || [];
+      }
+      
+      // Keep records that have a student_id
       const attended = list.filter(r => r.student_id !== undefined && r.student_id !== null);
       setRecords(attended);
     } catch (err) {
@@ -61,6 +65,7 @@ const ProctoringRecords = () => {
     ? records
     : records.filter(r => String(r.student_id) === selectedStudent);
 
+  // Consider a session flagged if needed, for now default to false or whatever the backend returns
   const flaggedCount = records.filter(r => r.flagged).length;
 
   const formatTime = (ts) => {
@@ -155,21 +160,22 @@ const ProctoringRecords = () => {
         <div className="pr-grid">
           {filtered.map((record, idx) => (
             <div
-              key={record.id || idx}
+              key={record.session_id || record.id || idx}
               className={`pr-card ${record.flagged ? 'flagged' : ''}`}
               onClick={() => setSelectedFrame(record)}
             >
               <div className="pr-card-img">
-                {record.image ? (
+                <div className="pr-live-badge"><div className="pr-live-dot"></div> LIVE</div>
+                {record.latest_frame_url || record.image ? (
                   <img
-                    src={record.image.startsWith('data:') ? record.image : `data:image/jpeg;base64,${record.image}`}
-                    alt={`Frame ${idx + 1}`}
+                    src={record.latest_frame_url || (record.image.startsWith('data:') ? record.image : `data:image/jpeg;base64,${record.image}`)}
+                    alt={`Student ${record.student_name}`}
                     onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }}
                   />
                 ) : null}
-                <div className="pr-card-placeholder" style={{ display: record.image ? 'none' : 'flex' }}>
+                <div className="pr-card-placeholder" style={{ display: (record.latest_frame_url || record.image) ? 'none' : 'flex' }}>
                   <FiUser size={40} />
-                  <p>Frame #{idx + 1}</p>
+                  <p>No Frame Available</p>
                 </div>
                 {record.flagged && (
                   <div className="pr-flag-badge">
@@ -179,12 +185,12 @@ const ProctoringRecords = () => {
               </div>
               <div className="pr-card-info">
                 <div className="pr-card-name">
-                  <FiUser style={{ marginRight: 6, opacity: 0.6 }} />
+                  <FiUser style={{ marginRight: 6, color: '#6366f1' }} />
                   {record.student_name || `Student #${record.student_id}`}
                 </div>
                 <div className="pr-card-time">
                   <FiClock style={{ marginRight: 4, opacity: 0.6 }} />
-                  {formatTime(record.timestamp)}
+                  Last seen: {formatTime(record.latest_frame_created_at || record.timestamp)}
                 </div>
               </div>
             </div>
@@ -199,27 +205,21 @@ const ProctoringRecords = () => {
             <button className="pr-modal-close" onClick={() => setSelectedFrame(null)}>
               <FiX />
             </button>
-            <h2>
-              <FiCamera style={{ marginRight: 10, color: '#6366f1' }} />
-              Exam Frame
-            </h2>
+            <h2><FiUser style={{ marginRight: 10, color: '#6366f1' }} /> {selectedFrame.student_name || `Student #${selectedFrame.student_id}`}</h2>
             <div className="pr-modal-meta">
-              <span><FiUser style={{ marginRight: 6 }} />{selectedFrame.student_name || `Student #${selectedFrame.student_id}`}</span>
-              <span><FiClock style={{ marginRight: 6 }} />{formatTime(selectedFrame.timestamp)}</span>
-              <span style={{ color: selectedFrame.flagged ? '#ef4444' : '#10b981', fontWeight: 800 }}>
-                {selectedFrame.flagged ? <><FiAlertTriangle style={{ marginRight: 4 }} />Flagged Violation</> : '✅ Clean'}
-              </span>
+              <span><FiClock style={{ marginRight: 6, color: '#94a3b8' }} /> Session Started: {formatTime(selectedFrame.started_at || selectedFrame.timestamp)}</span>
+              <span><FiCamera style={{ marginRight: 6, color: '#94a3b8' }} /> Latest Frame: {formatTime(selectedFrame.latest_frame_created_at || selectedFrame.timestamp)}</span>
             </div>
-            {selectedFrame.image ? (
+            {selectedFrame.latest_frame_url || selectedFrame.image ? (
               <img
-                src={selectedFrame.image.startsWith('data:') ? selectedFrame.image : `data:image/jpeg;base64,${selectedFrame.image}`}
-                alt="Exam frame"
-                style={{ width: '100%', borderRadius: 12, marginTop: 16, border: '2px solid #e2e8f0' }}
+                src={selectedFrame.latest_frame_url || (selectedFrame.image.startsWith('data:') ? selectedFrame.image : `data:image/jpeg;base64,${selectedFrame.image}`)}
+                alt="Enlarged Frame"
+                style={{ width: '100%', borderRadius: '16px', marginTop: '16px', border: '2px solid #e2e8f0', boxShadow: '0 8px 24px rgba(0,0,0,0.1)' }}
               />
             ) : (
               <div className="pr-modal-placeholder">
-                <FiCamera size={36} style={{ color: '#94a3b8', marginBottom: 10 }} />
-                <p>No image captured for this frame</p>
+                <FiUser size={48} />
+                <p>No image data available.</p>
               </div>
             )}
           </div>

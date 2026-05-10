@@ -60,8 +60,10 @@ const McqTestPage = () => {
     setTabSwitchCount(prev => {
       const next = prev + 1;
       if (next >= 3) { // 2 Warnings, 3rd is Terminate
-        toast.error("🚫 DISQUALIFIED! Too many violations.");
-        setTimeout(() => submitTest({}), 1000);
+        // Temporarily commented out termination
+        // toast.error("🚫 DISQUALIFIED! Too many violations.");
+        // setTimeout(() => submitTest({}), 1000);
+        toast.error(`⚠️ WARNING (${next}): ${msg} (Termination Disabled)`);
       } else {
         toast.error(`⚠️ WARNING (${next}/2): ${msg}`);
       }
