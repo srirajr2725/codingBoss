@@ -97,7 +97,33 @@
   align-items: center;
   justify-content: space-between;
 }
+.ide-toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
 
+.ide-lang-selector {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #e2e8f0;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.3s;
+}
+
+.ide-lang-selector:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.ide-lang-selector option {
+  background: #0f172a;
+  color: #e2e8f0;
+}
 .ide-status-pill {
   background: rgba(16, 185, 129, 0.1);
   color: #10b981;
@@ -140,27 +166,66 @@
   flex-direction: column;
 }
 
-.ide-console-tabs {
+.ide-console-header {
   display: flex;
-  padding: 0 24px;
+  background: rgba(255, 255, 255, 0.02);
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 0 16px;
 }
 
-.ide-console-tab {
+.console-tab {
   padding: 12px 20px;
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   font-weight: 700;
   color: #64748b;
+  display: flex;
+  align-items: center;
+  gap: 8px;
   cursor: pointer;
-  border-bottom: 2px solid transparent;
 }
 
-.ide-console-tab.active {
+.console-tab.active {
   color: #FFA003;
-  border-bottom-color: #FFA003;
+  border-bottom: 2px solid #FFA003;
+}
+
+.ide-console-body {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+.ide-input-panel {
+  width: 300px;
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  flex-direction: column;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.input-label {
+  padding: 12px 20px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.ide-stdin-field {
+  flex: 1;
+  background: transparent;
+  border: none;
+  padding: 0 20px 20px;
+  color: #e2e8f0;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85rem;
+  resize: none;
+  outline: none;
 }
 
 .ide-console-output {
+  flex: 1;
   padding: 24px;
   font-family: 'JetBrains Mono', 'Fira Code', monospace;
   font-size: 0.9rem;

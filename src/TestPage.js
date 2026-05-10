@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { Card, Button, Container, Row, Col, Spinner } from 'react-bootstrap';
+import { Card, Button, Container, Spinner } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
-import { FaCode, FaLightbulb, FaUserTie, FaChevronRight, FaLock, FaExclamationTriangle, FaCheckCircle, FaClock } from 'react-icons/fa';
+import { FaCode, FaChevronRight, FaLock, FaExclamationTriangle, FaCheckCircle, FaClock } from 'react-icons/fa';
 import Navbar from './NavbarComponent';
 import apiClient from './utils/apiClient';
 import CryptoJS from 'crypto-js';
@@ -19,16 +19,15 @@ const getDecryptedUserId = () => {
   }
 };
 
-const CategoryList = ({ isLoggedIn, setIsLoggedIn, userRole, handleLogout, username }) => {
+const TestPage = ({ isLoggedIn, setIsLoggedIn, userRole, handleLogout, username }) => {
 
-  const [categories, setCategories] = useState([]);
   const [subtypes, setSubtypes] = useState({});
-  const [loadingCategories, setLoadingCategories] = useState(true);
+  const [loadingInitial, setLoadingInitial] = useState(true);
   const [loadingSubtypes, setLoadingSubtypes] = useState(null);
   const [error, setError] = useState(null);
-  const [filterCategory, setFilterCategory] = useState('Technical');
+  const [filterLanguage, setFilterLanguage] = useState('JAVA');
   const [submitMsg, setSubmitMsg] = useState('');
-  
+
   // 🔥 Backend synced results for locking
   const [completedTests, setCompletedTests] = useState([]);
 
@@ -50,10 +49,6 @@ const CategoryList = ({ isLoggedIn, setIsLoggedIn, userRole, handleLogout, usern
           localStorage.removeItem('submitMessage');
         }
 
-        // Fetch Categories
-        const catData = await apiClient('compiler/get-category/', 'GET');
-        setCategories(catData.categories || []);
-
         // Fetch Completed Tests for robust locking
         const currentUserId = getDecryptedUserId();
         if (currentUserId) {
@@ -62,11 +57,10 @@ const CategoryList = ({ isLoggedIn, setIsLoggedIn, userRole, handleLogout, usern
             setCompletedTests(marksData.results);
           }
         }
-
       } catch (error) {
         setError('Server maintenance is scheduled until 6 AM. Please try again after that.');
       } finally {
-        setLoadingCategories(false);
+        setLoadingInitial(false);
       }
     };
     fetchInitialData();
@@ -76,44 +70,58 @@ const CategoryList = ({ isLoggedIn, setIsLoggedIn, userRole, handleLogout, usern
   // ================= FETCH SUBTYPE =================
   useEffect(() => {
     const fetchSubtypes = async () => {
-      if (filterCategory) {
-        setLoadingSubtypes(filterCategory);
+      if (filterLanguage) {
+        setLoadingSubtypes(filterLanguage);
         try {
           const response = await apiClient(
-            `compiler/get-subtype/?category=${filterCategory}`,
+            `compiler/sample/?language=${filterLanguage}`,
             'GET'
           );
+          
+          // Extract unique subtypes from the questions
+          let uniqueSubtypes = [];
+          if (Array.isArray(response)) {
+            uniqueSubtypes = [...new Set(response.map(q => q.subtype).filter(Boolean))];
+          }
+          
           setSubtypes((prev) => ({
             ...prev,
-            [filterCategory]: response.subtypes || [],
+            [filterLanguage]: uniqueSubtypes,
           }));
         } catch (error) {
-          setError(`Failed to fetch subtypes for ${filterCategory}.`);
+          setError(`Failed to fetch subtypes for ${filterLanguage}.`);
         } finally {
           setLoadingSubtypes(null);
         }
       }
     };
     fetchSubtypes();
-  }, [filterCategory]);
+  }, [filterLanguage]);
 
 
   // ================= CATEGORY SELECT =================
-  const handleViewSubtypes = async (category) => {
-    if (filterCategory === category) return;
-    setLoadingSubtypes(category);
+  const handleViewSubtypes = async (language) => {
+    if (filterLanguage === language) return;
+    setLoadingSubtypes(language);
     try {
       const response = await apiClient(
-        `compiler/get-subtype/?category=${category}`,
+        `compiler/sample/?language=${language}`,
         'GET'
       );
+      
+      // Extract unique subtypes from the questions
+      let uniqueSubtypes = [];
+      if (Array.isArray(response)) {
+        uniqueSubtypes = [...new Set(response.map(q => q.subtype).filter(Boolean))];
+      }
+
       setSubtypes((prev) => ({
         ...prev,
-        [category]: response.subtypes || [],
+        [language]: uniqueSubtypes,
       }));
-      setFilterCategory(category);
+      setFilterLanguage(language);
     } catch (error) {
-      setError(`Data Not Available for ${category}.`);
+      setError(`Data Not Available for ${language}.`);
     } finally {
       setLoadingSubtypes(null);
     }
@@ -133,26 +141,26 @@ const CategoryList = ({ isLoggedIn, setIsLoggedIn, userRole, handleLogout, usern
     if (!currentUserId) return false;
 
     // 1. Check LocalStorage (Fastest)
-    const localTestKey = `mcq_completed_${currentUserId}_${subtype}_${filterCategory || 'Technical'}`;
+    const localTestKey = `mcq_completed_${currentUserId}_${subtype}_${filterLanguage}`;
     if (localStorage.getItem(localTestKey)) return true;
 
     // 2. Check Backend List (Most reliable)
-    return completedTests.some(test => 
-      test.subtype === subtype && 
-      test.type === (filterCategory || 'Technical')
+    return completedTests.some(test =>
+      test.subtype === subtype &&
+      test.type === filterLanguage
     );
   };
 
-  const getCategoryIcon = (cat) => {
-    if (cat === 'Technical') return <FaCode />;
-    if (cat === 'Aptitude') return <FaLightbulb />;
-    if (cat === 'SoftSkill') return <FaUserTie />;
+  const getCategoryIcon = (lang) => {
+    if (lang === 'Java') return <FaCode />;
+    if (lang === 'Python') return <FaCode />;
+    if (lang === 'C') return <FaCode />;
     return <FaCode />;
   };
 
 
   // ================= LOADING =================
-  if (loadingCategories)
+  if (loadingInitial)
     return (
       <div className="flex-center">
         <Spinner animation="border" variant="primary" />
@@ -189,7 +197,7 @@ const CategoryList = ({ isLoggedIn, setIsLoggedIn, userRole, handleLogout, usern
               <Button className="quiz-btn btn-start" onClick={() => {
                 setShowWarning(false);
                 navigate('/McqTestPage', {
-                  state: { subtype: selectedSubtype, filterCategory }
+                  state: { subtype: selectedSubtype, filterCategory: filterLanguage }
                 });
               }}>Continue Test</Button>
             </div>
@@ -217,13 +225,14 @@ const CategoryList = ({ isLoggedIn, setIsLoggedIn, userRole, handleLogout, usern
         </div>
 
         <div className="category-tabs">
-          {['Technical', 'Aptitude', 'SoftSkill'].map((cat) => (
+          {['Java', 'Python', 'C'].map((lang) => (
             <button
-              key={cat}
-              className={`tab-btn ${filterCategory === cat ? 'active' : ''}`}
-              onClick={() => handleViewSubtypes(cat)}
+              key={lang}
+              name="sample-filter"
+              className={`tab-btn ${filterLanguage === lang ? 'active' : ''}`}
+              onClick={() => handleViewSubtypes(lang)}
             >
-              {getCategoryIcon(cat)} <span className="ms-2">{cat}</span>
+              {getCategoryIcon(lang)} <span className="ms-2">{lang}</span>
             </button>
           ))}
         </div>
@@ -237,14 +246,14 @@ const CategoryList = ({ isLoggedIn, setIsLoggedIn, userRole, handleLogout, usern
               <p className="mt-3">Loading available tests...</p>
             </div>
           ) : (
-            subtypes[filterCategory] && subtypes[filterCategory].map((subtype, index) => {
+            subtypes[filterLanguage] && subtypes[filterLanguage].map((subtype, index) => {
               const attended = isAlreadyAttended(subtype);
               return (
                 <Card key={index} className="quiz-card">
                   <Card.Body className="d-flex justify-content-between align-items-center">
                     <div className="quiz-info">
                       <div className="quiz-icon-wrapper">
-                        {getCategoryIcon(filterCategory)}
+                        {getCategoryIcon(filterLanguage)}
                       </div>
                       <div>
                         <h4 className="quiz-name">{subtype}</h4>
@@ -276,4 +285,4 @@ const CategoryList = ({ isLoggedIn, setIsLoggedIn, userRole, handleLogout, usern
   );
 };
 
-export default CategoryList;
+export default TestPage;

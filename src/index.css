@@ -123,3 +123,11 @@ body {
   70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
   100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
 }
+
+/* Hide Global AI when Course UI or Learning Lab is present */
+.lrn-container ~ .global-ai-container,
+.lrn-db-main ~ .global-ai-container,
+body:has(.lrn-container) .global-ai-container,
+body:has(.lrn-db-main) .global-ai-container {
+  display: none !important;
+}

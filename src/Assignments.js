@@ -5,7 +5,7 @@ import apiClient from './utils/apiClient';
 import CryptoJS from "crypto-js";
 import './Assignments.css';
 
-const Assignments = ({ isLoggedIn, setIsLoggedIn }) => { 
+const Assignments = ({ isLoggedIn, setIsLoggedIn }) => {
   const [progress, setProgress] = useState(0);
   const navigate = useNavigate();
   const [programmingQuestions, setProgrammingQuestions] = useState([]);
@@ -27,7 +27,7 @@ const Assignments = ({ isLoggedIn, setIsLoggedIn }) => {
       try {
         const questions = await apiClient('compiler/questions/', 'GET');
         setProgrammingQuestions(questions);
-        
+
         if (userId) {
           const completed = await apiClient(`compiler/completed-questions/?user_id=${userId}`, 'GET');
           if (completed?.completed_questions) {
@@ -103,7 +103,7 @@ const Assignments = ({ isLoggedIn, setIsLoggedIn }) => {
       <div className="as-list">
         {mcqQuestions.map((q, i) => {
           const isCompleted = !!localStorage.getItem(`mcq_completed_${userId}_${q}_Technical`);
-          
+
           return (
             <div key={i} className="as-item-card">
               <div className="as-item-main">

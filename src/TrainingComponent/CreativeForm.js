@@ -552,7 +552,7 @@ useEffect(() => {
     try {
       const response = await axios.post('/upload', formData, {
         headers: {
-          'ngrok-skip-browser-warning': '98547', // Custom header if needed
+           // Custom header if needed
         },
       })
 

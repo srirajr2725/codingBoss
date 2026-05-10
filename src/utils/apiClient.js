@@ -21,7 +21,7 @@ const apiClient = async (
   const headers = {
     Accept: "application/json",
     "Content-Type": "application/json",
-    "ngrok-skip-browser-warning": "true",
+
     ...customHeaders,
   };
 
@@ -76,7 +76,14 @@ const apiClient = async (
 
     const contentType = response.headers.get("content-type");
     const isJson = contentType?.includes("application/json");
-    const data = isJson ? await response.json() : null;
+    let data = null;
+    try {
+      if (isJson) {
+        data = await response.json();
+      }
+    } catch (parseErr) {
+      console.warn("JSON parse error", parseErr);
+    }
 
     if (!response.ok) {
       // 1. Try to find message in data

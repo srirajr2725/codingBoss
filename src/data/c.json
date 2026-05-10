@@ -1,225 +1,599 @@
 {
-  "id": 2,
-  "title": "Low-Level C Engineering",
-  "description": "The definitive guide to memory management, system calls, and performance optimization.",
-  "imageUrl": "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/c/c-original.svg",
-  "badge": "Hardware Track",
-  "duration": "12 Weeks",
-  "level": "Beginner → Advanced",
-  "students": "10k+",
-  "rating": "4.8",
-  "color": "#5c6bc0",
-  "curriculum": [
-    {
-      "id": "c1",
-      "title": "Chapter 1: The C Compilation Pipeline",
-      "type": "chapter",
-      "dur": "35m read",
-      "contentBlocks": [
-        { "type": "text", "value": "C is a compiled language. To be a systems engineer, you must know what happens inside the compiler." },
-        { "type": "definition", "term": "Compiler", "value": "A special program that translates a program written in a high-level language (like C) into machine code, bytecode, or another lower-level language." },
-        { "type": "definition", "term": "Preprocessor", "value": "A program that processes its input data to produce output that is used as input to another program. In C, it handles directives like #include and #define." },
-        { "type": "step", "number": 1, "title": "Preprocessing (#)", "value": "Handles macros, header inclusion, and conditional compilation. Use 'gcc -E' to see the preprocessed output." },
-        { "type": "step", "number": 2, "title": "Compilation (ASM)", "value": "Translates C code into Assembly code specific to your CPU architecture." },
-        { "type": "code", "lang": "bash", "value": "gcc -Wall -O2 main.c -o my_app" },
-        { "type": "text", "value": "### Mastery Summary: The Full Answer\nThe C build process is a pipeline: Preprocessor -> Compiler -> Assembler -> Linker. Understanding this allows you to debug 'Undefined Reference' errors (Linker) vs 'Syntax' errors (Compiler)." }
-      ],
-      "objectives": ["Preprocessor directives", "Object files vs Executables", "GCC flags"]
-    },
-    {
-      "id": "c2",
-      "title": "Chapter 2: Data Types & Bit-Level Storage",
-      "type": "chapter",
-      "dur": "40m read",
-      "contentBlocks": [
-        { "type": "text", "value": "In C, you are in control of every bit. Understanding how data is stored in RAM is fundamental." },
-        { "type": "definition", "term": "Endianness", "value": "The order of bytes used to represent a multi-byte data value in computer memory. Big-endian stores the most significant byte first, while Little-endian stores the least significant byte first." },
-        { "type": "definition", "term": "Signedness", "value": "A property of data types that indicates whether they can represent negative numbers (signed) or only non-negative numbers (unsigned)." },
-        { "type": "step", "number": 1, "title": "Integer Types", "value": "char (1 byte), short (2), int (4), long (8). Use 'unsigned' if you don't need negative numbers to double your positive range." },
-        { "type": "code", "lang": "c", "value": "unsigned int count = 4000000000;\nshort temp = -10;" },
-        { "type": "text", "value": "### Mastery Summary: The Full Answer\nData in C is just a sequence of bits. The 'Type' tells the compiler how to interpret those bits. Use 'uint32_t' or 'int64_t' from <stdint.h> for predictable sizes across different platforms." }
-      ],
-      "objectives": ["Bit-depths", "Two's Complement", "Endianness analysis"]
-    },
-    {
-      "id": "c3",
-      "title": "Chapter 3: Pointer Arithmetic & Memory",
-      "type": "chapter",
-      "dur": "45m read",
-      "contentBlocks": [
-        { "type": "text", "value": "Pointers are the bridge between your code and the physical RAM. Mastering them is non-negotiable." },
-        { "type": "definition", "term": "Pointer", "value": "A variable whose value is the address of another variable, i.e., direct address of the memory location." },
-        { "type": "definition", "term": "Dereferencing", "value": "The act of accessing the value stored at the memory address held by a pointer." },
-        { "type": "step", "number": 1, "title": "Address-of & Dereference", "value": "'&' gets the memory address; '*' gets the value at that address." },
-        { "type": "code", "lang": "c", "value": "int x = 42;\nint *ptr = &x;\nprintf(\"Value: %d\", *ptr);" },
-        { "type": "text", "value": "### Mastery Summary: The Full Answer\nPointer arithmetic is typed. If you increment an 'int*', it moves by 4 bytes. This 'typed-offset' logic is how C handles arrays behind the scenes." }
-      ],
-      "objectives": ["Reference vs Dereference", "Pointer sizes", "Null pointers"]
-    },
-    {
-      "id": "c4",
-      "title": "C Pointer Mastery Quiz",
-      "type": "test",
-      "dur": "15m",
-      "question": "What happens if you increment a pointer of type 'int *' on a 64-bit system?",
-      "options": ["The address increases by 1 byte", "The address increases by 4 bytes", "The address increases by 8 bytes", "The address remains the same"],
-      "correct": 1,
-      "explanation": "In C, pointer arithmetic is typed. Incrementing an 'int *' moves the pointer forward by the size of one integer, which is typically 4 bytes on modern 64-bit systems."
-    },
-    {
-      "id": "c5",
-      "title": "Chapter 4: Dynamic Heap Management",
-      "type": "chapter",
-      "dur": "40m read",
-      "contentBlocks": [
-        { "type": "text", "value": "The Heap is where you allocate large or long-lived data. But with great power comes great responsibility." },
-        { "type": "definition", "term": "Heap", "value": "A region of a computer's memory that is used for dynamic memory allocation. Memory in the heap is managed manually by the programmer." },
-        { "type": "definition", "term": "Memory Leak", "value": "A failure in a program to release discarded memory, causing impaired performance or failure." },
-        { "type": "step", "number": 1, "title": "Malloc vs Calloc", "value": "malloc allocates raw memory; calloc clears it to zero. Always check for NULL if allocation fails!" },
-        { "type": "code", "lang": "c", "value": "int *arr = calloc(10, sizeof(int));\nif(!arr) exit(1);\nfree(arr);" },
-        { "type": "text", "value": "### Mastery Summary: The Full Answer\nMemory allocated with malloc/calloc MUST be manually freed. Use tools like Valgrind to detect 'Memory Leaks' where memory was allocated but never freed." }
-      ],
-      "objectives": ["Heap vs Stack", "Memory Leaks", "Valgrind Basics"]
-    },
-    {
-      "id": "c6",
-      "title": "Chapter 5: Advanced Structs & Unions",
-      "type": "chapter",
-      "dur": "35m read",
-      "contentBlocks": [
-        { "type": "text", "value": "Structs allow you to model complex data. Unions allow you to share the same memory between different types." },
-        { "type": "definition", "term": "Struct", "value": "A composite data type (or record) declaration that defines a physically grouped list of variables under one name in a block of memory." },
-        { "type": "definition", "term": "Union", "value": "A special data type available in C that allows to store different data types in the same memory location." },
-        { "type": "step", "number": 1, "title": "Member Alignment", "value": "The compiler adds 'Padding' between members to align them with the CPU's word size. This can make structs larger than the sum of their parts." },
-        { "type": "code", "lang": "c", "value": "struct Data { char c; int i; }; // Likely 8 bytes, not 5!" },
-        { "type": "text", "value": "### Mastery Summary: The Full Answer\nStructs are the foundation of C data modeling. Use 'typedef' for cleaner code and be mindful of padding when writing memory-constrained firmware." }
-      ],
-      "objectives": ["Memory Alignment", "Typedef patterns", "Union optimization"]
-    },
-    {
-      "id": "c7",
-      "title": "Chapter 6: Function Pointers & Callbacks",
-      "type": "chapter",
-      "dur": "40m read",
-      "contentBlocks": [
-        { "type": "text", "value": "In C, you can point to code just as easily as you point to data. This is how high-level abstractions like 'plugins' are built." },
-        { "type": "definition", "term": "Function Pointer", "value": "A pointer that points to a function instead of a data value. It can be used to call the function and to be passed as an argument." },
-        { "type": "step", "number": 1, "title": "Callback Mechanism", "value": "Pass a function pointer to another function to let it 'call back' into your code. This is the basis of sorting algorithms and event systems." },
-        { "type": "code", "lang": "c", "value": "void (*ptr)(int) = &my_func;\nptr(10);" },
-        { "type": "text", "value": "### Mastery Summary: The Full Answer\nFunction pointers enable 'Polymorphism' in C. They allow you to write generic code that can work with any logic passed to it at runtime." }
-      ],
-      "objectives": ["Callback design", "Generic sorting", "Jump tables"]
-    },
-    {
-      "id": "c8",
-      "title": "Chapter 7: File I/O & Stream Buffering",
-      "type": "chapter",
-      "dur": "35m read",
-      "contentBlocks": [
-        { "type": "text", "value": "Interaction with the file system is done through 'Streams' (FILE*)." },
-        { "type": "definition", "term": "Buffer", "value": "A region of a physical memory storage used to temporarily store data while it is being moved from one place to another." },
-        { "type": "step", "number": 1, "title": "Buffered I/O", "value": "Standard I/O functions like fopen, fread, and fwrite use internal buffers to minimize expensive system calls to the OS." },
-        { "type": "code", "lang": "c", "value": "FILE *f = fopen(\"data.bin\", \"wb\");\nfwrite(data, 1, size, f);\nfclose(f);" },
-        { "type": "text", "value": "### Mastery Summary: The Full Answer\nAlways close your files! Each open FILE* consumes a file descriptor from the OS. Use 'fflush' if you need to ensure data is written to disk immediately without waiting for the buffer to fill." }
-      ],
-      "objectives": ["FILE pointers", "Binary vs Text I/O", "Buffer flushing"]
-    },
-    {
-      "id": "c9",
-      "title": "Chapter 8: System Calls & Kernel Interface",
-      "type": "chapter",
-      "dur": "50m read",
-      "contentBlocks": [
-        { "type": "text", "value": "C is the language of the kernel. To do anything meaningful, your program must talk to the OS." },
-        { "type": "definition", "term": "System Call", "value": "The programmatic way in which a computer program requests a service from the kernel of the operating system it is executed on." },
-        { "type": "step", "number": 1, "title": "Read/Write Syscalls", "value": "Unlike fread/fwrite, syscalls like 'read' and 'write' are unbuffered and direct. They are the building blocks of all higher-level I/O libraries." },
-        { "type": "code", "lang": "c", "value": "int fd = open(\"file\", O_RDONLY);\nread(fd, buf, 1024);\nclose(fd);" },
-        { "type": "text", "value": "### Mastery Summary: The Full Answer\nSystem calls are the boundary between User Space and Kernel Space. They are powerful but expensive due to the 'Context Switch' required to move into the kernel. Use them only when you need raw, unbuffered performance." }
-      ],
-      "objectives": ["User vs Kernel Space", "File Descriptors", "Error handling (errno)"]
-    },
-    {
-      "id": "c10",
-      "title": "Chapter 9: Multiprocessing & IPC",
-      "type": "chapter",
-      "dur": "55m read",
-      "contentBlocks": [
-        { "type": "text", "value": "UNIX-style multiprocessing uses the 'fork' mechanism to create new processes." },
-        { "type": "definition", "term": "Fork", "value": "An operation whereby a process creates a copy of itself. It is the primary way of creating new processes in Unix-like systems." },
-        { "type": "definition", "term": "IPC (Inter-Process Communication)", "value": "A set of programming interfaces which allow a programmer to coordinate activities among different program processes." },
-        { "type": "step", "number": 1, "title": "The Fork/Join Pattern", "value": "fork() returns 0 in the child and the child's PID in the parent. Use this to distribute work across multiple CPU cores." },
-        { "type": "code", "lang": "c", "value": "if(fork() == 0) { // Child logic }\nelse { wait(NULL); // Parent logic }" },
-        { "type": "text", "value": "### Mastery Summary: The Full Answer\nProcesses have separate memory spaces. To share data, you must use IPC mechanisms like Pipes, Shared Memory, or Message Queues. Processes are more stable than threads but have higher overhead." }
-      ],
-      "objectives": ["Process lifecycle", "Signal handling", "Shared memory basics"]
-    },
-    {
-      "id": "c11",
-      "title": "Chapter 10: Multithreading with Pthreads",
-      "type": "chapter",
-      "dur": "50m read",
-      "contentBlocks": [
-        { "type": "text", "value": "Threads share the same memory space, making communication fast but dangerous." },
-        { "type": "definition", "term": "Thread", "value": "A thread of execution is the smallest sequence of programmed instructions that can be managed independently by a scheduler." },
-        { "type": "definition", "term": "Mutex", "value": "A mutual exclusion object that allows multiple threads to share the same resource, such as file access, but not simultaneously." },
-        { "type": "step", "number": 1, "title": "Thread Synchronization", "value": "Use Mutexes to protect shared variables. Always lock before access and unlock immediately after." },
-        { "type": "code", "lang": "c", "value": "pthread_mutex_lock(&lock);\ncount++;\npthread_mutex_unlock(&lock);" },
-        { "type": "text", "value": "### Mastery Summary: The Full Answer\nThreads are lightweight processes. Because they share memory, they are prone to 'Race Conditions'. Always use synchronization primitives like Mutexes or Semaphores to ensure data integrity." }
-      ],
-      "objectives": ["Pthread lifecycle", "Race conditions", "Condition variables"]
-    },
-    {
-      "id": "c12",
-      "title": "Chapter 11: Network Programming (Sockets)",
-      "type": "chapter",
-      "dur": "60m read",
-      "contentBlocks": [
-        { "type": "text", "value": "Learn to talk to other computers over the network using the Berkeley Sockets API." },
-        { "type": "definition", "term": "Socket", "value": "An internal endpoint for sending or receiving data at a single node in a computer network." },
-        { "type": "step", "number": 1, "title": "TCP Server Lifecycle", "value": "1. socket(), 2. bind(), 3. listen(), 4. accept(), 5. send/recv()." },
-        { "type": "code", "lang": "c", "value": "int s = socket(AF_INET, SOCK_STREAM, 0);\nbind(s, (struct sockaddr*)&addr, sizeof(addr));\nlisten(s, 5);" },
-        { "type": "text", "value": "### Mastery Summary: The Full Answer\nNetwork programming is about protocols. TCP is reliable and connection-oriented; UDP is fast and connectionless. Always handle byte-order conversion (htonl/ntohl) when sending integers across the network!" }
-      ],
-      "objectives": ["TCP/IP stack", "Byte ordering", "Non-blocking sockets"]
-    },
-    {
-      "id": "c13",
-      "title": "C Systems Engineering Quiz",
-      "type": "test",
-      "dur": "25m",
-      "question": "Which system call is used to create a new process in a Unix-like environment?",
-      "options": ["exec()", "fork()", "spawn()", "create()"],
-      "correct": 1,
-      "explanation": "In Unix-like systems, fork() is the standard system call to create a new process. The new process (child) is a nearly identical copy of the calling process (parent)."
-    },
-    {
-      "id": "c14",
-      "title": "Chapter 12: Memory Safety & Exploit Mitigation",
-      "type": "chapter",
-      "dur": "45m read",
-      "contentBlocks": [
-        { "type": "text", "value": "C is powerful because it allows raw memory access, but this makes it vulnerable to attacks." },
-        { "type": "definition", "term": "Buffer Overflow", "value": "An anomaly where a program, while writing data to a buffer, overruns the buffer's boundary and overwrites adjacent memory locations." },
-        { "type": "step", "number": 1, "title": "Safe String Handling", "value": "Never use gets() or strcpy(). Use safer alternatives like fgets() and strncpy() which limit the number of bytes written." },
-        { "type": "code", "lang": "c", "value": "strncpy(dest, src, sizeof(dest) - 1);" },
-        { "type": "text", "value": "### Mastery Summary: The Full Answer\nSecurity in C is about bounds checking. Always validate the size of incoming data before copying it into a fixed-size buffer. Modern compilers provide 'Stack Canaries' to detect overflows, but the programmer is the first line of defense." }
-      ],
-      "objectives": ["Stack vs Heap overflows", "Format string attacks", "ASLR/DEP basics"]
-    },
-    {
-      "id": "c15",
-      "title": "Final Capstone: Production Allocator",
-      "type": "practice",
-      "dur": "15h",
-      "problem": "Write a thread-safe, high-performance memory allocator from scratch using 'sbrk' or 'mmap' system calls. Implement 'my_malloc' and 'my_free' with block coalescing.",
-      "starterCode": "void* my_malloc(size_t size) {\n  // Implement sbrk logic here\n  return NULL;\n}",
-      "solutionSteps": [
-        "1. Map the process heap memory using the 'sbrk' system call.",
-        "2. Create a 'Header' for each block containing size and status (free/used).",
-        "3. Implement a 'First Fit' or 'Best Fit' search across the linked list of blocks.",
-        "4. Critical: Implement 'Coalescing' where two adjacent free blocks merge into one.",
-        "5. Add thread safety using 'pthread_mutex' to allow parallel allocations."
-      ]
-    }
-  ]
+  "course": {
+    "title": "Complete C Programming Master Guide",
+    "subtitle": "Beginner to Advanced Full C Language Course",
+    "language": "C",
+    "version": "1.0",
+    "difficulty": "Beginner to Expert",
+    "duration": "10 Months",
+    "description": "A complete and detailed C programming course covering fundamentals, memory management, pointers, arrays, functions, structures, file handling, data structures, algorithms, operating system concepts, and advanced C programming with examples and projects.",
+    "modules": [
+      {
+        "moduleId": 1,
+        "moduleTitle": "Introduction to C",
+        "overview": "This module explains the basics of C programming language, history, features, structure of C program, compilation process, and first program.",
+        "topics": [
+          {
+            "topicId": "1.1",
+            "title": "History of C",
+            "content": {
+              "creator": "Dennis Ritchie",
+              "developedAt": "Bell Laboratories",
+              "releaseYear": 1972,
+              "description": "C is a procedural programming language developed for system programming and operating systems.",
+              "importantPoints": [
+                "Mother of modern programming languages",
+                "Used in operating systems and embedded systems",
+                "Fast and efficient",
+                "Provides low-level memory access"
+              ]
+            }
+          },
+          {
+            "topicId": "1.2",
+            "title": "Features of C",
+            "features": [
+              {
+                "name": "Simple",
+                "explanation": "C has a simple syntax and structure."
+              },
+              {
+                "name": "Portable",
+                "explanation": "Programs can run on multiple platforms."
+              },
+              {
+                "name": "Efficient",
+                "explanation": "C programs execute quickly."
+              },
+              {
+                "name": "Structured Language",
+                "explanation": "Programs are divided into functions."
+              },
+              {
+                "name": "Low-Level Access",
+                "explanation": "Supports direct memory manipulation using pointers."
+              }
+            ]
+          },
+          {
+            "topicId": "1.3",
+            "title": "Structure of C Program",
+            "example": {
+              "code": "#include <stdio.h>\n\nint main() {\n    printf(\"Hello C Language\");\n    return 0;\n}",
+              "explanation": {
+                "#include<stdio.h>": "Header file inclusion",
+                "main()": "Program execution starts here",
+                "printf()": "Prints output",
+                "return 0": "Indicates successful execution"
+              }
+            }
+          },
+          {
+            "topicId": "1.4",
+            "title": "Compilation Process",
+            "steps": [
+              "Write Source Code",
+              "Preprocessing",
+              "Compilation",
+              "Assembly",
+              "Linking",
+              "Execution"
+            ]
+          }
+        ]
+      },
+      {
+        "moduleId": 2,
+        "moduleTitle": "Variables and Data Types",
+        "overview": "Variables store values and data types define memory allocation.",
+        "topics": [
+          {
+            "topicId": "2.1",
+            "title": "Variables",
+            "description": "Variables in C are named memory locations used to store data that can be modified during program execution.",
+            "rules": [
+              "Cannot start with numbers",
+              "Cannot use keywords",
+              "Case-sensitive",
+              "Can contain underscore"
+            ],
+            "example": {
+              "code": "int age = 20;\nfloat salary = 50000.50;\nchar grade = 'A';"
+            }
+          },
+          {
+            "topicId": "2.2",
+            "title": "Primitive Data Types",
+            "types": [
+              {
+                "name": "int",
+                "size": "4 bytes",
+                "description": "Stores integer values"
+              },
+              {
+                "name": "char",
+                "size": "1 byte",
+                "description": "Stores single character"
+              },
+              {
+                "name": "float",
+                "size": "4 bytes",
+                "description": "Stores decimal values"
+              },
+              {
+                "name": "double",
+                "size": "8 bytes",
+                "description": "Stores large decimal values"
+              }
+            ]
+          },
+          {
+            "topicId": "2.3",
+            "title": "Constants",
+            "example": {
+              "code": "#define PI 3.14\nconst int MAX = 100;"
+            }
+          }
+        ]
+      },
+      {
+        "moduleId": 3,
+        "moduleTitle": "Operators",
+        "topics": [
+          {
+            "title": "Arithmetic Operators",
+            "description": "Arithmetic operators are used to perform mathematical calculations like addition, subtraction, and modulus.",
+            "operators": [
+              "+",
+              "-",
+              "*",
+              "/",
+              "%"
+            ],
+            "example": {
+              "code": "int a = 10;\nint b = 5;\nprintf(\"%d\", a+b);"
+            }
+          },
+          {
+            "title": "Relational Operators",
+            "operators": [
+              "==",
+              "!=",
+              ">",
+              "<",
+              ">=",
+              "<="
+            ]
+          },
+          {
+            "title": "Logical Operators",
+            "operators": [
+              "&&",
+              "||",
+              "!"
+            ]
+          },
+          {
+            "title": "Bitwise Operators",
+            "operators": [
+              "&",
+              "|",
+              "^",
+              "<<",
+              ">>"
+            ]
+          }
+        ]
+      },
+      {
+        "moduleId": 4,
+        "moduleTitle": "Control Statements",
+        "topics": [
+          {
+            "title": "If Statement",
+            "description": "The if statement in C is used to execute a block of code only if a specified condition is true.",
+            "example": {
+              "code": "if(age >= 18) {\n    printf(\"Adult\");\n}"
+            }
+          },
+          {
+            "title": "If Else",
+            "example": {
+              "code": "if(marks >= 50) {\n    printf(\"Pass\");\n} else {\n    printf(\"Fail\");\n}"
+            }
+          },
+          {
+            "title": "Switch Statement",
+            "example": {
+              "code": "switch(day) {\n    case 1:\n        printf(\"Monday\");\n        break;\n    default:\n        printf(\"Invalid\");\n}"
+            }
+          },
+          {
+            "title": "Loops",
+            "description": "Loops allow the execution of a set of statements multiple times. C supports for, while, and do-while loops.",
+            "content": {
+              "forLoop": {
+                "description": "Used when the number of iterations is known.",
+                "example": {
+                  "code": "for(int i=1;i<=5;i++) {\n    printf(\"%d\", i);\n}"
+                }
+              },
+              "whileLoop": {
+                "description": "Used when the iterations depend on a condition.",
+                "example": {
+                  "code": "while(i<=5) {\n    i++;\n}"
+                }
+              },
+              "doWhileLoop": {
+                "description": "Executes at least once before checking the condition.",
+                "example": {
+                  "code": "do {\n    i++;\n} while(i<=5);"
+                }
+              }
+            }
+          }
+        ]
+      },
+      {
+        "moduleId": 5,
+        "moduleTitle": "Arrays",
+        "topics": [
+          {
+            "title": "Single Dimensional Array",
+            "example": {
+              "code": "int arr[5] = {1,2,3,4,5};"
+            }
+          },
+          {
+            "title": "Array Traversal",
+            "example": {
+              "code": "for(int i=0;i<5;i++) {\n    printf(\"%d\", arr[i]);\n}"
+            }
+          },
+          {
+            "title": "Multidimensional Array",
+            "example": {
+              "code": "int matrix[2][2] = {{1,2},{3,4}};"
+            }
+          }
+        ]
+      },
+      {
+        "moduleId": 6,
+        "moduleTitle": "Functions",
+        "topics": [
+          {
+            "title": "Function Declaration",
+            "example": {
+              "code": "int add(int a, int b) {\n    return a+b;\n}"
+            }
+          },
+          {
+            "title": "Function Prototype",
+            "example": {
+              "code": "int add(int, int);"
+            }
+          },
+          {
+            "title": "Recursion",
+            "example": {
+              "code": "int factorial(int n) {\n    if(n==1)\n        return 1;\n    return n * factorial(n-1);\n}"
+            }
+          }
+        ]
+      },
+      {
+        "moduleId": 7,
+        "moduleTitle": "Pointers",
+        "overview": "Pointers store memory addresses.",
+        "topics": [
+          {
+            "title": "Pointer Basics",
+            "description": "Pointers are variables that store the memory address of another variable. They are one of C's most powerful features.",
+            "example": {
+              "code": "int x = 10;\nint *ptr = &x;"
+            }
+          },
+          {
+            "title": "Pointer Arithmetic",
+            "example": {
+              "code": "ptr++;\nptr--;"
+            }
+          },
+          {
+            "title": "Pointers and Arrays",
+            "example": {
+              "code": "int arr[3] = {1,2,3};\nint *ptr = arr;"
+            }
+          }
+        ]
+      },
+      {
+        "moduleId": 8,
+        "moduleTitle": "Structures and Unions",
+        "topics": [
+          {
+            "title": "Structures",
+            "example": {
+              "code": "struct Student {\n    int id;\n    char name[50];\n};"
+            }
+          },
+          {
+            "title": "Unions",
+            "example": {
+              "code": "union Data {\n    int i;\n    float f;\n};"
+            }
+          }
+        ]
+      },
+      {
+        "moduleId": 9,
+        "moduleTitle": "String Handling",
+        "topics": [
+          {
+            "title": "String Declaration",
+            "example": {
+              "code": "char name[] = \"C Language\";"
+            }
+          },
+          {
+            "title": "String Functions",
+            "functions": [
+              "strlen()",
+              "strcpy()",
+              "strcat()",
+              "strcmp()"
+            ]
+          }
+        ]
+      },
+      {
+        "moduleId": 10,
+        "moduleTitle": "Dynamic Memory Allocation",
+        "topics": [
+          {
+            "title": "malloc",
+            "example": {
+              "code": "int *ptr = (int*)malloc(5 * sizeof(int));"
+            }
+          },
+          {
+            "title": "calloc",
+            "example": {
+              "code": "int *ptr = (int*)calloc(5, sizeof(int));"
+            }
+          },
+          {
+            "title": "free",
+            "example": {
+              "code": "free(ptr);"
+            }
+          }
+        ]
+      },
+      {
+        "moduleId": 11,
+        "moduleTitle": "File Handling",
+        "topics": [
+          {
+            "title": "Writing Files",
+            "example": {
+              "code": "FILE *fp = fopen(\"test.txt\", \"w\");\nfprintf(fp, \"Hello C\");\nfclose(fp);"
+            }
+          },
+          {
+            "title": "Reading Files",
+            "example": {
+              "code": "FILE *fp = fopen(\"test.txt\", \"r\");"
+            }
+          }
+        ]
+      },
+      {
+        "moduleId": 12,
+        "moduleTitle": "Data Structures",
+        "topics": [
+          {
+            "title": "Stack",
+            "description": "LIFO data structure."
+          },
+          {
+            "title": "Queue",
+            "description": "FIFO data structure."
+          },
+          {
+            "title": "Linked List",
+            "description": "Dynamic node-based structure."
+          },
+          {
+            "title": "Tree",
+            "description": "Hierarchical data structure."
+          },
+          {
+            "title": "Graph",
+            "description": "Collection of nodes and edges."
+          }
+        ]
+      },
+      {
+        "moduleId": 13,
+        "moduleTitle": "Algorithms",
+        "topics": [
+          {
+            "title": "Searching Algorithms",
+            "algorithms": [
+              "Linear Search",
+              "Binary Search"
+            ]
+          },
+          {
+            "title": "Sorting Algorithms",
+            "algorithms": [
+              "Bubble Sort",
+              "Selection Sort",
+              "Insertion Sort",
+              "Merge Sort",
+              "Quick Sort"
+            ]
+          }
+        ]
+      },
+      {
+        "moduleId": 14,
+        "moduleTitle": "Projects",
+        "projects": [
+          {
+            "name": "Calculator",
+            "description": "A menu-driven calculator project that performs arithmetic operations using functions. It helps students practice switch case, loops, functions, input handling, and division-by-zero validation.",
+            "features": [
+              {
+                "name": "Menu",
+                "explanation": "Shows operation choices such as add, subtract, multiply, divide, and exit."
+              },
+              {
+                "name": "Functions",
+                "explanation": "Each operation can be written as a separate reusable function."
+              },
+              {
+                "name": "Validation",
+                "explanation": "The program checks invalid choices and division by zero."
+              }
+            ],
+            "example": {
+              "code": "#include <stdio.h>\n\nint add(int a, int b) {\n    return a + b;\n}\n\nint main() {\n    printf(\"Sum = %d\", add(10, 20));\n    return 0;\n}"
+            }
+          },
+          {
+            "name": "Student Management System",
+            "description": "A record management project using structures and arrays. It teaches how to group related data, store multiple records, search by roll number, and display results clearly.",
+            "features": [
+              {
+                "name": "Structure",
+                "explanation": "Use struct Student to store roll number, name, department, and marks."
+              },
+              {
+                "name": "Array of Structures",
+                "explanation": "Store multiple student records in one array."
+              },
+              {
+                "name": "Search",
+                "explanation": "Loop through the array and compare roll numbers."
+              }
+            ],
+            "example": {
+              "code": "struct Student {\n    int roll;\n    char name[30];\n    float mark;\n};\n\nstruct Student s1 = {1, \"Arun\", 92.5};"
+            }
+          },
+          {
+            "name": "Bank Management System",
+            "description": "A console-based banking project that simulates account creation, deposit, withdrawal, balance checking, and transaction validation. It is useful for understanding structures, functions, and file storage.",
+            "features": [
+              {
+                "name": "Create Account",
+                "explanation": "Store account number, holder name, and opening balance."
+              },
+              {
+                "name": "Deposit",
+                "explanation": "Add money to the account balance."
+              },
+              {
+                "name": "Withdraw",
+                "explanation": "Check balance before reducing money."
+              },
+              {
+                "name": "File Storage",
+                "explanation": "Save account details so data is not lost after closing the program."
+              }
+            ],
+            "steps": [
+              "Create a structure for account data",
+              "Write functions for deposit and withdraw",
+              "Use menu-driven switch case",
+              "Validate amount before transaction",
+              "Store records in a file"
+            ]
+          },
+          {
+            "name": "Library Management System",
+            "description": "A project for managing books, issue records, return records, and availability. It teaches arrays or linked lists, strings, structures, searching, and file handling.",
+            "features": [
+              {
+                "name": "Add Book",
+                "explanation": "Store book id, title, author, and quantity."
+              },
+              {
+                "name": "Issue Book",
+                "explanation": "Reduce quantity when a student borrows a book."
+              },
+              {
+                "name": "Return Book",
+                "explanation": "Increase quantity when the book is returned."
+              },
+              {
+                "name": "Search Book",
+                "explanation": "Find books by id, title, or author name."
+              }
+            ],
+            "example": {
+              "code": "struct Book {\n    int id;\n    char title[50];\n    int quantity;\n};"
+            }
+          },
+          {
+            "name": "Inventory System",
+            "description": "A stock management application for products, quantity, price, purchase, and sales. It teaches structure arrays, calculations, menu logic, and report generation.",
+            "features": [
+              {
+                "name": "Product Record",
+                "explanation": "Store product id, name, quantity, and price."
+              },
+              {
+                "name": "Stock Update",
+                "explanation": "Increase stock on purchase and reduce stock on sales."
+              },
+              {
+                "name": "Billing",
+                "explanation": "Calculate total amount using quantity and price."
+              },
+              {
+                "name": "Low Stock Report",
+                "explanation": "Show products that need restocking."
+              }
+            ],
+            "steps": [
+              "Create Product structure",
+              "Add product records",
+              "Update stock after each transaction",
+              "Calculate bill amount",
+              "Print inventory report"
+            ]
+          },
+          {
+            "name": "C Interview and Debugging Checklist",
+            "description": "A revision guide for students preparing for C programming tests and interviews. It focuses on concepts that commonly cause mistakes.",
+            "features": [
+              {
+                "name": "Pointers",
+                "explanation": "Understand address operator, dereference operator, pointer arithmetic, and NULL pointer checks."
+              },
+              {
+                "name": "Arrays and Strings",
+                "explanation": "Practice indexing, bounds, character arrays, null terminator, and string functions."
+              },
+              {
+                "name": "Memory Management",
+                "explanation": "Use malloc, calloc, realloc, and free carefully to avoid memory leaks."
+              },
+              {
+                "name": "Common Errors",
+                "explanation": "Watch for segmentation faults, uninitialized variables, buffer overflow, and missing return values."
+              }
+            ],
+            "example": {
+              "code": "int *ptr = NULL;\nif (ptr != NULL) {\n    printf(\"%d\", *ptr);\n} else {\n    printf(\"Pointer is not assigned\");\n}"
+            }
+          }
+        ]
+      }
+    ]
+  }
 }

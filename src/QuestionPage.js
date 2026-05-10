@@ -26,8 +26,9 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
 
   // Editor States
   const [sourceCode, setSourceCode] = useState("");
-  const [selectedLanguage, setSelectedLanguage] = useState("java");
+  const [selectedLanguage, setSelectedLanguage] = useState("Java");
   const [output, setOutput] = useState('');
+  const [stdin, setStdin] = useState('');
   const [isCompiling, setIsCompiling] = useState(false);
 
   // Question States
@@ -44,13 +45,15 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const [showHint, setShowHint] = useState(false);
-  
+
   const isTrackingRef = useRef(false);
   const lastWarningTimeRef = useRef(0);
   const isUploadingRef = useRef(false);
   const violationCountRef = useRef(0);
   const lastViolationRef = useRef(null);
   const terminatedRef = useRef(false);
+  const isHeadRotatedRef = useRef(false);
+  const isFocusLostRef = useRef(false);
 
   const [showViolationOverlay, setShowViolationOverlay] = useState(false);
   const [violationMessage, setViolationMessage] = useState("");
@@ -66,9 +69,9 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
         image = canvas.toDataURL('image/jpeg', 0.1);
       }
 
-      await fetch('https://unlanded-isela-unmunificently.ngrok-free.dev/api/upload-frame/', {
+      await fetch('https://api.codingboss.in/api/upload-frame/', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true' },
+        headers: { 'Content-Type': 'application/json', },
         body: JSON.stringify({
           student_id: Number(getDecryptedUserId() || 1),
           image,
@@ -76,10 +79,10 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
           violation_type: lastViolationRef.current?.type || null,
           violation_message: lastViolationRef.current?.message || null,
           violation_count: violationCountRef.current,
-          terminated: terminatedRef.current || violationCountRef.current >= 4
+          terminated: false
         })
       });
-    } catch (err) {}
+    } catch (err) { }
   };
 
   useEffect(() => {
@@ -99,16 +102,16 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
     }
   }, [startTime, isTestSubmitted]);
 
-  const triggerWarning = (msg, type = "proctoring_violation") => {
+  const triggerWarning = (msg, type = "proctoring_violation", bypassCooldown = false) => {
     const now = Date.now();
-    if (now - lastWarningTimeRef.current < 4000) return;
+    if (!bypassCooldown && now - lastWarningTimeRef.current < 4000) return;
     lastWarningTimeRef.current = now;
 
     console.warn("AI PROCTOR ALERT:", msg);
     setViolationMessage(msg);
     setShowViolationOverlay(true);
     setTimeout(() => setShowViolationOverlay(false), 2500);
-    
+
     setTabSwitchCount(prev => {
       const next = prev + 1;
       violationCountRef.current = next;
@@ -144,18 +147,35 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
         ).withFaceLandmarks();
 
         if (!detections) {
-          // triggerWarning("Face missing! Stay in front of camera.", "face_missing");
+          if (!isFocusLostRef.current) {
+            isFocusLostRef.current = true;
+            triggerWarning("Face missing! Stay in front of camera.", "face_missing");
+          }
         } else {
+          isFocusLostRef.current = false;
+
           const landmarks = detections.landmarks;
           const nose = landmarks.getNose()[3];
           const leftEye = landmarks.getLeftEye()[0];
           const rightEye = landmarks.getRightEye()[3];
-          
+
           const eyeCenterX = (leftEye.x + rightEye.x) / 2;
           const diff = Math.abs(eyeCenterX - nose.x);
-          
-          // if (diff > 10) triggerWarning("Head rotation detected!", "head_switch");
-          // if (rightEye.x - leftEye.x < 30) triggerWarning("Please focus on the screen!", "focus_lost");
+
+          if (diff > 10) {
+            if (!isHeadRotatedRef.current) {
+              isHeadRotatedRef.current = true;
+              triggerWarning("Head rotation detected!", "head_switch");
+            }
+          } else {
+            isHeadRotatedRef.current = false;
+          }
+
+          if (rightEye.x - leftEye.x < 30) {
+            if (!isHeadRotatedRef.current) {
+              // triggerWarning("Please focus on the screen!", "focus_lost");
+            }
+          }
         }
       } catch (err) {
         console.error("AI PROCTOR ERROR:", err);
@@ -170,6 +190,7 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
         const script = document.createElement("script");
         script.src = "https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js";
         script.async = true;
+        script.crossOrigin = "anonymous";
         script.onload = async () => {
           try {
             const MODEL_URL = "https://justadudewhohacks.github.io/face-api.js/models";
@@ -178,8 +199,9 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
               window.faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL)
             ]);
             startFaceTracking();
-          } catch (err) { console.error("Init failed", err); }
+          } catch (err) { console.warn("AI Proctor models failed to load - proceeding without face tracking", err); }
         };
+        script.onerror = () => console.warn("AI Proctor script failed to load");
         document.body.appendChild(script);
       } else {
         startFaceTracking();
@@ -199,9 +221,9 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
         const canvas = canvasRef.current;
         canvas.width = 240; canvas.height = 180;
         canvas.getContext('2d').drawImage(videoRef.current, 0, 0, 240, 180);
-        await fetch('https://unlanded-isela-unmunificently.ngrok-free.dev/api/upload-frame/', {
+        await fetch('https://api.codingboss.in/api/upload-frame/', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true' },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             student_id: Number(getDecryptedUserId() || 1),
             image: canvas.toDataURL('image/jpeg', 0.1),
@@ -209,10 +231,10 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
             violation_type: lastViolationRef.current?.type || null,
             violation_message: lastViolationRef.current?.message || null,
             violation_count: violationCountRef.current,
-            terminated: terminatedRef.current || violationCountRef.current >= 4
+            terminated: false
           })
         });
-      } catch (err) {} finally { isUploadingRef.current = false; timeoutId = setTimeout(uploadFrame, 15000); }
+      } catch (err) { } finally { isUploadingRef.current = false; timeoutId = setTimeout(uploadFrame, 15000); }
     };
     if (isTestStarted && cameraStream) uploadFrame();
     return () => clearTimeout(timeoutId);
@@ -224,46 +246,62 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
     const pollDoctorWarnings = async () => {
       if (!isTestStarted || isTestSubmitted || terminatedRef.current) return;
       try {
-        const res = await fetch('https://unlanded-isela-unmunificently.ngrok-free.dev/api/upload-frame/', {
+        const res = await fetch('https://api.codingboss.in/api/upload-frame/', {
           method: 'GET',
-          headers: { 'ngrok-skip-browser-warning': 'true', 'Accept': 'application/json' }
+          headers: { 'Accept': 'application/json' }
         });
         const data = await res.json();
         const list = data.sessions ? data.sessions : Array.isArray(data) ? data : data.results || data.frames || data.data || [];
         const studentId = String(getDecryptedUserId() || 1);
         const myFrames = list.filter(r => String(r.student_id) === studentId);
-        
+
         let doctorDetects = 0;
+        let doctorUndetects = 0;
         let isTerminated = false;
-        
+
         myFrames.forEach(f => {
           if (f.violation_type === 'doctor_detect') doctorDetects++;
+          if (f.violation_type === 'doctor_undetect') doctorUndetects++;
           if (f.terminated) isTerminated = true;
         });
 
+        const effectiveDetects = Math.max(0, doctorDetects - doctorUndetects);
+
         if (!window.lastDoctorDetectCountRef) window.lastDoctorDetectCountRef = { current: 0 };
-        
-        if (doctorDetects > window.lastDoctorDetectCountRef.current) {
-           const newDetects = doctorDetects - window.lastDoctorDetectCountRef.current;
-           window.lastDoctorDetectCountRef.current = doctorDetects;
-           
-           for(let i=0; i<newDetects; i++) {
-             triggerWarning("Doctor issued a warning! Please follow exam rules.", "doctor_detect");
-           }
+
+        if (effectiveDetects > window.lastDoctorDetectCountRef.current) {
+          const newDetects = effectiveDetects - window.lastDoctorDetectCountRef.current;
+          window.lastDoctorDetectCountRef.current = effectiveDetects;
+
+          for (let i = 0; i < newDetects; i++) {
+            setTimeout(() => {
+              triggerWarning("Doctor issued a warning! Please follow exam rules.", "doctor_detect", true);
+            }, i * 500); // spread out visually
+          }
+        } else if (effectiveDetects < window.lastDoctorDetectCountRef.current) {
+          // Doctor hit "UNDETECT"
+          const reducedBy = window.lastDoctorDetectCountRef.current - effectiveDetects;
+          window.lastDoctorDetectCountRef.current = effectiveDetects;
+
+          // Reduce the internal tabSwitchCount
+          setTabSwitchCount(prev => {
+            const next = Math.max(0, prev - reducedBy);
+            violationCountRef.current = next;
+            return next;
+          });
+          toast.info("A warning was cleared by the Doctor.", { position: "bottom-center" });
         }
-        
+
         if (isTerminated && !terminatedRef.current) {
-           terminatedRef.current = true;
-           toast.error("🚫 DISQUALIFIED! Doctor terminated the exam.");
-           setIsTestSubmitted(true);
-           setTimeout(() => navigate('/UserDashboard'), 1000);
+          terminatedRef.current = true;
+          toast.error("🚫 Warning: Doctor issued a critical notice. Please follow exam rules.");
         }
-      } catch (err) {}
+      } catch (err) { }
     };
 
     if (isTestStarted) {
-       if (!window.lastDoctorDetectCountRef) window.lastDoctorDetectCountRef = { current: 0 };
-       intervalId = setInterval(pollDoctorWarnings, 5000);
+      if (!window.lastDoctorDetectCountRef) window.lastDoctorDetectCountRef = { current: 0 };
+      intervalId = setInterval(pollDoctorWarnings, 5000);
     }
     return () => clearInterval(intervalId);
   }, [isTestStarted, isTestSubmitted]);
@@ -290,7 +328,12 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
     if (!sourceCode.trim()) return toast.warning("Enter code first!");
     setIsCompiling(true);
     try {
-      const res = await apiClient("compiler/compile/", "POST", { source_code: sourceCode, language: selectedLanguage, stdin: "" });
+      const res = await apiClient("compiler/compile/", "POST", {
+        source_code: sourceCode,
+        code: sourceCode,
+        language: selectedLanguage.charAt(0).toUpperCase() + selectedLanguage.slice(1).toLowerCase(),
+        stdin: stdin
+      });
       setOutput(res.output || res.error || "No output captured.");
     } catch (err) { setOutput("Execution error."); } finally { setIsCompiling(false); }
   };
@@ -334,7 +377,19 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
       </aside>
       <main className="ide-main">
         <header className="ide-toolbar">
-          <div className="ide-status-pill"><div className="pulse"></div> SECURE LAB</div>
+          <div className="ide-toolbar-left">
+            <div className="ide-status-pill"><div className="pulse"></div> SECURE LAB</div>
+            <select
+              className="ide-lang-selector"
+              value={selectedLanguage}
+              onChange={(e) => setSelectedLanguage(e.target.value)}
+            >
+              <option value="Java">Java</option>
+              <option value="Python">Python</option>
+              <option value="C">C</option>
+              <option value="Cpp">C++</option>
+            </select>
+          </div>
           <div className="text-muted small"><FaClock /> {formatTime(elapsedTime)}</div>
         </header>
         <div className="ide-editor-container">
@@ -345,7 +400,24 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
           <button className="ide-btn ide-btn-submit" onClick={() => { setIsTestSubmitted(true); toast.success("Solution Submitted!"); setTimeout(() => navigate('/UserDashboard'), 1000); }}>Submit Solution</button>
         </div>
         <div className="ide-console">
-          <div className="ide-console-output"><pre>{output || 'Execution results...'}</pre></div>
+          <div className="ide-console-header">
+            <span className="console-tab active"><FaTerminal /> Output</span>
+            <span className="console-tab"><FaRobot /> Input</span>
+          </div>
+          <div className="ide-console-body">
+            <div className="ide-input-panel">
+              <label className="input-label">Standard Input (stdin)</label>
+              <textarea
+                className="ide-stdin-field"
+                placeholder="Enter input data here..."
+                value={stdin}
+                onChange={(e) => setStdin(e.target.value)}
+              />
+            </div>
+            <div className="ide-console-output">
+              <pre>{output || 'Execution results...'}</pre>
+            </div>
+          </div>
         </div>
       </main>
     </div>

@@ -5,7 +5,7 @@ import {
   FaGraduationCap, FaShieldAlt, FaWhatsapp, FaInfoCircle,
   FaCode, FaClipboardList, FaArrowLeft, FaChevronRight,
   FaLightbulb, FaBookOpen, FaLayerGroup, FaQuoteLeft,
-  FaClock, FaSignal, FaTrophy, FaPlay, FaChevronLeft, FaTimesCircle, FaExclamationTriangle, FaRobot, FaVolumeUp, FaVolumeMute, FaMicrophone
+  FaClock, FaSignal, FaTrophy, FaPlay, FaChevronLeft, FaTimesCircle, FaExclamationTriangle, FaRobot, FaVolumeUp, FaVolumeMute, FaMicrophone, FaTimes, FaPaperPlane
 } from 'react-icons/fa';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -22,19 +22,217 @@ import CLogo from './images/c_program.png';
 import slider1 from './images/slider1.png';
 import slider2 from './images/slider2.png';
 import slider3 from './images/slider3.png';
+import CourseAI from './CourseAI';
 
-javaData.imageUrl = JavaLogo;
-pythonData.imageUrl = PythonLogo;
-cData.imageUrl = CLogo;
+const humanizeKey = (key = "") =>
+  key
+    .replace(/([A-Z])/g, ' $1')
+    .replace(/[_-]/g, ' ')
+    .replace(/\b\w/g, (char) => char.toUpperCase());
 
-const courses = [javaData, pythonData, cData];
+const isPlainValue = (value) =>
+  value === null || ['string', 'number', 'boolean'].includes(typeof value);
+
+const compactText = (value) => {
+  if (value === null || value === undefined) return "";
+  if (isPlainValue(value)) return String(value);
+  if (Array.isArray(value)) return value.map(compactText).filter(Boolean).join(', ');
+  if (typeof value === 'object') {
+    return Object.entries(value)
+      .filter(([key]) => key !== 'code')
+      .map(([key, val]) => {
+        const text = compactText(val);
+        return text ? `${humanizeKey(key)}: ${text}` : "";
+      })
+      .filter(Boolean)
+      .join(' | ');
+  }
+  return "";
+};
+
+const findNestedCode = (value) => {
+  if (!value) return "";
+  if (typeof value === 'object' && !Array.isArray(value) && typeof value.code === 'string') return value.code;
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      const code = findNestedCode(item);
+      if (code) return code;
+    }
+  }
+  if (typeof value === 'object') {
+    for (const item of Object.values(value)) {
+      const code = findNestedCode(item);
+      if (code) return code;
+    }
+  }
+  return "";
+};
+
+const normalizeListItems = (items) =>
+  (items || []).map((item) => {
+    if (isPlainValue(item)) return { label: "", text: String(item) };
+    const label = item.name || item.type || item.fullForm || item.title || "";
+    const details = [
+      item.explanation,
+      item.description,
+      item.usage,
+      item.size && `Size: ${item.size}`,
+      item.range && `Range: ${item.range}`,
+      item.example && `Example: ${compactText(item.example)}`
+    ].filter(Boolean).join(' ');
+    return { label, text: details || compactText(item) };
+  }).filter((item) => item.text || item.label);
+
+const addObjectContentBlocks = (blocks, value, title = "") => {
+  if (!value) return;
+
+  if (typeof value === 'string') {
+    blocks.push({ type: 'text', value, title });
+    return;
+  }
+
+  if (Array.isArray(value)) {
+    blocks.push({ type: 'list', title, items: normalizeListItems(value) });
+    return;
+  }
+
+  Object.entries(value).forEach(([key, val]) => {
+    if (key === 'code' || key === 'example') return;
+    const sectionTitle = humanizeKey(key);
+
+    if (Array.isArray(val)) {
+      blocks.push({ type: 'list', title: sectionTitle, items: normalizeListItems(val) });
+      return;
+    }
+
+    if (isPlainValue(val)) {
+      blocks.push({ type: 'point', label: sectionTitle, value: String(val) });
+      return;
+    }
+
+    const entries = Object.entries(val || {});
+    const allSimple = entries.every(([, nestedValue]) => isPlainValue(nestedValue) || Array.isArray(nestedValue));
+
+    if (allSimple) {
+      blocks.push({ type: 'point', label: sectionTitle, value: compactText(val) });
+      return;
+    }
+
+    blocks.push({ type: 'subtopic', title: sectionTitle });
+    addObjectContentBlocks(blocks, val, sectionTitle);
+  });
+};
+
+const normalizeCourse = (data, defaultImage, color, badge) => {
+  if (data.course) {
+    const c = data.course;
+    // Map the new schema to our internal structure
+    const title = c.courseTitle || c.title || "Untitled Course";
+    const rawModules = c.chapters || c.modules || [];
+
+    return {
+      id: title.replace(/\s+/g, '-').toLowerCase(),
+      title: title,
+      description: c.description || c.subtitle || "",
+      imageUrl: defaultImage,
+      badge: badge,
+      duration: c.courseDuration || "Flexible",
+      level: c.courseLevel || "All Levels",
+      students: "15k+",
+      rating: "4.9",
+      color: color,
+      curriculum: rawModules.map((mod, i) => {
+        if (!mod) return { id: "mod-" + i, title: "Empty Chapter", contentBlocks: [] };
+
+        const modTitle = mod.chapterTitle || mod.moduleTitle || mod.title || `Chapter ${i + 1}`;
+        const rawTopics = mod.topics || mod.projects || [];
+
+        return {
+          id: "mod-" + i,
+          title: modTitle,
+          type: "chapter",
+          dur: "30m read",
+          contentBlocks: rawTopics.flatMap(t => {
+            if (!t) return [];
+            if (typeof t === 'string') return [{ type: 'text', value: t }];
+
+            const topicTitle = t.topicTitle || t.title || t.name || "";
+            const blocks = [];
+            const topicIntro = t.description || t.overview || "";
+
+            if (topicTitle || topicIntro) {
+              blocks.push({ type: 'topic', title: topicTitle, value: topicIntro });
+            }
+
+            // Handle content strings or objects
+            if (t.content) {
+              if (typeof t.content === 'string') {
+                blocks.push({ type: 'text', value: t.content });
+              } else {
+                addObjectContentBlocks(blocks, t.content);
+              }
+            }
+
+            // Handle features/types arrays
+            [
+              ['Features', t.features],
+              ['Data Types', t.dataTypes],
+              ['Types', t.types],
+              ['Operators', t.operators],
+              ['Rules', t.rules],
+              ['Steps', t.steps]
+            ].forEach(([listTitle, list]) => {
+              if (list) blocks.push({ type: 'list', title: listTitle, items: normalizeListItems(list) });
+            });
+
+            // Handle code examples
+            const exampleCode = t.example?.code || findNestedCode(t.content);
+            if (exampleCode) {
+              blocks.push({ type: 'code', lang: c.language?.toLowerCase() || title.toLowerCase(), value: exampleCode });
+            }
+
+            const exampleExplanation = t.example?.explanation || t.content?.example?.explanation;
+            if (exampleExplanation) {
+              blocks.push({ type: 'list', title: 'Code Explanation', items: normalizeListItems(
+                typeof exampleExplanation === 'object'
+                  ? Object.entries(exampleExplanation).map(([key, value]) => ({ name: key, explanation: compactText(value) }))
+                  : [exampleExplanation]
+              ) });
+            }
+
+            return blocks.length > 0 ? blocks : [{ type: 'text', value: topicTitle || JSON.stringify(t) }];
+          })
+        };
+      })
+    };
+  }
+
+  // Fallback for legacy format
+  const legacy = { ...data };
+  legacy.imageUrl = defaultImage;
+  if (!legacy.color) legacy.color = color;
+  if (!legacy.badge) legacy.badge = badge;
+  if (!legacy.title) legacy.title = "Untitled";
+  return legacy;
+};
+
+let courses = [];
+try {
+  courses = [
+    normalizeCourse(javaData, JavaLogo, "#f89820", "Comprehensive"),
+    normalizeCourse(pythonData, PythonLogo, "#eab308", "AI/Backend Track"),
+    normalizeCourse(cData, CLogo, "#5c6bc0", "Hardware Track")
+  ].filter(Boolean);
+} catch (err) {
+  console.error("Failed to normalize courses", err);
+}
 
 const Learn = () => {
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [activeLesson, setActiveLesson] = useState(null);
   const [activeTab, setActiveTab] = useState('chapter');
   const [lessonProgress, setLessonProgress] = useState({});
-  const [viewMode, setViewMode] = useState('listing'); 
+  const [viewMode, setViewMode] = useState('listing');
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState('All');
   const [isCompleted, setIsCompleted] = useState(false);
@@ -78,32 +276,24 @@ const Learn = () => {
   const [isProctored, setIsProctored] = useState(false);
   const [tabSwitchCount, setTabSwitchCount] = useState(0);
 
-  // AI BOT STATES
   const [showAIBot, setShowAIBot] = useState(false);
   const [aiQuery, setAiQuery] = useState("");
-  const [aiResponse, setAiResponse] = useState(null);
+  const [aiMessages, setAiMessages] = useState([
+    { type: 'ai', text: "Hello! I am your AI Course Mentor. Ask me any doubts about this lesson and I will explain properly!" }
+  ]);
   const [isBotThinking, setIsBotThinking] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isListening, setIsListening] = useState(false);
-  const [displayedCode, setDisplayedCode] = useState("");
+  const messagesEndRef = useRef(null);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [aiMessages, showAIBot]);
   const [isTaskMode, setIsTaskMode] = useState(false);
   const [isTaskIDE, setIsTaskIDE] = useState(false);
   const [taskEvaluation, setTaskEvaluation] = useState(null);
 
-  useEffect(() => {
-    if (aiResponse && aiResponse.code) {
-      setDisplayedCode("");
-      let i = 0;
-      const code = aiResponse.code;
-      const interval = setInterval(() => {
-        if (i < code.length) {
-          setDisplayedCode((prev) => prev + code[i]);
-          i++;
-        } else { clearInterval(interval); }
-      }, 10);
-      return () => clearInterval(interval);
-    }
-  }, [aiResponse]);
+
 
   const toggleListening = () => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -121,18 +311,47 @@ const Learn = () => {
   const speakResponse = (text) => {
     window.speechSynthesis.cancel();
     if (!text) return;
-    utteranceRef.current = new SpeechSynthesisUtterance(text);
-    utteranceRef.current.rate = 0.8;
-    const voices = window.speechSynthesis.getVoices();
-    if (voices.length > 0) utteranceRef.current.voice = voices.find(v => v.name.includes('Google US English')) || voices[0];
-    utteranceRef.current.onstart = () => setIsSpeaking(true);
-    utteranceRef.current.onend = () => setIsSpeaking(false);
-    window.speechSynthesis.speak(utteranceRef.current);
+
+    const speak = () => {
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = 0.9;
+      const voices = window.speechSynthesis.getVoices();
+
+      // Look for Tamil voice
+      const tamilVoice = voices.find(v =>
+        v.lang === 'ta-IN' ||
+        v.name.toLowerCase().includes('tamil') ||
+        v.lang.toLowerCase().includes('ta')
+      );
+
+      if (tamilVoice) {
+        utterance.voice = tamilVoice;
+        utterance.lang = 'ta-IN';
+      } else {
+        utterance.lang = 'en-US';
+      }
+
+      utterance.onstart = () => setIsSpeaking(true);
+      utterance.onend = () => setIsSpeaking(false);
+      window.speechSynthesis.speak(utterance);
+      utteranceRef.current = utterance;
+    };
+
+    if (window.speechSynthesis.getVoices().length === 0) {
+      window.speechSynthesis.onvoiceschanged = speak;
+    } else {
+      speak();
+    }
   };
 
   const stopSpeaking = () => { window.speechSynthesis.cancel(); setIsSpeaking(false); };
 
-  const filteredCourses = courses.filter(course => course.title.toLowerCase().includes(searchQuery.toLowerCase()));
+  const filteredCourses = (courses || []).filter(course =>
+    course &&
+    course.title &&
+    typeof course.title === 'string' &&
+    course.title.toLowerCase().includes((searchQuery || "").toLowerCase())
+  );
 
   useEffect(() => {
     const saved = localStorage.getItem('cb_learn_progress');
@@ -151,24 +370,90 @@ const Learn = () => {
     } catch (err) { toast.error("❌ Fullscreen required!"); }
   };
 
-  const handleAISubmit = useCallback(() => {
+  const handleAISubmit = useCallback((e) => {
+    if (e) e.preventDefault();
     if (!aiQuery.trim()) return;
-    setAiResponse(null);
+
+    const userQ = aiQuery;
+    setAiMessages(prev => [...prev, { type: 'user', text: userQ }]);
+    setAiQuery("");
     setIsBotThinking(true);
+
     setTimeout(() => {
-      const matchedLesson = selectedCourse?.curriculum.find(l => l.title.toLowerCase().includes(aiQuery.toLowerCase()));
-      if (matchedLesson) {
-        const resp = { title: matchedLesson.title, explanation: matchedLesson.title + " is a vital concept in software development.", code: "// Sample code for " + matchedLesson.title, codeLang: "java", codeExplanation: "Professional code structure.", studentTask: "Extend this logic.", lessonId: matchedLesson.id };
-        setAiResponse(resp);
-        speakResponse(resp.explanation);
-      } else {
-        const resp = { title: "AI Insight", explanation: "I've analyzed your query about " + aiQuery + ". Here's a professional implementation.", code: "// General implementation", codeLang: "javascript", codeExplanation: "Master this pattern.", studentTask: "Try building a similar module." };
-        setAiResponse(resp);
-        speakResponse(resp.explanation);
+      let aiExplanation = "எனக்கு புரிகிறது. உங்கள் கேள்வியை ஆராய்கிறேன்.";
+      let aiCode = "";
+
+      const lowerQuery = userQ.toLowerCase();
+      let matchedBlock = null;
+
+      // Check current lesson for context
+      if (activeLesson && activeLesson.contentBlocks) {
+        matchedBlock = activeLesson.contentBlocks.find(block =>
+          (block.term && block.term.toLowerCase().includes(lowerQuery)) ||
+          (block.value && block.value.toLowerCase().includes(lowerQuery)) ||
+          (block.title && block.title.toLowerCase().includes(lowerQuery))
+        );
       }
+
+      if (matchedBlock) {
+        if (matchedBlock.type === 'definition') {
+          aiExplanation = `இந்த பாடத்தில் ${matchedBlock.term} என்பது மிகவும் முக்கியமானது. ${matchedBlock.value} இதை நன்றாக புரிந்து கொள்ளுங்கள்.`;
+        } else if (matchedBlock.type === 'step') {
+          aiExplanation = `${matchedBlock.title} க்கான படிமுறை: ${matchedBlock.value}`;
+        } else if (matchedBlock.type === 'code') {
+          aiExplanation = `இதோ அதற்கான கோட் (Code). இதை கவனித்து பாருங்கள்!`;
+          aiCode = matchedBlock.value;
+        } else {
+          aiExplanation = matchedBlock.value;
+        }
+      } else if (activeLesson && activeLesson.type === 'test') {
+        aiExplanation = `நீங்கள் இப்போது "${activeLesson.question}" என்ற கேள்வியில் உள்ளீர்கள். முந்தைய பாடங்களை நினைத்து பாருங்கள்!`;
+      } else {
+        // Generic fallback with extensive Tamil logic
+        if (selectedCourse?.title.toLowerCase().includes('java')) {
+          if (lowerQuery.includes('jvm') || lowerQuery.includes('virtual machine')) {
+            aiExplanation = "JVM (Java Virtual Machine) என்பது ஜாவா புரோகிராம்களை இயக்க உதவும் ஒரு இன்ஜின். நீங்கள் எழுதும் ஜாவா கோட் Bytecode ஆக மாறும், அதை JVM தான் கணிப்பொறிக்கு புரியும் Machine Code ஆக மாற்றும்.";
+          } else if (lowerQuery.includes('oop') || lowerQuery.includes('object')) {
+            aiExplanation = "OOPs (Object Oriented Programming) என்பது நிஜ உலக பொருட்களை (Objects) அடிப்படையாக வைத்து புரோகிராம் எழுதும் முறை. Class என்பது அச்சு (Blueprint), Object என்பது அதிலிருந்து உருவாகும் நிஜ பொருள்.";
+          } else if (lowerQuery.includes('inheritance')) {
+            aiExplanation = "Inheritance என்பது ஒரு Class-இன் பண்புகளை மற்றொரு Class பெற்றுக்கொள்வது. இது கோட் மறுபயன்பாட்டை (Code Reusability) அதிகரிக்கிறது.";
+          } else if (lowerQuery.includes('array')) {
+            aiExplanation = "Array என்பது ஒரே வகையான பல டேட்டாக்களை (Data) ஒரே பெயரில் சேமித்து வைக்க உதவும் ஒரு கட்டமைப்பு. இதில் உள்ள ஒவ்வொரு மதிப்பையும் Index மூலம் அணுகலாம்.";
+          } else {
+            aiExplanation = "ஜாவா (Java) மிகவும் வலிமையான மொழி. நீங்கள் கேட்கும் கேள்வி '" + userQ + "' பற்றி இன்னும் ஆழமாக படிக்க உங்கள் பாடத்திட்டத்தை (Curriculum) கவனமாக படிக்கவும்!";
+          }
+        } else if (selectedCourse?.title.toLowerCase().includes('python')) {
+          if (lowerQuery.includes('list') || lowerQuery.includes('array')) {
+            aiExplanation = "பைத்தானில் List என்பது பல மதிப்புகளை ஒரே மாறிக்குள் (Variable) சேமிக்க பயன்படும் ஒரு Data Structure. இது மாற்றக்கூடியது (Mutable).";
+          } else if (lowerQuery.includes('dictionary') || lowerQuery.includes('dict')) {
+            aiExplanation = "Dictionary என்பது Key-Value ஜோடியாக டேட்டாவை சேமிக்கும் முறை. உதாரணத்திற்கு 'name': 'Arun' என்று சேமித்து வைக்கலாம்.";
+          } else if (lowerQuery.includes('function') || lowerQuery.includes('def')) {
+            aiExplanation = "Function என்பது ஒரு குறிப்பிட்ட வேலையை செய்ய எழுதப்படும் ஒரு கோட் பிளாக் (Block of Code). பைத்தானில் இதை 'def' என்ற keyword மூலம் உருவாக்கலாம்.";
+          } else {
+            aiExplanation = "பைத்தான் (Python) மிகவும் எளிமையான மொழி. உங்கள் கேள்வி '" + userQ + "' அருமையானது. தொடர்ந்து பயிற்சி செய்யுங்கள்!";
+          }
+        } else if (selectedCourse?.title.toLowerCase().includes('c ')) { // C programming
+          if (lowerQuery.includes('pointer')) {
+            aiExplanation = "பாயிண்டர் (Pointer) என்பது C மொழியில் உள்ள ஒரு சிறப்பு Variable. இது மற்றொரு Variable-இன் மெமரி முகவரியை (Memory Address) சேமிக்க பயன்படுகிறது. இது மிகவும் வேகமானது!";
+            aiCode = "int x = 10;\nint *ptr = &x;";
+          } else if (lowerQuery.includes('malloc') || lowerQuery.includes('memory')) {
+            aiExplanation = "Dynamic Memory Allocation-க்கு malloc() பயன்படுகிறது. இது Heap Memory-ல் உங்களுக்கு தேவையான இடத்தை ஒதுக்கி தரும். பயன்படுத்திய பின் free() செய்ய மறக்காதீர்கள்!";
+          } else if (lowerQuery.includes('struct')) {
+            aiExplanation = "Structure (struct) என்பது பல வகையான Data type-களை ஒன்றாக இணைத்து ஒரே பெயரில் பயன்படுத்த உதவும் ஒரு வசதி.";
+          } else {
+            aiExplanation = "C மொழி அனைத்து மொழிகளுக்கும் தாய் (Mother of all languages). மெமரி (Memory) எப்படி வேலை செய்கிறது என்று புரிந்து கொண்டால் இது மிக எளிது!";
+          }
+        } else {
+          aiExplanation = "உங்கள் கேள்வி எனக்கு புரிகிறது. இதை பற்றி மேலும் அறிய உங்கள் பாடத்திட்டத்தின் தற்போதைய பகுதியை கவனமாக படிக்கவும்.";
+        }
+      }
+
+      const newMsg = { type: 'ai', text: aiExplanation, code: aiCode };
+      setAiMessages(prev => [...prev, newMsg]);
+      speakResponse(aiExplanation);
       setIsBotThinking(false);
-    }, 1000);
-  }, [aiQuery, selectedCourse]);
+    }, 1500);
+  }, [aiQuery, activeLesson, selectedCourse]);
 
   const handleExitCourse = useCallback(() => {
     if (document.fullscreenElement) document.exitFullscreen().catch(() => { });
@@ -186,34 +471,6 @@ const Learn = () => {
   return (
     <div className="lrn-master-wrapper">
       <ToastContainer theme="dark" position="top-center" />
-      {showAIBot && (
-        <div className="cb-ai-portal">
-          <div className="cb-ai-glass-card animate-scale-up">
-            <div className="cb-ai-glass-header">
-              <div className="cb-ai-bot-visual"><FaRobot /></div>
-              <div className="cb-ai-header-info"><h3>AI Mentor</h3></div>
-              <button className="cb-ai-close-btn" onClick={() => { stopSpeaking(); setShowAIBot(false); }}><FaTimesCircle /></button>
-            </div>
-            <div className="cb-ai-glass-body">
-              {!aiResponse ? (
-                <div className="cb-ai-welcome-state">
-                  <div className="cb-ai-search-wrapper">
-                    <input type="text" value={aiQuery} onChange={(e) => setAiQuery(e.target.value)} onKeyPress={(e) => e.key === 'Enter' && handleAISubmit()} placeholder="Ask AI anything..." />
-                    <button onClick={handleAISubmit}><FaPlay /></button>
-                  </div>
-                </div>
-              ) : (
-                <div className="cb-ai-result-state animate-fade-in">
-                  <h4>{aiResponse.title}</h4>
-                  <p>{aiResponse.explanation}</p>
-                  <pre><code>{displayedCode}</code></pre>
-                  <button onClick={() => setAiResponse(null)}>Ask More</button>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
 
       {viewMode === 'listing' ? (
         <div className="lrn-root">
@@ -286,35 +543,110 @@ const Learn = () => {
           </section>
         </div>
       ) : (
-        <div className="lrn-dashboard animate-fade-in">
-          <aside className="lrn-db-sidebar">
-            <div className="lrn-db-sidebar-header">
-              <button className="lrn-db-back-btn" onClick={handleExitCourse}><FaArrowLeft /> Exit</button>
-              <h3 className="lrn-db-course-title">{selectedCourse?.title}</h3>
-            </div>
-            <nav className="lrn-db-nav">
-              {selectedCourse?.curriculum.map((item, idx) => (
-                <div key={item.id} className={`lrn-db-nav-item ${activeLesson?.id === item.id ? 'active' : ''}`} onClick={() => setActiveLesson(item)}>
-                  <span>{idx + 1}. {item.title}</span>
-                  {lessonProgress[item.id] && <FaCheckCircle style={{ color: selectedCourse.color }} />}
-                </div>
-              ))}
-            </nav>
-          </aside>
-          <main className="lrn-db-main">
-            <header className="lrn-db-topbar">
-              <div className="lrn-db-breadcrumb">Lessons / {activeLesson?.title}</div>
-              <button onClick={() => toggleLessonComplete(activeLesson.id)}>{lessonProgress[activeLesson?.id] ? 'Completed' : 'Mark as Done'}</button>
-            </header>
-            <div className="lrn-db-viewport">
-              <div className="lrn-content-container">
-                <h2>{activeLesson?.title}</h2>
-                <p>Welcome to this high-performance learning module. Focus and achieve mastery.</p>
+        <div className="lrn-dashboard ultra-modern">
+          {/* TOP BAR AS SEEN IN IMAGE */}
+          <header className="lrn-db-header">
+            <div className="lrn-db-header-left">
+              <div className="lrn-db-logo">
+                <FaCode />
+                <span>Coding<strong>Boss</strong></span>
               </div>
             </div>
-          </main>
+            <div className="lrn-db-header-right">
+              <div className="lrn-db-user-pill">
+                <span className="user-email">sri2@gmail.com</span>
+                <div className="user-progress">
+                  <span>0%</span>
+                  <FaChevronRight />
+                </div>
+              </div>
+            </div>
+          </header>
+
+          <div className="lrn-db-layout">
+            <aside className="lrn-db-sidebar">
+              <nav className="lrn-db-nav">
+                {selectedCourse?.curriculum.map((item, idx) => (
+                  <div
+                    key={item.id}
+                    className={`lrn-db-nav-item ${activeLesson?.id === item.id ? 'active' : ''}`}
+                    onClick={() => setActiveLesson(item)}
+                  >
+                    <span className="nav-number">{idx + 1}.</span>
+                    <span className="nav-title">{item.title}</span>
+                    {lessonProgress[item.id] && <FaCheckCircle className="nav-check" />}
+                  </div>
+                ))}
+              </nav>
+            </aside>
+
+            <main className="lrn-db-main">
+              <div className="lrn-db-viewport">
+                <div className="lrn-content-container">
+                  <div className="lrn-article-header">
+                    <h1 className="lrn-article-title">{activeLesson?.title}</h1>
+                    <div className="lrn-article-meta">
+                      <span><FaClock /> 30m read</span>
+                      <span><FaLayerGroup /> Chapter</span>
+                    </div>
+                  </div>
+
+                  <div className="lrn-article-body chatgpt-style" style={{ '--course-color': selectedCourse?.color || '#2563eb' }}>
+                    {activeLesson?.type === 'chapter' && activeLesson.contentBlocks && activeLesson.contentBlocks.map((block, idx) => (
+                      <div key={idx} className={`lrn-block block-${block.type}`}>
+                        {block.type === 'topic' && (
+                          <section className="lrn-topic-card">
+                            <div className="lrn-topic-icon"><FaRobot /></div>
+                            <div>
+                              <h2>{block.title}</h2>
+                              {block.value && <p>{block.value}</p>}
+                            </div>
+                          </section>
+                        )}
+
+                        {block.type === 'subtopic' && <h3 className="lrn-subtopic-title">{block.title}</h3>}
+
+                        {block.type === 'text' && (
+                          <p className="lrn-ai-paragraph">{block.value}</p>
+                        )}
+
+                        {block.type === 'point' && (
+                          <div className="lrn-ai-point">
+                            <span>{block.label}</span>
+                            <p>{block.value}</p>
+                          </div>
+                        )}
+
+                        {block.type === 'list' && (
+                          <div className="lrn-ai-list">
+                            {block.title && <h3>{block.title}</h3>}
+                            <ul>
+                              {block.items?.map((item, itemIdx) => (
+                                <li key={itemIdx}>
+                                  {item.label && <strong>{item.label}</strong>}
+                                  <span>{item.text}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+
+                        {block.type === 'code' && (
+                          <div className="lrn-code-wrapper">
+                            <div className="lrn-code-title"><FaCode /> Example</div>
+                            <pre><code>{block.value}</code></pre>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </main>
+          </div>
         </div>
       )}
+      <CourseAI activeLesson={activeLesson} courseData={selectedCourse} />
     </div>
   );
 };

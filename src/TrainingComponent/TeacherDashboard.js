@@ -5,7 +5,7 @@ import {
 } from 'react-icons/fi';
 import './DoctorDashboard.css'; // Reuse the ultra-modern proctoring styles
 
-const API_URL = 'https://unlanded-isela-unmunificently.ngrok-free.dev/api/upload-frame/';
+const API_URL = 'https://api.codingboss.in/api/upload-frame/';
 
 const getFrameSource = (frame) => {
   const source = frame?.latest_frame_url || frame?.frame_url || frame?.image_url || frame?.image || null;
@@ -36,7 +36,7 @@ const AuthorizedImage = ({ src, alt, className }) => {
     let objectUrl = null;
     let isMounted = true;
 
-    fetch(secureSrc, { headers: { 'ngrok-skip-browser-warning': '1' } })
+    fetch(secureSrc, { headers: {  } })
       .then(res => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.blob();
@@ -81,7 +81,7 @@ const TeacherDashboard = ({ handleLogout, username }) => {
       const res = await fetch(API_URL, {
         method: 'GET',
         headers: {
-          'ngrok-skip-browser-warning': 'true',
+          
           'Accept': 'application/json',
         }
       });

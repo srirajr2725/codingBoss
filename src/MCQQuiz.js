@@ -26,8 +26,8 @@ function MCQQuiz({ questions, updateQuestionStatus, submitTest }) {
   // Initialize
   useEffect(() => {
     const initialAnswers = {};
-    questions.forEach((_, index) => {
-      initialAnswers[index + 1] = "";
+    questions.forEach((q) => {
+      if (q && q.id) initialAnswers[q.id] = "";
     });
     setSelectedAnswer(initialAnswers);
   }, [questions]);
@@ -69,9 +69,12 @@ function MCQQuiz({ questions, updateQuestionStatus, submitTest }) {
   };
 
   const handleAnswerSelect = (answer) => {
+    const qId = questions[currentQuestionIndex]?.id;
+    if (!qId) return;
+
     setSelectedAnswer((prev) => ({
       ...prev,
-      [currentQuestionIndex + 1]: answer,
+      [qId]: answer,
     }));
 
     updateQuestionStatus(questions[currentQuestionIndex].id, "answered");
@@ -211,7 +214,8 @@ function MCQQuiz({ questions, updateQuestionStatus, submitTest }) {
 
               <div className="options-grid">
                 {parseOptions(questions[currentQuestionIndex]?.options).map((option, i) => {
-                  const isSelected = selectedAnswer[currentQuestionIndex + 1] === option;
+                  const qId = questions[currentQuestionIndex]?.id;
+                  const isSelected = selectedAnswer[qId] === option;
                   return (
                     <div
                       key={i}
@@ -297,7 +301,7 @@ function MCQQuiz({ questions, updateQuestionStatus, submitTest }) {
               <div
                 key={index}
                 className={`palette-item 
-                  ${selectedAnswer[index + 1] ? "answered" : ""} 
+                  ${selectedAnswer[questions[index]?.id] ? "answered" : ""} 
                   ${currentQuestionIndex === index ? "current" : ""}`}
                 onClick={() => setCurrentQuestionIndex(index)}
               >

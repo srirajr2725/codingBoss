@@ -113,9 +113,9 @@ const Status = ({ isLoggedIn, setAccess }) => {
   const handleMasterUnlock = async (tokenInput = null) => {
     // If tokenInput is an event object (from onClick), ignore it and use couponCode
     const tokenToUse = (typeof tokenInput === 'string') ? tokenInput : couponCode;
-    
+
     if (!tokenToUse) return showToast("Please enter your token", "error");
-    
+
     try {
       const email = localStorage.getItem("username");
       const result = await apiClient(`quiz/verify-token/?email=${encodeURIComponent(email)}`, "POST", { user_token: tokenToUse.trim() });
@@ -123,12 +123,12 @@ const Status = ({ isLoggedIn, setAccess }) => {
       if (result && result.success) {
         const cleanToken = tokenToUse.trim();
         const emailKey = email.toLowerCase();
-        
+
         localStorage.setItem("user_token", cleanToken);
         localStorage.setItem(`user_token_${emailKey}`, cleanToken);
         localStorage.setItem(`task_unlocked_${email}`, "true");
         localStorage.setItem(`course_unlocked_${email}`, "true");
-        
+
         setIsTaskUnlocked(true);
         setIsCourseUnlocked(true);
 
@@ -221,8 +221,8 @@ const Status = ({ isLoggedIn, setAccess }) => {
             <AreaChart data={dailyStats}>
               <defs>
                 <linearGradient id="colorAvg" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#FFA003" stopOpacity={0.1}/>
-                  <stop offset="95%" stopColor="#FFA003" stopOpacity={0}/>
+                  <stop offset="5%" stopColor="#FFA003" stopOpacity={0.1} />
+                  <stop offset="95%" stopColor="#FFA003" stopOpacity={0} />
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />

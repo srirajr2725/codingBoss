@@ -7,8 +7,9 @@ import './GlobalAIAssistant.css';
 const GlobalAIAssistant = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
-    { type: 'ai', text: "Hello! I am your AI Mentor. I'm actively monitoring your progress and I'm here to guide you." }
+    { type: 'ai', text: "Hello! I'm your Global AI Assistant. How can I help you today?" }
   ]);
+  const [isLearnMounted, setIsLearnMounted] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const [isListening, setIsListening] = useState(false);
   const location = useLocation();
@@ -154,8 +155,12 @@ const GlobalAIAssistant = () => {
     processAIRequest(inputValue);
   };
 
+  // Strictly hide on Course/Learn pages and Tests
   const path = location.pathname.toLowerCase();
-  if (path.includes('course') || path.includes('learn') || path.includes('test') || path.includes('mcq')) {
+  const isCourseRelated = path.includes('course') || path.includes('learn');
+  const isTestRelated = path.includes('test') || path.includes('mcq') || path.includes('question');
+
+  if (isCourseRelated || isTestRelated) {
     return null;
   }
 

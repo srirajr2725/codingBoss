@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { FiRefreshCw, FiUser, FiAlertTriangle, FiCamera, FiX, FiClock, FiLayers } from 'react-icons/fi';
 import './ProctoringRecords.css';
 
-const API_URL = 'https://unlanded-isela-unmunificently.ngrok-free.dev/api/upload-frame/';
+const API_URL = 'https://api.codingboss.in/api/upload-frame/';
 
 const AuthorizedImage = ({ src, alt, style, className }) => {
   const [blobUrl, setBlobUrl] = useState(null);
@@ -14,9 +14,7 @@ const AuthorizedImage = ({ src, alt, style, className }) => {
     let objectUrl = null;
     let isMounted = true;
 
-    fetch(secureSrc, {
-      headers: { 'ngrok-skip-browser-warning': '1' },
-    })
+    fetch(secureSrc)
       .then(res => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.blob();
@@ -73,7 +71,7 @@ const ProctoringRecords = () => {
       const res = await fetch(API_URL, {
         method: 'GET',
         headers: {
-          'ngrok-skip-browser-warning': 'true',
+          
           'Accept': 'application/json',
         }
       });

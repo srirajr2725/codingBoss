@@ -1,0 +1,326 @@
+[
+  {
+    "title": "Programming",
+    "keywords": ["programming", "coding", "code", "software", "program"],
+    "answer": "Programming means giving instructions to a computer to solve a problem. A good program takes input, processes it using logic, and produces output. To learn programming well, focus on variables, conditions, loops, functions, data structures, and problem solving.",
+    "code": "input -> logic -> output"
+  },
+  {
+    "title": "Algorithm",
+    "keywords": ["algorithm", "logic", "steps", "procedure"],
+    "answer": "An algorithm is a clear step-by-step method to solve a problem. Before writing code, first write the logic in simple steps. If the steps are correct, converting them into Java, Python, or C becomes much easier.",
+    "code": "1. Start\n2. Read input\n3. Process data\n4. Print output\n5. Stop"
+  },
+  {
+    "title": "Flowchart",
+    "keywords": ["flowchart", "flow chart", "diagram", "symbols"],
+    "answer": "A flowchart is a diagram that shows program logic visually. Oval is used for start and stop, parallelogram for input and output, rectangle for processing, and diamond for decisions like if or else.",
+    "code": "Start -> Input -> Decision -> Process -> Output -> Stop"
+  },
+  {
+    "title": "Compiler",
+    "keywords": ["compiler", "compile", "compilation"],
+    "answer": "A compiler converts source code into machine-level code or bytecode before execution. C uses a compiler to create executable code. Java compiler converts .java files into bytecode, then JVM runs that bytecode.",
+    "code": "source code -> compiler -> executable/bytecode -> output"
+  },
+  {
+    "title": "Interpreter",
+    "keywords": ["interpreter", "interpreted", "line by line"],
+    "answer": "An interpreter runs code line by line. Python is commonly called an interpreted language because it executes statements directly through the Python runtime. This makes testing small code easier.",
+    "code": "print(\"Hello\")\nprint(\"Runs line by line\")"
+  },
+  {
+    "title": "Input and Output",
+    "keywords": ["input", "output", "read", "print", "scanner", "scanf", "printf"],
+    "answer": "Input means data given to the program. Output means the result shown by the program. In Java you can use Scanner, in Python you can use input(), and in C you can use scanf() and printf().",
+    "code": "name = input(\"Enter name: \")\nprint(\"Hello\", name)"
+  },
+  {
+    "title": "Data Types",
+    "keywords": ["data type", "datatype", "int", "float", "double", "char", "boolean", "string"],
+    "answer": "A data type tells the computer what kind of value a variable can store. int stores whole numbers, float or double stores decimals, char stores one character, boolean stores true or false, and string stores text.",
+    "code": "int age = 20;\ndouble mark = 95.5;\nchar grade = 'A';"
+  },
+  {
+    "title": "Operators",
+    "keywords": ["operator", "operators", "arithmetic", "relational", "logical"],
+    "answer": "Operators are symbols used to perform operations. Arithmetic operators do maths, relational operators compare values, and logical operators combine conditions.",
+    "code": "a + b\nage >= 18\nmarks > 50 && attendance > 75"
+  },
+  {
+    "title": "If Else",
+    "keywords": ["if", "else", "condition", "conditional", "decision making"],
+    "answer": "if else is used for decision making. If the condition is true, one block runs. If it is false, the else block runs. This is how programs choose between two actions.",
+    "code": "if (age >= 18) {\n    System.out.println(\"Eligible\");\n} else {\n    System.out.println(\"Not eligible\");\n}"
+  },
+  {
+    "title": "Switch",
+    "keywords": ["switch", "case", "default"],
+    "answer": "switch is used when one value must be compared with many possible cases. It is cleaner than writing many if else conditions for fixed choices like menu options.",
+    "code": "switch(choice) {\n    case 1: System.out.println(\"Add\"); break;\n    default: System.out.println(\"Invalid\");\n}"
+  },
+  {
+    "title": "Loops",
+    "keywords": ["loop", "loops", "for loop", "while loop", "do while", "iteration"],
+    "answer": "A loop repeats code. Use for loop when the number of repetitions is known. Use while loop when repetition depends on a condition. Use do while when the code must run at least once.",
+    "code": "for (int i = 1; i <= 5; i++) {\n    System.out.println(i);\n}"
+  },
+  {
+    "title": "Nested Loop",
+    "keywords": ["nested loop", "pattern", "star pattern"],
+    "answer": "A nested loop means one loop inside another loop. It is commonly used for tables, matrices, and star patterns. The outer loop usually controls rows and the inner loop controls columns.",
+    "code": "for (int row = 1; row <= 3; row++) {\n    for (int col = 1; col <= 3; col++) {\n        System.out.print(\"* \");\n    }\n    System.out.println();\n}"
+  },
+  {
+    "title": "Functions",
+    "keywords": ["function", "functions", "method", "methods", "def", "return"],
+    "answer": "A function is a reusable block of code. It can take input as parameters, perform logic, and return a result. Functions make code clean and avoid repetition.",
+    "code": "def add(a, b):\n    return a + b\n\nprint(add(2, 3))"
+  },
+  {
+    "title": "Array",
+    "keywords": ["array", "arrays", "index"],
+    "answer": "An array stores multiple values of the same type under one name. Each value is accessed using an index. Indexing usually starts from 0, so the first element is at index 0.",
+    "code": "int[] marks = {90, 80, 70};\nSystem.out.println(marks[0]);"
+  },
+  {
+    "title": "String",
+    "keywords": ["string", "strings", "text"],
+    "answer": "A string stores text. Strings are used for names, messages, passwords, email ids, and any text data. Common operations are length, uppercase, lowercase, search, replace, and split.",
+    "code": "String name = \"CodingBoss\";\nSystem.out.println(name.length());"
+  },
+  {
+    "title": "List",
+    "keywords": ["list", "python list", "arraylist", "collection list"],
+    "answer": "A list stores multiple values in order. Python lists are flexible and can grow. Java ArrayList is similar and is used when the number of elements can change.",
+    "code": "numbers = [10, 20, 30]\nnumbers.append(40)\nprint(numbers)"
+  },
+  {
+    "title": "Dictionary and Map",
+    "keywords": ["dictionary", "dict", "map", "hashmap", "key value", "key-value"],
+    "answer": "A dictionary or map stores data as key-value pairs. The key is used to find the value quickly. It is useful for student marks, product prices, user profiles, and lookup tables.",
+    "code": "student = {\"name\": \"Arun\", \"mark\": 95}\nprint(student[\"name\"])"
+  },
+  {
+    "title": "Set",
+    "keywords": ["set", "sets", "unique"],
+    "answer": "A set stores unique values. It automatically removes duplicates. Sets are useful when you only care whether a value exists, not about its position.",
+    "code": "items = {1, 2, 2, 3}\nprint(items)"
+  },
+  {
+    "title": "Tuple",
+    "keywords": ["tuple", "tuples", "immutable"],
+    "answer": "A tuple is an ordered collection that cannot be changed after creation. In Python, tuples are useful for fixed data such as coordinates, dates, or records that should not be modified.",
+    "code": "point = (10, 20)\nprint(point[0])"
+  },
+  {
+    "title": "Class and Object",
+    "keywords": ["class", "object", "objects", "oop", "oops"],
+    "answer": "A class is a blueprint. An object is a real item created from that blueprint. For example, Student can be a class, and Arun or Priya can be objects of that class.",
+    "code": "class Student {\n    String name;\n}\n\nStudent s1 = new Student();"
+  },
+  {
+    "title": "Constructor",
+    "keywords": ["constructor", "constructors", "__init__"],
+    "answer": "A constructor is a special method that runs automatically when an object is created. It is mainly used to initialize object values.",
+    "code": "class Student {\n    Student() {\n        System.out.println(\"Object created\");\n    }\n}"
+  },
+  {
+    "title": "Inheritance",
+    "keywords": ["inheritance", "extends", "parent class", "child class", "superclass", "subclass"],
+    "answer": "Inheritance allows one class to reuse the properties and methods of another class. The existing class is called parent class, and the new class is called child class. It helps code reuse.",
+    "code": "class Animal { }\nclass Dog extends Animal { }"
+  },
+  {
+    "title": "Polymorphism",
+    "keywords": ["polymorphism", "overloading", "overriding"],
+    "answer": "Polymorphism means one name can behave in different ways. Method overloading means same method name with different parameters. Method overriding means child class changes parent class method behavior.",
+    "code": "void add(int a, int b) { }\nvoid add(double a, double b) { }"
+  },
+  {
+    "title": "Encapsulation",
+    "keywords": ["encapsulation", "getter", "setter", "private"],
+    "answer": "Encapsulation means wrapping data and methods inside a class and protecting the data from direct access. Usually variables are private and accessed through getters and setters.",
+    "code": "private int age;\npublic int getAge() { return age; }"
+  },
+  {
+    "title": "Abstraction",
+    "keywords": ["abstraction", "abstract", "interface"],
+    "answer": "Abstraction means showing only necessary details and hiding internal implementation. In Java, abstraction is achieved using abstract classes and interfaces.",
+    "code": "interface Payment {\n    void pay();\n}"
+  },
+  {
+    "title": "Access Modifiers",
+    "keywords": ["public", "private", "protected", "access modifier", "access modifiers"],
+    "answer": "Access modifiers control where a class, variable, or method can be used. public is accessible everywhere, private only inside the same class, and protected mainly inside package and child classes.",
+    "code": "public class Student {\n    private int mark;\n}"
+  },
+  {
+    "title": "Static",
+    "keywords": ["static", "static method", "static variable"],
+    "answer": "static belongs to the class, not to a particular object. A static method or variable can be used without creating an object. Java main method is static so JVM can call it directly.",
+    "code": "static int count = 0;\npublic static void main(String[] args) { }"
+  },
+  {
+    "title": "Main Method",
+    "keywords": ["main method", "public static void main", "main function"],
+    "answer": "The main method is the starting point of a program. In Java, public static void main(String[] args) is called by JVM. In C, int main() is where execution begins.",
+    "code": "public static void main(String[] args) {\n    System.out.println(\"Start\");\n}"
+  },
+  {
+    "title": "JDK JRE JVM",
+    "keywords": ["jdk", "jre", "jvm", "bytecode", "write once run anywhere"],
+    "answer": "JDK is for developing Java programs. JRE is for running Java programs. JVM is the engine that executes Java bytecode. Java code becomes bytecode, and JVM runs it on different operating systems.",
+    "code": ".java -> javac -> .class bytecode -> JVM"
+  },
+  {
+    "title": "Exception Handling",
+    "keywords": ["exception", "try", "catch", "finally", "error handling"],
+    "answer": "Exception handling is used to handle runtime errors without crashing the program. try contains risky code, catch handles the error, and finally runs cleanup code.",
+    "code": "try {\n    int x = 10 / 0;\n} catch (Exception e) {\n    System.out.println(e.getMessage());\n}"
+  },
+  {
+    "title": "File Handling",
+    "keywords": ["file", "file handling", "read file", "write file"],
+    "answer": "File handling means reading from and writing to files. It is used to store data permanently, such as logs, reports, user data, and configuration.",
+    "code": "with open(\"data.txt\", \"w\") as file:\n    file.write(\"Hello\")"
+  },
+  {
+    "title": "Pointer",
+    "keywords": ["pointer", "pointers", "address", "dereference"],
+    "answer": "A pointer is a C variable that stores the memory address of another variable. & gives the address and * accesses the value at that address.",
+    "code": "int x = 10;\nint *p = &x;\nprintf(\"%d\", *p);"
+  },
+  {
+    "title": "Malloc and Free",
+    "keywords": ["malloc", "calloc", "free", "dynamic memory", "heap"],
+    "answer": "malloc and calloc allocate memory dynamically from the heap in C. After using dynamically allocated memory, free() should be called to avoid memory leaks.",
+    "code": "int *arr = malloc(5 * sizeof(int));\nfree(arr);"
+  },
+  {
+    "title": "Segmentation Fault",
+    "keywords": ["segmentation fault", "segfault", "memory error"],
+    "answer": "A segmentation fault happens when a program tries to access memory it is not allowed to access. Common reasons are invalid pointers, array index out of range, and using freed memory.",
+    "code": "// Check pointer is not NULL before using it\nif (ptr != NULL) {\n    printf(\"%d\", *ptr);\n}"
+  },
+  {
+    "title": "Recursion",
+    "keywords": ["recursion", "recursive", "base case"],
+    "answer": "Recursion means a function calls itself to solve a smaller problem. Every recursive function must have a base case to stop the calls.",
+    "code": "int fact(int n) {\n    if (n == 0) return 1;\n    return n * fact(n - 1);\n}"
+  },
+  {
+    "title": "Time Complexity",
+    "keywords": ["time complexity", "big o", "o(n)", "o(log n)", "complexity"],
+    "answer": "Time complexity describes how program running time grows when input size grows. O(1) is constant, O(n) grows linearly, O(log n) grows slowly, and O(n^2) grows fast for large input.",
+    "code": "for (int i = 0; i < n; i++) { }\n// This is O(n)"
+  },
+  {
+    "title": "Sorting",
+    "keywords": ["sorting", "sort", "bubble sort", "selection sort", "insertion sort"],
+    "answer": "Sorting means arranging data in order, usually ascending or descending. Bubble sort compares nearby elements, selection sort selects the smallest item, and insertion sort inserts each item into the correct position.",
+    "code": "numbers = [3, 1, 2]\nnumbers.sort()\nprint(numbers)"
+  },
+  {
+    "title": "Searching",
+    "keywords": ["searching", "linear search", "binary search", "search"],
+    "answer": "Searching means finding an item in data. Linear search checks one by one. Binary search is faster but works only when data is sorted.",
+    "code": "def linear_search(arr, target):\n    for i in range(len(arr)):\n        if arr[i] == target:\n            return i\n    return -1"
+  },
+  {
+    "title": "Stack",
+    "keywords": ["stack", "push", "pop", "lifo"],
+    "answer": "A stack is a data structure that follows LIFO: Last In, First Out. The last item added is removed first. It is used in undo operations, recursion, and expression evaluation.",
+    "code": "stack = []\nstack.append(10)\nstack.pop()"
+  },
+  {
+    "title": "Queue",
+    "keywords": ["queue", "enqueue", "dequeue", "fifo"],
+    "answer": "A queue follows FIFO: First In, First Out. The first item added is removed first. It is used in scheduling, printer queues, and request processing.",
+    "code": "from collections import deque\nq = deque()\nq.append(10)\nq.popleft()"
+  },
+  {
+    "title": "Linked List",
+    "keywords": ["linked list", "node", "next pointer"],
+    "answer": "A linked list stores data in nodes. Each node has data and a reference to the next node. It grows dynamically and does not need continuous memory like arrays.",
+    "code": "class Node:\n    def __init__(self, data):\n        self.data = data\n        self.next = None"
+  },
+  {
+    "title": "Database",
+    "keywords": ["database", "db", "sql", "table", "query"],
+    "answer": "A database stores organized data. SQL databases store data in tables with rows and columns. Common SQL commands are SELECT, INSERT, UPDATE, and DELETE.",
+    "code": "SELECT name, mark FROM students WHERE mark > 80;"
+  },
+  {
+    "title": "API",
+    "keywords": ["api", "rest api", "endpoint", "request", "response"],
+    "answer": "An API allows two software systems to communicate. A REST API usually has endpoints where the frontend sends requests and the backend sends responses.",
+    "code": "GET /students\nPOST /students"
+  },
+  {
+    "title": "Frontend and Backend",
+    "keywords": ["frontend", "backend", "full stack", "client", "server"],
+    "answer": "Frontend is the part users see, like pages, buttons, and forms. Backend runs on the server and handles logic, database, authentication, and APIs. Full stack means working with both.",
+    "code": "Frontend -> API request -> Backend -> Database -> Response"
+  },
+  {
+    "title": "Debugging",
+    "keywords": ["debug", "bug", "not working", "wrong output", "syntax error", "fix error"],
+    "answer": "Debugging means finding and fixing mistakes in code. Read the error message, check the line number, verify brackets and spelling, print variable values, and fix one issue at a time.",
+    "code": "print(\"value of x:\", x)\n// Use small checks to find where logic changes"
+  },
+  {
+    "title": "Project Idea",
+    "keywords": ["project", "mini project", "final year project", "idea"],
+    "answer": "A good beginner project should use input, logic, storage, and output. Examples: student mark system, quiz app, library management, expense tracker, todo app, and simple placement preparation portal.",
+    "code": "Project flow:\n1. Add data\n2. View data\n3. Update data\n4. Delete data"
+  },
+  {
+    "title": "Interview Preparation",
+    "keywords": ["interview", "placement", "prepare", "job", "resume"],
+    "answer": "For placement preparation, revise programming basics, OOP, DBMS, simple DSA, projects, and problem solving. Practice explaining your code clearly because interviewers check both logic and communication.",
+    "code": "Daily plan:\n30 min basics\n45 min coding\n30 min project\n15 min revision"
+  },
+  {
+    "title": "Java",
+    "keywords": ["java", "core java", "java programming"],
+    "answer": "Java is an object-oriented programming language used for backend development, Android apps, enterprise software, and large systems. Java code is compiled into bytecode and runs on JVM, so the same program can run on many operating systems.",
+    "code": "public class Main {\n    public static void main(String[] args) {\n        System.out.println(\"Hello Java\");\n    }\n}"
+  },
+  {
+    "title": "Python",
+    "keywords": ["python", "python programming", "py"],
+    "answer": "Python is a beginner-friendly high-level language used for web development, automation, data science, AI, scripting, and backend work. Its syntax is simple, so students can focus more on logic than boilerplate code.",
+    "code": "print(\"Hello Python\")"
+  },
+  {
+    "title": "C Programming",
+    "keywords": ["c", "c programming", "c language"],
+    "answer": "C is a fast procedural programming language used in operating systems, embedded systems, compilers, and low-level programming. Learning C helps you understand memory, pointers, arrays, and how programs work close to hardware.",
+    "code": "#include <stdio.h>\n\nint main() {\n    printf(\"Hello C\");\n    return 0;\n}"
+  },
+  {
+    "title": "HTML",
+    "keywords": ["html", "tag", "web page", "markup"],
+    "answer": "HTML is used to create the structure of a web page. It defines headings, paragraphs, links, images, forms, tables, and sections. HTML is not a programming language; it is a markup language.",
+    "code": "<h1>Hello</h1>\n<p>This is a web page.</p>"
+  },
+  {
+    "title": "CSS",
+    "keywords": ["css", "style", "stylesheet", "responsive"],
+    "answer": "CSS is used to style web pages. It controls colors, spacing, fonts, layout, animations, and responsive design. HTML gives structure, CSS makes it look good.",
+    "code": "h1 {\n    color: blue;\n    font-size: 32px;\n}"
+  },
+  {
+    "title": "JavaScript",
+    "keywords": ["javascript", "js", "dom", "web scripting"],
+    "answer": "JavaScript is used to make web pages interactive. It can handle button clicks, validate forms, update page content, call APIs, and build full frontend apps with frameworks like React.",
+    "code": "document.querySelector(\"button\").addEventListener(\"click\", () => {\n    alert(\"Clicked\");\n});"
+  },
+  {
+    "title": "React",
+    "keywords": ["react", "react js", "component", "state", "props"],
+    "answer": "React is a JavaScript library for building user interfaces using components. Props pass data into a component, and state stores data that can change on the screen.",
+    "code": "function Welcome({ name }) {\n    return <h1>Hello {name}</h1>;\n}"
+  }
+]

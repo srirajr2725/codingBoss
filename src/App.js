@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { HashRouter as Router, Route, Routes, Navigate } from "react-router-dom";
+import { HashRouter as Router, Route, Routes, Navigate, useLocation } from "react-router-dom";
 import "./index.css";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import CryptoJS from "crypto-js";
@@ -23,7 +23,7 @@ import Dashboard from "./Dashboard.js";
 import Userdashboard from "./CollegeAdminDashboard.js";
 import Admindashboardg from "./CollegeStudentDashboard.js";
 import UploadQuestions from "./Uploadquestions.js";
-import TestPage from "./TestPage.js";
+import TestPage from "./Testpage.js";
 import Company from "./Company.js";
 import Assignments from "./Assignments.js";
 import InstructionPage from './InstructionPage.jsx';
@@ -48,6 +48,7 @@ import InnovativeLearning from "./InnovativeLearning.js";
 
 
 function AppWrapper() {
+  const location = useLocation();
   const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem("username"));
   const [username, setUsername] = useState(localStorage.getItem("username") || "");
   const [userRole, setUserRole] = useState(localStorage.getItem("role") || "");
@@ -62,6 +63,17 @@ function AppWrapper() {
   ]);
 
   useEffect(() => {
+    // 🛡️ SILENCE CROSS-ORIGIN "SCRIPT ERROR" OVERLAYS
+    const originalOnError = window.onerror;
+    window.onerror = function (msg, url, lineNo, columnNo, error) {
+      if (msg === "Script error." || (url && url.includes("bundle.js") && msg.includes("handleError"))) {
+        console.warn("CORS/CDN script error silenced:", msg, url);
+        return true;
+      }
+      if (originalOnError) return originalOnError(msg, url, lineNo, columnNo, error);
+      return false;
+    };
+
     // Check access
     const unlocked = localStorage.getItem("user_token");
     if (unlocked) {
@@ -72,13 +84,14 @@ function AppWrapper() {
     const fetchPermToken = async () => {
       const email = localStorage.getItem("username");
       const token = localStorage.getItem("token");
-
       const encPwd = localStorage.getItem("password");
 
       if (email && encPwd && !token) {
         try {
           const bytes = CryptoJS.AES.decrypt(encPwd, 'thirancoding360mgai');
           const password = bytes.toString(CryptoJS.enc.Utf8);
+
+          if (!password) return;
 
           // Perform background re-auth to get the fresh tokens
           const res = await apiClient("quiz/users/login/", "POST", { email, password });
@@ -176,9 +189,6 @@ function AppWrapper() {
         <Route path="/projects/:projectName" element={isLoggedIn ? <ProjectForm /> : <Navigate to="/LoginPage" replace />} />
         <Route path="/QuestionPage" element={isLoggedIn ? <QuestionPage {...{ isLoggedIn, setIsLoggedIn, username, userRole, handleLogout }} /> : <Navigate to="/LoginPage" replace />} />
         <Route path="/courses" element={isLoggedIn ? <Learn /> : <Navigate to="/LoginPage" replace />} />
-
-
-
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       {isLoggedIn && userRole === 'member' && <GlobalAIAssistant />}

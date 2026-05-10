@@ -5,7 +5,7 @@ import {
 } from 'react-icons/fi';
 import './DoctorDashboard.css';
 
-const API_URL = 'https://unlanded-isela-unmunificently.ngrok-free.dev/api/upload-frame/';
+const API_URL = 'https://api.codingboss.in/api/upload-frame/';
 const HEAD_SWITCH_LIMIT = 4;
 
 const getViolationType = (frame) => String(frame?.violation_type || frame?.violationType || '').toLowerCase();
@@ -32,7 +32,7 @@ const AuthorizedImage = ({ src, alt, className }) => {
     let objectUrl = null;
     let isMounted = true;
 
-    fetch(secureSrc, { headers: { 'ngrok-skip-browser-warning': '1' } })
+    fetch(secureSrc, { headers: {  } })
       .then(res => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.blob();
@@ -78,7 +78,7 @@ const DoctorDashboard = ({ handleLogout, username }) => {
       const res = await fetch(API_URL, {
         method: 'GET',
         headers: {
-          'ngrok-skip-browser-warning': 'true',
+          
           'Accept': 'application/json',
         }
       });
@@ -152,59 +152,48 @@ const DoctorDashboard = ({ handleLogout, username }) => {
       const res = await fetch(API_URL, {
         method: 'GET',
         headers: {
-          'ngrok-skip-browser-warning': 'true',
+          
           'Accept': 'application/json',
         }
       });
 
       if (!res.ok) throw new Error(`Server responded with ${res.status}`);
       const data = await res.json();
-      const list = data.sessions
-        ? data.sessions
-        : Array.isArray(data) ? data : data.results || data.frames || data.data || [];
-
+      const list = data.sessions || data;
       const studentFrames = list.filter(r => String(r.student_id) === String(student.id));
       const framesToCheck = studentFrames.length ? studentFrames : (student.allFrames || []);
-      let headSwitchCount = 0;
-
+      
+      let doctorDetectCount = 0;
+      let doctorUndetectCount = 0;
       framesToCheck.forEach(frame => {
-        if (frame.violation_type === 'doctor_detect') {
-          headSwitchCount += 1;
-        } else {
-          const reportedCount = getViolationCount(frame);
-          if (reportedCount) {
-            headSwitchCount = Math.max(headSwitchCount, reportedCount);
-          } else if (isHeadSwitchFrame(frame)) {
-            headSwitchCount += 1;
-          }
-        }
+        if (frame.violation_type === 'doctor_detect') doctorDetectCount += 1;
+        if (frame.violation_type === 'doctor_undetect') doctorUndetectCount += 1;
       });
 
-      headSwitchCount = Math.max(headSwitchCount, (student.headSwitchCount || 0)) + 1;
-      const terminated = framesToCheck.some(frame => frame.terminated) || headSwitchCount >= HEAD_SWITCH_LIMIT;
+      const effectiveDetects = Math.max(0, doctorDetectCount - doctorUndetectCount);
+      const newDetectCount = effectiveDetects + 1;
+      const terminated = newDetectCount >= HEAD_SWITCH_LIMIT;
 
-      // Post the detection to the backend so the student receives it
       await fetch(API_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'ngrok-skip-browser-warning': 'true'
+          
         },
         body: JSON.stringify({
           student_id: Number(student.id),
-          image: student.latestFrameUrl || null, // Reuse latest frame to avoid empty payload errors if any
+          image: "data:image/jpeg;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=",
           flagged: true,
           violation_type: 'doctor_detect',
-          violation_message: terminated ? 'Doctor terminated the exam.' : `Doctor warning #${headSwitchCount}`,
-          violation_count: headSwitchCount,
+          violation_message: terminated ? 'Doctor terminated the exam.' : `Doctor warning #${newDetectCount}`,
+          violation_count: newDetectCount,
           terminated: terminated
         })
       });
 
       const detected = {
         ...student,
-        allFrames: framesToCheck,
-        headSwitchCount,
+        headSwitchCount: newDetectCount,
         terminated,
         status: terminated ? 'Terminated' : 'Warning',
         camera: terminated ? 'Inactive' : student.camera
@@ -216,21 +205,68 @@ const DoctorDashboard = ({ handleLogout, username }) => {
       );
     } catch (err) {
       console.error('Detect Error:', err);
-      // Fallback if backend POST fails
-      const headSwitchCount = (student.headSwitchCount || 0) + 1;
-      const terminated = headSwitchCount >= HEAD_SWITCH_LIMIT;
-      const detected = {
+    } finally {
+      setDetectingStudentId(null);
+    }
+  };
+
+  const handleUndetectStudent = async (student) => {
+    setDetectingStudentId(student.id);
+    try {
+      const res = await fetch(API_URL, {
+        method: 'GET',
+        headers: {
+          
+          'Accept': 'application/json',
+        }
+      });
+      const data = await res.json();
+      const list = data.sessions || data;
+      const studentFrames = list.filter(r => String(r.student_id) === String(student.id));
+      const framesToCheck = studentFrames.length ? studentFrames : (student.allFrames || []);
+      
+      let doctorDetectCount = 0;
+      let doctorUndetectCount = 0;
+      framesToCheck.forEach(frame => {
+        if (frame.violation_type === 'doctor_detect') doctorDetectCount += 1;
+        if (frame.violation_type === 'doctor_undetect') doctorUndetectCount += 1;
+      });
+
+      const effectiveDetects = Math.max(0, doctorDetectCount - doctorUndetectCount);
+      if (effectiveDetects === 0) {
+        setDetectingStudentId(null);
+        return;
+      }
+
+      const newEffectiveDetects = effectiveDetects - 1;
+
+      await fetch(API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          
+        },
+        body: JSON.stringify({
+          student_id: Number(student.id),
+          image: "data:image/jpeg;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=", 
+          flagged: false,
+          violation_type: 'doctor_undetect',
+          violation_message: 'Doctor cleared a warning.',
+          violation_count: newEffectiveDetects,
+          terminated: false
+        })
+      });
+
+      const undetected = {
         ...student,
-        headSwitchCount,
-        terminated,
-        status: terminated ? 'Terminated' : 'Warning',
-        camera: terminated ? 'Inactive' : student.camera
+        headSwitchCount: newEffectiveDetects,
+        terminated: false,
+        status: newEffectiveDetects > 0 ? 'Warning' : 'Active',
       };
 
-      setActiveTests(prev => terminated
-        ? prev.filter(s => s.id !== student.id)
-        : prev.map(s => s.id === student.id ? detected : s)
-      );
+      setActiveTests(prev => prev.map(s => s.id === student.id ? undetected : s));
+    } catch (err) {
+      console.error('Undetect Error:', err);
     } finally {
       setDetectingStudentId(null);
     }
@@ -240,7 +276,6 @@ const DoctorDashboard = ({ handleLogout, username }) => {
 
   return (
     <div className="ultra-dashboard">
-      {/* Sidebar - Ultra Sleek */}
       <aside className="ultra-sidebar">
         <div className="ultra-logo">
           <div className="logo-icon"><FiMonitor /></div>
@@ -264,7 +299,6 @@ const DoctorDashboard = ({ handleLogout, username }) => {
         </div>
       </aside>
 
-      {/* Main Command Center */}
       <main className="ultra-main">
         <header className="ultra-header">
           <div className="header-left">
@@ -299,7 +333,6 @@ const DoctorDashboard = ({ handleLogout, username }) => {
           )}
 
           <div className="command-grid">
-            {/* Live Camera Cluster */}
             <div className="camera-cluster">
               {liveTests.map(s => (
                 <div key={s.id} className={`camera-unit ${s.status === 'Warning' ? 'unit-flagged' : ''}`}>
@@ -354,21 +387,27 @@ const DoctorDashboard = ({ handleLogout, username }) => {
                         Head {s.headSwitchCount || 0}/{HEAD_SWITCH_LIMIT}
                       </span>
                     </div>
-                    <div className="unit-btns">
-                      <button
-                        className="btn-deactivate"
-                        onClick={() => handleDetectStudent(s)}
-                        disabled={detectingStudentId === s.id}
-                      >
-                        {detectingStudentId === s.id ? 'CHECKING' : 'DETECT'}
-                      </button>
-                    </div>
+                      <div className="unit-btns" style={{ display: 'flex', gap: '8px' }}>
+                        <button
+                          className="btn-deactivate"
+                          onClick={() => handleDetectStudent(s)}
+                          disabled={detectingStudentId === s.id}
+                        >
+                          {detectingStudentId === s.id ? 'CHECKING' : 'DETECT'}
+                        </button>
+                        <button
+                          className="btn-deactivate"
+                          style={{ background: '#3b82f6', borderColor: '#3b82f6' }}
+                          onClick={() => handleUndetectStudent(s)}
+                          disabled={detectingStudentId === s.id || (s.headSwitchCount || 0) === 0}
+                        >
+                          UNDETECT
+                        </button>
+                      </div>
                   </div>
                 </div>
               ))}
             </div>
-
-            {/* Detail Overlay (Conditional) */}
             {false && (
               <div className="dd-detail-overlay">
                 <div className="dd-detail-modal">
