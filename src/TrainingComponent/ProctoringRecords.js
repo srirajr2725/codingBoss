@@ -4,39 +4,50 @@ import './ProctoringRecords.css';
 
 const API_URL = 'https://unlanded-isela-unmunificently.ngrok-free.dev/api/upload-frame/';
 
-const AuthorizedImage = ({ src, alt, ...props }) => {
-  const [imgSrc, setImgSrc] = useState(null);
-  const [error, setError] = useState(false);
+const AuthorizedImage = ({ src, alt, style, className }) => {
+  const [blobUrl, setBlobUrl] = useState(null);
 
   useEffect(() => {
     if (!src) return;
-    
-    // Force HTTPS to prevent mixed-content blocking and 404s from ngrok
-    const secureSrc = src.replace(/^http:\/\//i, 'https://');
 
-    if (secureSrc.startsWith('data:')) {
-      setImgSrc(secureSrc);
-      return;
-    }
+    const secureSrc = src.replace(/^http:\/\//i, 'https://');
+    let objectUrl = null;
     let isMounted = true;
+
     fetch(secureSrc, {
-      headers: { 'ngrok-skip-browser-warning': 'true' }
+      headers: { 'ngrok-skip-browser-warning': '1' },
     })
       .then(res => {
-        if (!res.ok) throw new Error('Fetch failed');
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.blob();
       })
       .then(blob => {
-        if (isMounted) setImgSrc(URL.createObjectURL(blob));
+        if (isMounted) {
+          objectUrl = URL.createObjectURL(blob);
+          setBlobUrl(objectUrl);
+        }
       })
-      .catch(() => {
-        if (isMounted) setError(true);
+      .catch(err => {
+        console.error('Frame load error:', err);
+        // Last resort: set src directly
+        if (isMounted) setBlobUrl(secureSrc);
       });
-    return () => { isMounted = false; };
+
+    return () => {
+      isMounted = false;
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
   }, [src]);
 
-  if (error || !imgSrc) return null;
-  return <img src={imgSrc} alt={alt} {...props} />;
+  if (!blobUrl) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#94a3b8', gap: '8px' }}>
+        <FiCamera size={32} />
+        <p style={{ margin: 0, fontSize: '0.75rem' }}>Loading frame…</p>
+      </div>
+    );
+  }
+  return <img src={blobUrl} alt={alt} style={{ width: '100%', height: '100%', objectFit: 'cover', ...(style || {}) }} className={className} />;
 };
 
 const ProctoringRecords = () => {
@@ -75,7 +86,7 @@ const ProctoringRecords = () => {
       } else {
         list = Array.isArray(data) ? data : data.results || data.frames || data.data || [];
       }
-      
+
       // Keep records that have a student_id
       const attended = list.filter(r => r.student_id !== undefined && r.student_id !== null);
       setRecords(attended);

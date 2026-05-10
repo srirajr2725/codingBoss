@@ -310,6 +310,25 @@
   animation: flash 1s infinite;
 }
 
+.unit-offline-badge {
+  background: #475569;
+  color: #fff;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.65rem;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+}
+
+.unit-live-badge {
+  background: #dcfce7;
+  color: #15803d;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.65rem;
+  font-weight: 900;
+}
+
 @keyframes flash {
 
   0%,
@@ -399,6 +418,12 @@
   border-radius: 6px;
 }
 
+.unit-meta {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
 .badge-active {
   background: #dcfce7;
   color: #15803d;
@@ -430,6 +455,11 @@
   background: #fee2e2;
   border-color: #ef4444;
   color: #ef4444;
+}
+
+.btn-deactivate:disabled {
+  cursor: wait;
+  opacity: 0.7;
 }
 
 .btn-pulse {

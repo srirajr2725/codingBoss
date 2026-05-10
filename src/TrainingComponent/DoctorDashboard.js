@@ -1,18 +1,68 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  FiCamera, FiUser, FiAlertCircle, FiXCircle, FiRefreshCw, 
-  FiMonitor, FiPower, FiClock, FiSettings, FiLogOut, FiGrid
+  FiCamera, FiAlertCircle, FiXCircle, FiRefreshCw, 
+  FiMonitor, FiPower, FiLogOut, FiGrid
 } from 'react-icons/fi';
-import apiClient from '../utils/apiClient';
 import './DoctorDashboard.css';
 
 const API_URL = 'https://unlanded-isela-unmunificently.ngrok-free.dev/api/upload-frame/';
+const HEAD_SWITCH_LIMIT = 4;
+
+const getViolationType = (frame) => String(frame?.violation_type || frame?.violationType || '').toLowerCase();
+const getViolationMessage = (frame) => String(frame?.violation_message || frame?.message || frame?.reason || '').toLowerCase();
+const getViolationCount = (frame) => Number(frame?.violation_count || frame?.violationCount || 0);
+const hasViolationData = (frame) => Boolean(frame?.flagged || getViolationType(frame) || getViolationMessage(frame) || getViolationCount(frame));
+const isHeadSwitchFrame = (frame) => {
+  const type = getViolationType(frame);
+  const message = getViolationMessage(frame);
+  return type === 'head_switch'
+    || type === 'head_rotation'
+    || message.includes('head')
+    || message.includes('looking away')
+    || (frame?.flagged && !type && !message);
+};
+
+// Fetches image with ngrok bypass header and renders as blob URL
+const AuthorizedImage = ({ src, alt, className }) => {
+  const [blobUrl, setBlobUrl] = useState(null);
+
+  useEffect(() => {
+    if (!src) return;
+    const secureSrc = src.replace(/^http:\/\//i, 'https://');
+    let objectUrl = null;
+    let isMounted = true;
+
+    fetch(secureSrc, { headers: { 'ngrok-skip-browser-warning': '1' } })
+      .then(res => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.blob();
+      })
+      .then(blob => {
+        if (isMounted) {
+          objectUrl = URL.createObjectURL(blob);
+          setBlobUrl(objectUrl);
+        }
+      })
+      .catch(err => {
+        if (isMounted) setBlobUrl(secureSrc); // fallback to direct src
+      });
+
+    return () => {
+      isMounted = false;
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
+  }, [src]);
+
+  if (!blobUrl) return <div className="no-feed-placeholder"><FiCamera /> Loading…</div>;
+  return <img src={blobUrl} alt={alt} className={className} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />;
+};
 
 const DoctorDashboard = ({ handleLogout, username }) => {
   const [activeTests, setActiveTests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [detectingStudentId, setDetectingStudentId] = useState(null);
   const [error, setError] = useState(null);
 
   useEffect(() => {
@@ -35,39 +85,57 @@ const DoctorDashboard = ({ handleLogout, username }) => {
       
       if (!res.ok) throw new Error(`Server responded with ${res.status}`);
       const data = await res.json();
-      
-      const list = Array.isArray(data)
-        ? data
-        : data.results || data.frames || data.data || [];
 
-      // Group by student to show them as unique "Units"
+      // Parse the sessions format: { sessions: [...] }
+      const list = data.sessions
+        ? data.sessions
+        : Array.isArray(data) ? data : data.results || data.frames || data.data || [];
+
+      const now = Date.now();
+      const OFFLINE_THRESHOLD_MS = 30 * 1000; // 30 seconds — no frame = offline
+
+      // Map sessions to student units
       const studentMap = list.reduce((acc, r) => {
         const key = String(r.student_id);
         if (!acc[key]) {
           acc[key] = {
             id: key,
             name: r.student_name || `Student #${key}`,
-            test: 'Active Exam', // Could be dynamic if backend provides test name
+            test: 'Active Exam',
             status: r.flagged ? 'Warning' : 'Active',
             camera: 'Active',
-            request: null, // This would need a specific backend flag for "Request Inactive"
-            latestFrame: r.image,
-            timestamp: r.timestamp,
+            latestFrameUrl: r.latest_frame_url || null,
+            startedAt: r.started_at,
+            lastFrameAt: r.latest_frame_created_at,
+            isOffline: r.latest_frame_created_at
+              ? (now - new Date(r.latest_frame_created_at).getTime()) > OFFLINE_THRESHOLD_MS
+              : false,
+            headSwitchCount: 0,
+            terminated: Boolean(r.terminated),
             allFrames: []
           };
         }
         acc[key].allFrames.push(r);
-        // If any frame is flagged, the status is Warning
         if (r.flagged) acc[key].status = 'Warning';
-        // Always keep the latest image
-        if (new Date(r.timestamp) > new Date(acc[key].timestamp)) {
-          acc[key].latestFrame = r.image;
-          acc[key].timestamp = r.timestamp;
+        if (isHeadSwitchFrame(r)) {
+          const reportedCount = getViolationCount(r);
+          acc[key].headSwitchCount = Math.max(acc[key].headSwitchCount, reportedCount || acc[key].headSwitchCount + 1);
+        }
+        if (r.terminated || acc[key].headSwitchCount >= HEAD_SWITCH_LIMIT) {
+          acc[key].terminated = true;
+          acc[key].status = 'Terminated';
+          acc[key].camera = 'Inactive';
+        }
+        // Update to latest frame URL if newer
+        if (r.latest_frame_created_at && (!acc[key].lastFrameAt || new Date(r.latest_frame_created_at) > new Date(acc[key].lastFrameAt))) {
+          acc[key].latestFrameUrl = r.latest_frame_url;
+          acc[key].lastFrameAt = r.latest_frame_created_at;
+          acc[key].isOffline = (now - new Date(r.latest_frame_created_at).getTime()) > OFFLINE_THRESHOLD_MS;
         }
         return acc;
       }, {});
 
-      setActiveTests(Object.values(studentMap));
+      setActiveTests(Object.values(studentMap).filter(s => !s.terminated && s.camera === 'Active' && !s.isOffline && s.latestFrameUrl));
       setError(null);
     } catch (err) {
       console.error('Fetch Error:', err);
@@ -78,18 +146,97 @@ const DoctorDashboard = ({ handleLogout, username }) => {
     }
   };
 
-  const handleMonitorStudent = (student) => {
-    setSelectedStudent(student);
-  };
+  const handleDetectStudent = async (student) => {
+    setDetectingStudentId(student.id);
+    try {
+      const res = await fetch(API_URL, {
+        method: 'GET',
+        headers: {
+          'ngrok-skip-browser-warning': 'true',
+          'Accept': 'application/json',
+        }
+      });
 
-  const handleDeactivateCamera = (studentId) => {
-    if (window.confirm("Are you sure you want to approve camera deactivation for this student?")) {
-      setActiveTests(prev => prev.map(s => 
-        s.id === studentId ? { ...s, camera: 'Inactive' } : s
-      ));
-      // In a real app, you would send a POST to the backend to update the student's status
+      if (!res.ok) throw new Error(`Server responded with ${res.status}`);
+      const data = await res.json();
+      const list = data.sessions
+        ? data.sessions
+        : Array.isArray(data) ? data : data.results || data.frames || data.data || [];
+
+      const studentFrames = list.filter(r => String(r.student_id) === String(student.id));
+      const framesToCheck = studentFrames.length ? studentFrames : (student.allFrames || []);
+      let headSwitchCount = 0;
+
+      framesToCheck.forEach(frame => {
+        if (frame.violation_type === 'doctor_detect') {
+          headSwitchCount += 1;
+        } else {
+          const reportedCount = getViolationCount(frame);
+          if (reportedCount) {
+            headSwitchCount = Math.max(headSwitchCount, reportedCount);
+          } else if (isHeadSwitchFrame(frame)) {
+            headSwitchCount += 1;
+          }
+        }
+      });
+
+      headSwitchCount = Math.max(headSwitchCount, (student.headSwitchCount || 0)) + 1;
+      const terminated = framesToCheck.some(frame => frame.terminated) || headSwitchCount >= HEAD_SWITCH_LIMIT;
+
+      // Post the detection to the backend so the student receives it
+      await fetch(API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'ngrok-skip-browser-warning': 'true'
+        },
+        body: JSON.stringify({
+          student_id: Number(student.id),
+          image: student.latestFrameUrl || null, // Reuse latest frame to avoid empty payload errors if any
+          flagged: true,
+          violation_type: 'doctor_detect',
+          violation_message: terminated ? 'Doctor terminated the exam.' : `Doctor warning #${headSwitchCount}`,
+          violation_count: headSwitchCount,
+          terminated: terminated
+        })
+      });
+
+      const detected = {
+        ...student,
+        allFrames: framesToCheck,
+        headSwitchCount,
+        terminated,
+        status: terminated ? 'Terminated' : 'Warning',
+        camera: terminated ? 'Inactive' : student.camera
+      };
+
+      setActiveTests(prev => terminated
+        ? prev.filter(s => s.id !== student.id)
+        : prev.map(s => s.id === student.id ? detected : s)
+      );
+    } catch (err) {
+      console.error('Detect Error:', err);
+      // Fallback if backend POST fails
+      const headSwitchCount = (student.headSwitchCount || 0) + 1;
+      const terminated = headSwitchCount >= HEAD_SWITCH_LIMIT;
+      const detected = {
+        ...student,
+        headSwitchCount,
+        terminated,
+        status: terminated ? 'Terminated' : 'Warning',
+        camera: terminated ? 'Inactive' : student.camera
+      };
+
+      setActiveTests(prev => terminated
+        ? prev.filter(s => s.id !== student.id)
+        : prev.map(s => s.id === student.id ? detected : s)
+      );
+    } finally {
+      setDetectingStudentId(null);
     }
   };
+
+  const liveTests = activeTests.filter(s => !s.terminated && s.camera === 'Active' && !s.isOffline && s.latestFrameUrl);
 
   return (
     <div className="ultra-dashboard">
@@ -124,7 +271,7 @@ const DoctorDashboard = ({ handleLogout, username }) => {
             <h1 className="ultra-title">Proctoring Command Center</h1>
             <div className="system-status-pills">
               <span className="pill green">System: Optimal</span>
-              <span className="pill blue">Nodes: {activeTests.length} Active</span>
+              <span className="pill blue">Nodes: {liveTests.length} Live</span>
               <span className="pill amber">Network: {refreshing ? 'Syncing...' : 'Stable'}</span>
             </div>
           </div>
@@ -143,33 +290,47 @@ const DoctorDashboard = ({ handleLogout, username }) => {
             </div>
           )}
 
-          {!loading && activeTests.length === 0 && (
+          {!loading && liveTests.length === 0 && (
             <div className="ultra-empty-state">
               <FiCamera size={48} />
-              <h3>No Active Sessions</h3>
-              <p>Waiting for students to begin their exams...</p>
+              <h3>No Live Sessions</h3>
+              <p>Live proctoring feeds will appear here once students begin streaming.</p>
             </div>
           )}
 
           <div className="command-grid">
             {/* Live Camera Cluster */}
             <div className="camera-cluster">
-              {activeTests.map(s => (
-                <div key={s.id} className={`camera-unit ${s.status === 'Warning' ? 'unit-flagged' : ''} ${s.camera === 'Inactive' ? 'unit-offline' : ''}`}>
+              {liveTests.map(s => (
+                <div key={s.id} className={`camera-unit ${s.status === 'Warning' ? 'unit-flagged' : ''}`}>
                   <div className="unit-header">
                     <span className="unit-name">{s.name}</span>
-                    {s.status === 'Warning' && (
+                    {s.isOffline ? (
+                      <span className="unit-offline-badge">⚫ OFFLINE</span>
+                    ) : s.status === 'Warning' ? (
                       <span className="unit-request-flash">VIOLATION</span>
+                    ) : (
+                      <span className="unit-live-badge">🟢 LIVE</span>
                     )}
                   </div>
                   
                   <div className="unit-display">
-                    {s.camera === 'Active' ? (
+                      {s.isOffline ? (
+                      <div className="offline-view">
+                        <FiPower className="off-icon" />
+                        <span>FEED OFFLINE</span>
+                        {s.lastFrameAt && (
+                          <span style={{ fontSize: '0.7rem', opacity: 0.6, marginTop: 4 }}>
+                            Last seen: {new Date(s.lastFrameAt).toLocaleTimeString()}
+                          </span>
+                        )}
+                      </div>
+                    ) : (
                       <div className="feed-view">
-                        {s.latestFrame ? (
-                          <img 
-                            src={s.latestFrame.startsWith('data:') ? s.latestFrame : `data:image/jpeg;base64,${s.latestFrame}`} 
-                            alt="Feed" 
+                        {s.latestFrameUrl ? (
+                          <AuthorizedImage
+                            src={s.latestFrameUrl}
+                            alt="Live Feed"
                             className="live-img"
                           />
                         ) : (
@@ -183,26 +344,23 @@ const DoctorDashboard = ({ handleLogout, username }) => {
                           <span className="f-fps">Auto-Sync</span>
                         </div>
                       </div>
-                    ) : (
-                      <div className="offline-view">
-                        <FiPower className="off-icon" />
-                        <span>FEED TERMINATED</span>
-                      </div>
                     )}
                   </div>
 
                   <div className="unit-controls">
                     <div className="unit-meta">
                       <span className={`badge-${s.status.toLowerCase()}`}>{s.status}</span>
+                      <span className={s.headSwitchCount ? 'badge-warning' : 'badge-active'}>
+                        Head {s.headSwitchCount || 0}/{HEAD_SWITCH_LIMIT}
+                      </span>
                     </div>
                     <div className="unit-btns">
-                      {s.camera === 'Active' && (
-                        <button className="btn-deactivate" onClick={() => handleDeactivateCamera(s.id)}>
-                          INACTIVE
-                        </button>
-                      )}
-                      <button className="btn-details" onClick={() => handleMonitorStudent(s)}>
-                        <FiSettings />
+                      <button
+                        className="btn-deactivate"
+                        onClick={() => handleDetectStudent(s)}
+                        disabled={detectingStudentId === s.id}
+                      >
+                        {detectingStudentId === s.id ? 'CHECKING' : 'DETECT'}
                       </button>
                     </div>
                   </div>
@@ -211,7 +369,7 @@ const DoctorDashboard = ({ handleLogout, username }) => {
             </div>
 
             {/* Detail Overlay (Conditional) */}
-            {selectedStudent && (
+            {false && (
               <div className="dd-detail-overlay">
                 <div className="dd-detail-modal">
                   <div className="dd-detail-header">
@@ -221,8 +379,10 @@ const DoctorDashboard = ({ handleLogout, username }) => {
                   <div className="dd-detail-metrics">
                     <div className="metric"><span>ID:</span> <b>{selectedStudent.id}</b></div>
                     <div className="metric"><span>Latest Flag:</span> <b className={selectedStudent.status.toLowerCase()}>{selectedStudent.status}</b></div>
+                    <div className="metric"><span>Head Switches:</span> <b className={selectedStudent.headSwitchCount >= HEAD_SWITCH_LIMIT ? 'warning' : 'active'}>{selectedStudent.headSwitchCount || 0}/{HEAD_SWITCH_LIMIT}</b></div>
+                    <div className="metric"><span>Test Status:</span> <b className={selectedStudent.terminated ? 'warning' : 'active'}>{selectedStudent.terminated ? 'Terminated' : 'Running'}</b></div>
                     <div className="metric"><span>Frames Captured:</span> <b>{selectedStudent.allFrames?.length || 0}</b></div>
-                    <div className="metric"><span>Last Seen:</span> <b>{new Date(selectedStudent.timestamp).toLocaleTimeString()}</b></div>
+                    <div className="metric"><span>Last Seen:</span> <b>{selectedStudent.lastFrameAt ? new Date(selectedStudent.lastFrameAt).toLocaleTimeString() : '—'}</b></div>
                     <div className="metric"><span>Camera:</span> <b>{selectedStudent.camera}</b></div>
                   </div>
                 </div>

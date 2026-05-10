@@ -1,12 +1,65 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  FiCamera, FiUser, FiAlertCircle, FiXCircle, FiRefreshCw, 
-  FiMonitor, FiPower, FiClock, FiSettings, FiLogOut, FiGrid
+  FiCamera, FiAlertCircle, FiXCircle, FiRefreshCw, 
+  FiMonitor, FiPower, FiSettings, FiLogOut, FiGrid
 } from 'react-icons/fi';
-import apiClient from '../utils/apiClient';
 import './DoctorDashboard.css'; // Reuse the ultra-modern proctoring styles
 
 const API_URL = 'https://unlanded-isela-unmunificently.ngrok-free.dev/api/upload-frame/';
+
+const getFrameSource = (frame) => {
+  const source = frame?.latest_frame_url || frame?.frame_url || frame?.image_url || frame?.image || null;
+  if (!source || typeof source !== 'string') return null;
+  if (source.startsWith('data:') || source.startsWith('http://') || source.startsWith('https://')) {
+    return source;
+  }
+  return `data:image/jpeg;base64,${source}`;
+};
+
+const getFrameTime = (frame) => (
+  frame?.latest_frame_created_at || frame?.created_at || frame?.timestamp || frame?.started_at || null
+);
+
+// Fetches image URLs with the ngrok bypass header and supports base64 frame payloads.
+const AuthorizedImage = ({ src, alt, className }) => {
+  const [displaySrc, setDisplaySrc] = useState(null);
+
+  useEffect(() => {
+    if (!src) return;
+
+    if (src.startsWith('data:')) {
+      setDisplaySrc(src);
+      return;
+    }
+
+    const secureSrc = src.replace(/^http:\/\//i, 'https://');
+    let objectUrl = null;
+    let isMounted = true;
+
+    fetch(secureSrc, { headers: { 'ngrok-skip-browser-warning': '1' } })
+      .then(res => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.blob();
+      })
+      .then(blob => {
+        if (isMounted) {
+          objectUrl = URL.createObjectURL(blob);
+          setDisplaySrc(objectUrl);
+        }
+      })
+      .catch(() => {
+        if (isMounted) setDisplaySrc(secureSrc);
+      });
+
+    return () => {
+      isMounted = false;
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
+  }, [src]);
+
+  if (!displaySrc) return <div className="no-feed-placeholder"><FiCamera /> Loading...</div>;
+  return <img src={displaySrc} alt={alt} className={className} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />;
+};
 
 const TeacherDashboard = ({ handleLogout, username }) => {
   const [activeTests, setActiveTests] = useState([]);
@@ -36,13 +89,18 @@ const TeacherDashboard = ({ handleLogout, username }) => {
       if (!res.ok) throw new Error(`Server responded with ${res.status}`);
       const data = await res.json();
       
-      const list = Array.isArray(data)
-        ? data
-        : data.results || data.frames || data.data || [];
+      const list = data.sessions
+        ? data.sessions
+        : Array.isArray(data) ? data : data.results || data.frames || data.data || [];
+
+      const now = Date.now();
+      const OFFLINE_THRESHOLD_MS = 30 * 1000;
 
       // Group by student to show them as unique "Units"
       const studentMap = list.reduce((acc, r) => {
-        const key = String(r.student_id);
+        const key = String(r.student_id || r.user_id || r.id);
+        const frameSource = getFrameSource(r);
+        const frameTime = getFrameTime(r);
         if (!acc[key]) {
           acc[key] = {
             id: key,
@@ -50,21 +108,27 @@ const TeacherDashboard = ({ handleLogout, username }) => {
             test: 'Active Exam', 
             status: r.flagged ? 'Warning' : 'Active',
             camera: 'Active',
-            latestFrame: r.image,
-            timestamp: r.timestamp,
+            latestFrame: frameSource,
+            timestamp: frameTime,
+            lastFrameAt: frameTime,
+            isOffline: frameTime
+              ? (now - new Date(frameTime).getTime()) > OFFLINE_THRESHOLD_MS
+              : false,
             allFrames: []
           };
         }
         acc[key].allFrames.push(r);
         if (r.flagged) acc[key].status = 'Warning';
-        if (new Date(r.timestamp) > new Date(acc[key].timestamp)) {
-          acc[key].latestFrame = r.image;
-          acc[key].timestamp = r.timestamp;
+        if (frameTime && (!acc[key].lastFrameAt || new Date(frameTime) > new Date(acc[key].lastFrameAt))) {
+          acc[key].latestFrame = frameSource;
+          acc[key].timestamp = frameTime;
+          acc[key].lastFrameAt = frameTime;
+          acc[key].isOffline = (now - new Date(frameTime).getTime()) > OFFLINE_THRESHOLD_MS;
         }
         return acc;
       }, {});
 
-      setActiveTests(Object.values(studentMap));
+      setActiveTests(Object.values(studentMap).filter(s => s.camera === 'Active' && !s.isOffline && s.latestFrame));
       setError(null);
     } catch (err) {
       console.error('Fetch Error:', err);
@@ -86,6 +150,8 @@ const TeacherDashboard = ({ handleLogout, username }) => {
       ));
     }
   };
+
+  const liveTests = activeTests.filter(s => s.camera === 'Active' && !s.isOffline && s.latestFrame);
 
   return (
     <div className="ultra-dashboard">
@@ -120,8 +186,8 @@ const TeacherDashboard = ({ handleLogout, username }) => {
             <h1 className="ultra-title">Teacher Proctoring Center</h1>
             <div className="system-status-pills">
               <span className="pill green">System: Optimal</span>
-              <span className="pill blue">Active Sessions: {activeTests.length}</span>
-              <span className="pill amber">Network: Stable</span>
+              <span className="pill blue">Live Sessions: {liveTests.length}</span>
+              <span className="pill amber">Network: {refreshing ? 'Syncing...' : 'Stable'}</span>
             </div>
           </div>
           <div className="header-actions">
@@ -139,33 +205,47 @@ const TeacherDashboard = ({ handleLogout, username }) => {
             </div>
           )}
 
-          {!loading && activeTests.length === 0 && (
+          {!loading && liveTests.length === 0 && (
             <div className="ultra-empty-state">
               <FiCamera size={48} />
-              <h3>No Active Student Sessions</h3>
-              <p>Proctoring feeds will appear here once students begin their exams.</p>
+              <h3>No Live Student Sessions</h3>
+              <p>Live proctoring feeds will appear here once students begin streaming.</p>
             </div>
           )}
 
           <div className="command-grid">
             {/* Live Camera Cluster */}
             <div className="camera-cluster">
-              {activeTests.map(s => (
-                <div key={s.id} className={`camera-unit ${s.status === 'Warning' ? 'unit-flagged' : ''} ${s.camera === 'Inactive' ? 'unit-offline' : ''}`}>
+              {liveTests.map(s => (
+                <div key={s.id} className={`camera-unit ${s.status === 'Warning' ? 'unit-flagged' : ''} ${s.isOffline || s.camera === 'Inactive' ? 'unit-offline' : ''}`}>
                   <div className="unit-header">
                     <span className="unit-name">{s.name}</span>
-                    {s.status === 'Warning' && (
+                    {s.isOffline || s.camera === 'Inactive' ? (
+                      <span className="unit-offline-badge">OFFLINE</span>
+                    ) : s.status === 'Warning' ? (
                       <span className="unit-request-flash">VIOLATION</span>
+                    ) : (
+                      <span className="unit-live-badge">LIVE</span>
                     )}
                   </div>
                   
                   <div className="unit-display">
-                    {s.camera === 'Active' ? (
+                    {s.isOffline || s.camera === 'Inactive' ? (
+                      <div className="offline-view">
+                        <FiPower className="off-icon" />
+                        <span>{s.camera === 'Inactive' ? 'FEED TERMINATED' : 'FEED OFFLINE'}</span>
+                        {s.lastFrameAt && (
+                          <span style={{ fontSize: '0.7rem', opacity: 0.6, marginTop: 4 }}>
+                            Last seen: {new Date(s.lastFrameAt).toLocaleTimeString()}
+                          </span>
+                        )}
+                      </div>
+                    ) : (
                       <div className="feed-view">
                         {s.latestFrame ? (
-                          <img 
-                            src={s.latestFrame.startsWith('data:') ? s.latestFrame : `data:image/jpeg;base64,${s.latestFrame}`} 
-                            alt="Feed" 
+                          <AuthorizedImage
+                            src={s.latestFrame}
+                            alt="Live Feed"
                             className="live-img"
                           />
                         ) : (
@@ -179,11 +259,6 @@ const TeacherDashboard = ({ handleLogout, username }) => {
                           <span className="f-fps">Auto-Sync</span>
                         </div>
                       </div>
-                    ) : (
-                      <div className="offline-view">
-                        <FiPower className="off-icon" />
-                        <span>FEED TERMINATED</span>
-                      </div>
                     )}
                   </div>
 
@@ -192,7 +267,7 @@ const TeacherDashboard = ({ handleLogout, username }) => {
                       <span className={`badge-${s.status.toLowerCase()}`}>{s.status}</span>
                     </div>
                     <div className="unit-btns">
-                      {s.camera === 'Active' && (
+                      {s.camera === 'Active' && !s.isOffline && (
                         <button className="btn-deactivate" onClick={() => handleDeactivateCamera(s.id)}>
                           INACTIVE
                         </button>
@@ -218,7 +293,7 @@ const TeacherDashboard = ({ handleLogout, username }) => {
                     <div className="metric"><span>ID:</span> <b>{selectedStudent.id}</b></div>
                     <div className="metric"><span>Latest Flag:</span> <b className={selectedStudent.status.toLowerCase()}>{selectedStudent.status}</b></div>
                     <div className="metric"><span>Frames Captured:</span> <b>{selectedStudent.allFrames?.length || 0}</b></div>
-                    <div className="metric"><span>Last Seen:</span> <b>{new Date(selectedStudent.timestamp).toLocaleTimeString()}</b></div>
+                    <div className="metric"><span>Last Seen:</span> <b>{selectedStudent.lastFrameAt ? new Date(selectedStudent.lastFrameAt).toLocaleTimeString() : '-'}</b></div>
                     <div className="metric"><span>Camera:</span> <b>{selectedStudent.camera}</b></div>
                   </div>
                 </div>
