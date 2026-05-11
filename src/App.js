@@ -9,7 +9,7 @@ import apiClient from "./utils/apiClient";
 import Preloader from "./Preloader.js";
 import SignUp from "./SignUp.js";
 import LoginPage from "./LoginPage.js";
-import NavbarComponent from "./NavbarComponent.js";
+import NavbarComponent from "./NavbarComponent.js" ;
 import Banner from "./Banner.js";
 import Footer from "./Footer.js";
 import Status from "./Status.js";
