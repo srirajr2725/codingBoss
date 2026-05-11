@@ -247,21 +247,27 @@ const Learn = () => {
       title: "Master Modern Software Engineering",
       subtitle: "Learn industrial-grade patterns used by tech giants.",
       badge: "PLATINUM CONTENT",
-      color: "#6366f1"
+      color: "#2563eb",
+      metric: "42 modules",
+      focus: "Structured paths"
     },
     {
       image: slider2,
       title: "AI-Powered Personal Mentor",
       subtitle: "Real-time code review and interactive problem solving.",
       badge: "AI INTEGRATED",
-      color: "#f59e0b"
+      color: "#7c3aed",
+      metric: "24/7 mentor",
+      focus: "Guided practice"
     },
     {
       image: slider3,
       title: "Build Production-Ready Portfolios",
       subtitle: "Complete real-world projects and get industry certified.",
       badge: "JOB READY",
-      color: "#10b981"
+      color: "#059669",
+      metric: "18 projects",
+      focus: "Career proof"
     }
   ];
 
@@ -480,26 +486,62 @@ const Learn = () => {
               <motion.div
                 key={currentSlide}
                 className="lrn-slide"
-                initial={{ opacity: 0, x: 50 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -50 }}
-                transition={{ duration: 0.8, ease: "easeOut" }}
+                style={{ '--slide-color': slides[currentSlide].color }}
+                initial={{ opacity: 0, y: 18 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -18 }}
+                transition={{ duration: 0.45, ease: "easeOut" }}
               >
-                <div className="lrn-slide-image">
-                  <img src={slides[currentSlide].image} alt="" />
-                  <div className="lrn-slide-overlay" style={{ background: `linear-gradient(to right, ${slides[currentSlide].color}dd, transparent)` }}></div>
-                </div>
                 <div className="lrn-slide-content">
-                  <span className="lrn-slide-badge" style={{ backgroundColor: slides[currentSlide].color }}>{slides[currentSlide].badge}</span>
+                  <span className="lrn-slide-badge">
+                    <FaRocket />
+                    {slides[currentSlide].badge}
+                  </span>
                   <h1 className="lrn-slide-title">{slides[currentSlide].title}</h1>
                   <p className="lrn-slide-sub">{slides[currentSlide].subtitle}</p>
-                  <button className="lrn-slide-btn" style={{ background: slides[currentSlide].color }}>Get Started Now <FaChevronRight /></button>
+                  <div className="lrn-slide-meta">
+                    <span><FaBookOpen /> {slides[currentSlide].metric}</span>
+                    <span><FaSignal /> {slides[currentSlide].focus}</span>
+                  </div>
+                  <button
+                    className="lrn-slide-btn"
+                    onClick={() => document.querySelector('.lrn-section')?.scrollIntoView({ behavior: 'smooth' })}
+                  >
+                    Explore Tracks <FaChevronRight />
+                  </button>
+                </div>
+
+                <div className="lrn-slide-image">
+                  <img src={slides[currentSlide].image} alt="" />
+                  <div className="lrn-slide-image-label">
+                    <FaPlay />
+                    Learning Preview
+                  </div>
                 </div>
               </motion.div>
             </AnimatePresence>
+            <button
+              className="lrn-slider-arrow lrn-slider-prev"
+              onClick={() => setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length)}
+              aria-label="Previous slide"
+            >
+              <FaChevronLeft />
+            </button>
+            <button
+              className="lrn-slider-arrow lrn-slider-next"
+              onClick={() => setCurrentSlide((prev) => (prev + 1) % slides.length)}
+              aria-label="Next slide"
+            >
+              <FaChevronRight />
+            </button>
             <div className="lrn-slider-dots">
               {slides.map((_, i) => (
-                <div key={i} className={`lrn-dot ${i === currentSlide ? 'active' : ''}`} onClick={() => setCurrentSlide(i)} style={{ backgroundColor: i === currentSlide ? slides[i].color : '#e2e8f0' }}></div>
+                <button
+                  key={i}
+                  className={`lrn-dot ${i === currentSlide ? 'active' : ''}`}
+                  onClick={() => setCurrentSlide(i)}
+                  aria-label={`Go to slide ${i + 1}`}
+                />
               ))}
             </div>
           </div>

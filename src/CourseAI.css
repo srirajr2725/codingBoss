@@ -3,11 +3,13 @@
    ========================================= */
 
 .course-ai-wrapper {
-  position: fixed;
-  right: 20px;
-  top: 50%;
-  transform: translateY(-50%);
-  z-index: 9999;
+  position: fixed !important;
+  top: auto !important;
+  right: 20px !important;
+  bottom: 20px !important;
+  left: auto !important;
+  transform: none !important;
+  z-index: 999999;
   font-family: 'Plus Jakarta Sans', sans-serif;
 }
 
@@ -54,7 +56,7 @@
 /* Chat Window */
 .ai-chat-window {
   width: 380px;
-  height: 600px;
+  height: min(600px, calc(100vh - 40px));
   background: white;
   border-radius: 24px;
   display: flex;
@@ -70,6 +72,10 @@
   justify-content: space-between;
   align-items: center;
   color: white;
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  flex-shrink: 0;
 }
 
 .ai-header-left {
@@ -100,30 +106,73 @@
   border: 2px solid #1e293b;
 }
 
-.ai-title {
+.course-ai-wrapper .ai-title {
   margin: 0;
   font-size: 1rem;
   font-weight: 700;
+  color: #ffffff !important;
+  line-height: 1.2;
 }
 
-.ai-status {
+.course-ai-wrapper .ai-status {
   margin: 0;
   font-size: 0.75rem;
-  opacity: 0.7;
+  color: #cbd5e1 !important;
+  line-height: 1.35;
+}
+
+.ai-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ai-sound-btn {
+  min-width: 62px;
+  height: 32px;
+  padding: 0 10px;
+  background: #10b981;
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 8px;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 0.65rem;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  transition: 0.2s ease;
+}
+
+.ai-sound-btn:hover,
+.ai-sound-btn.muted {
+  background: #ef4444;
 }
 
 .ai-close-btn {
-  background: none;
-  border: none;
+  width: 32px;
+  height: 32px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px;
   color: white;
-  opacity: 0.5;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: 0.2s ease;
+}
+
+.ai-close-btn:hover {
+  background: rgba(255,255,255,0.16);
 }
 
 /* Chat Body */
 .ai-chat-body {
   flex: 1;
   overflow-y: auto;
+  overscroll-behavior: contain;
   padding: 24px;
   background: #f8fafc;
   display: flex;
@@ -258,6 +307,10 @@
   display: flex;
   align-items: center;
   gap: 12px;
+  position: sticky;
+  bottom: 0;
+  z-index: 5;
+  flex-shrink: 0;
 }
 
 .ai-input-pill {
@@ -338,17 +391,38 @@
 
 @media (max-width: 520px) {
   .course-ai-wrapper {
-    right: 12px;
-    left: 12px;
-    top: auto;
-    bottom: 14px;
-    transform: none;
+    right: 12px !important;
+    left: 12px !important;
+    bottom: 14px !important;
+    transform: none !important;
   }
 
   .ai-chat-window {
     width: 100%;
     height: min(620px, calc(100vh - 32px));
     border-radius: 20px;
+  }
+
+  .ai-chat-header {
+    padding: 16px;
+    gap: 10px;
+  }
+
+  .ai-header-actions {
+    gap: 6px;
+  }
+
+  .ai-title {
+    font-size: 0.9rem;
+  }
+
+  .ai-status {
+    font-size: 0.68rem;
+  }
+
+  .ai-sound-btn {
+    min-width: 54px;
+    padding: 0 8px;
   }
 
   .ai-fab-modern {

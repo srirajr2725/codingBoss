@@ -312,12 +312,15 @@ const McqTestPage = () => {
   useEffect(() => {
     const fetchQuestions = async () => {
       if (!subtype) { navigate('/TestPage', { replace: true }); return; }
+      const normalizedSubtype = String(subtype).trim();
+      const normalizedCategory = filterCategory || 'Technical';
       try {
         const userId = getDecryptedUserId();
-        if (userId && localStorage.getItem(`mcq_completed_${userId}_${subtype}_${filterCategory || 'Technical'}`)) {
+        if (userId && localStorage.getItem(`mcq_completed_${userId}_${normalizedSubtype}_${normalizedCategory}`)) {
           setIsTestCompleted(true); return;
         }
-        const data = await apiClient(`compiler/filter-by-subtype/?subtype=${subtype}`, 'GET');
+        const params = new URLSearchParams({ subtype: normalizedSubtype });
+        const data = await apiClient(`compiler/filter-by-subtype/?${params.toString()}`, 'GET');
         if (Array.isArray(data) && data.length > 0) { 
           setQuestions(data); 
           setTestStartTime(Date.now());
@@ -333,16 +336,18 @@ const McqTestPage = () => {
 
   const submitTest = async (answers) => {
     setCompletionLoading(true);
+    const normalizedSubtype = String(subtype || '').trim();
+    const normalizedCategory = filterCategory || 'Technical';
     try {
       const response = await apiClient('compiler/evaluate/', 'POST', {
         user_id: Number(getDecryptedUserId()),
-        type: detectedType || filterCategory || 'Technical',
-        subtype: subtype,
+        type: detectedType || normalizedCategory,
+        subtype: normalizedSubtype,
         answers: answers,
       });
       if (response) {
         toast.success("Test Submitted!");
-        localStorage.setItem(`mcq_completed_${getDecryptedUserId()}_${subtype}_${filterCategory || 'Technical'}`, 'true');
+        localStorage.setItem(`mcq_completed_${getDecryptedUserId()}_${normalizedSubtype}_${normalizedCategory}`, 'true');
         setTimeout(() => navigate('/UserDashboard', { replace: true }), 1000);
       }
     } catch (error) { toast.error("Submission failed."); } finally { setCompletionLoading(false); }
@@ -353,12 +358,19 @@ const McqTestPage = () => {
   if (error) return <div className="text-center mt-5"><h3>⚠️ {error}</h3></div>;
 
   if (!isTestStarted) return (
-    <div className="ide-lock-screen">
-      <div className="ide-lock-card text-center">
-        <FaShieldAlt style={{ fontSize: '3.5rem', color: '#FFA003', marginBottom: '20px' }} />
-        <h2 style={{ fontWeight: 800 }}>Proctoring Enabled</h2>
-        <p className="text-muted">Stay focused. Looking away or leaving the camera will result in disqualification.</p>
-        <button className="btn btn-dark w-100 py-3 mt-4" style={{ borderRadius: '12px', fontWeight: 800 }} onClick={startProctoring}>Start Assessment</button>
+    <div className="proctor-start-screen">
+      <ToastContainer position="top-center" autoClose={3000} />
+      <div className="proctor-start-card">
+        <div className="proctor-start-icon">
+          <FaShieldAlt />
+        </div>
+        <h2 className="proctor-start-title">Proctoring Enabled</h2>
+        <p className="proctor-start-copy">
+          Stay focused. Looking away or leaving the camera will result in disqualification.
+        </p>
+        <button className="proctor-start-btn" onClick={startProctoring}>
+          Start Assessment
+        </button>
       </div>
     </div>
   );

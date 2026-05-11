@@ -1,5 +1,14 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { FaRobot, FaTimes, FaPaperPlane, FaMicrophone, FaLightbulb, FaCode, FaMagic } from 'react-icons/fa';
+import { createPortal } from 'react-dom';
+import {
+  FaRobot,
+  FaTimes,
+  FaPaperPlane,
+  FaMicrophone,
+  FaLightbulb,
+  FaCode,
+  FaMagic
+} from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import './CourseAI.css';
 
@@ -20,6 +29,8 @@ const QUICK_PROMPTS = [
   'Give one coding example',
   'Create practice questions'
 ];
+
+const ENGLISH_VOICE = { code: 'en-US', voicePrefix: 'en', label: 'English' };
 
 const CONCEPT_LIBRARY = [
   {
@@ -149,6 +160,15 @@ const tokenize = (text) =>
 
 const unique = (items) => [...new Set(items)];
 
+const getEnglishVoice = (voices) => {
+  const voiceList = voices || [];
+  return (
+    voiceList.find((voice) => voice.lang === ENGLISH_VOICE.code) ||
+    voiceList.find((voice) => voice.lang?.startsWith(ENGLISH_VOICE.voicePrefix)) ||
+    null
+  );
+};
+
 const buildKnowledgeIndex = () => {
   const allData = [javaData, pythonData, cData];
   const index = [];
@@ -218,6 +238,9 @@ const lessonToEntry = (activeLesson, courseData) => {
   };
 };
 
+const isCurrentLessonRequest = (query) =>
+  /this lesson|current lesson|this topic|current topic|lesson simply|today lesson/.test(query);
+
 const scoreEntry = (entry, queryTokens, rawQuery, activeLessonTitle) => {
   const title = entry.title.toLowerCase();
   const chapter = entry.chapterTitle.toLowerCase();
@@ -232,7 +255,9 @@ const scoreEntry = (entry, queryTokens, rawQuery, activeLessonTitle) => {
   });
 
   if (rawQuery.includes(title) || title.includes(rawQuery)) score += 18;
-  if (activeLessonTitle && title === activeLessonTitle.toLowerCase()) score += 8;
+  if (activeLessonTitle && title === activeLessonTitle.toLowerCase() && isCurrentLessonRequest(rawQuery)) {
+    score += 10;
+  }
   return score;
 };
 
@@ -301,6 +326,14 @@ const conceptAnswer = (query) => {
     .sort((a, b) => b.score - a.score)[0];
 };
 
+const buildConceptAnswer = (concept) => {
+  const answer = concept.answer || concept.text;
+  return {
+    text: `${concept.title}\n\n${answer}\n\nRemember it like this: first learn what it stores or does, then learn when to use it, then write a tiny program with it.\n\nIf this is still confusing, ask: "explain ${concept.title} with real life example".`,
+    code: concept.code
+  };
+};
+
 const buildPracticeAnswer = (match, query) => {
   const topic = match?.title || query;
   return {
@@ -348,41 +381,39 @@ const buildMatchedAnswer = (query, matches, activeLessonEntry) => {
   return { text, code: best.code };
 };
 
-const buildGeneralAnswer = (query, activeLessonEntry) => {
+const buildGeneralAnswer = (query) => {
+  const lowerQuery = query.toLowerCase();
   const concept = conceptAnswer(query);
   if (concept) {
-    const answer = concept.answer || concept.text;
-    return {
-      text: `${concept.title}\n\n${answer}\n\nRemember it like this: first learn what it stores or does, then learn when to use it, then write a tiny program with it.\n\nIf this is still confusing, ask: "explain ${concept.title} with real life example".`,
-      code: concept.code
-    };
+    return buildConceptAnswer(concept);
   }
 
-  if (/hello|hi|hey/.test(query.toLowerCase())) {
+  if (/hello|hi|hey/.test(lowerQuery)) {
     return {
       text: 'Hello! Ask me any course doubt, coding question, error, example request, or practice question. I can explain Java, Python, C, and the current lesson step by step.',
       code: ''
     };
   }
 
-  if (/roadmap|study|learn|start|where/.test(query.toLowerCase())) {
+  if (/roadmap|study|learn|start|where/.test(lowerQuery)) {
     return {
       text: 'A good study order is: basics, variables, operators, conditions, loops, functions, arrays or collections, OOP, files, errors, and projects. Study one topic, write one small program, then explain the output in your own words.',
       code: ''
     };
   }
 
-  if (/error|not working|wrong output|fix/.test(query.toLowerCase())) {
+  if (/error|not working|wrong output|fix/.test(lowerQuery)) {
     return {
       text: 'Paste your code and the exact error message. I will explain what the error means, where it happens, why it happens, and how to fix it. Until then, check spelling, brackets, semicolons, indentation, data types, and input values.',
       code: ''
     };
   }
 
-  if (activeLessonEntry?.content) {
+  const topicWords = unique(tokenize(query)).slice(0, 6);
+  if (topicWords.length > 0) {
     return {
-      text: `I can help with that. Based on your current lesson, focus on this first:\n\n${trimText(activeLessonEntry.content, 650)}\n\nNow ask the doubt with one keyword, for example "why use loop" or "give example for variable", and I will go deeper.`,
-      code: activeLessonEntry.code || ''
+      text: `You asked: "${query}"\n\nI do not want to answer a different lesson by mistake. Please add one course keyword or paste the code/error for this exact question.\n\nFor example:\n- "Explain ${topicWords.join(' ')} with example"\n- "Give code for ${topicWords.join(' ')}"\n- "Why ${topicWords.join(' ')} is used?"`,
+      code: ''
     };
   }
 
@@ -392,6 +423,9 @@ const buildGeneralAnswer = (query, activeLessonEntry) => {
   };
 };
 
+const getWelcomeMessage = () =>
+  'Hello! I am your AI Course Mentor. Ask any doubt, any extra question, any code error, or ask for examples. I will explain step by step.';
+
 const CourseAI = ({ activeLesson, courseData }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([]);
@@ -399,11 +433,13 @@ const CourseAI = ({ activeLesson, courseData }) => {
   const [isThinking, setIsThinking] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [isMuted, setIsMuted] = useState(() => localStorage.getItem('course_ai_muted') === 'true');
   const messagesEndRef = useRef(null);
   const voicesRef = useRef([]);
   const recognitionRef = useRef(null);
   const knowledgeIndex = useMemo(() => buildKnowledgeIndex(), []);
   const activeLessonEntry = useMemo(() => lessonToEntry(activeLesson, courseData), [activeLesson, courseData]);
+  const voiceStatus = isMuted ? 'Voice muted' : isSpeaking ? 'Speaking in English' : 'English voice ready';
 
   useEffect(() => {
     const loadVoices = () => {
@@ -412,15 +448,23 @@ const CourseAI = ({ activeLesson, courseData }) => {
 
     loadVoices();
     if (window.speechSynthesis) {
+      window.speechSynthesis.addEventListener?.('voiceschanged', loadVoices);
       window.speechSynthesis.onvoiceschanged = loadVoices;
     }
 
-    setMessages([
-      {
-        type: 'ai',
-        text: 'Hello! I am your AI Course Mentor. Ask any doubt, any extra question, any code error, or ask for examples. I will explain step by step.'
-      }
-    ]);
+    setMessages((prev) => {
+      if (prev.length > 1 || (prev.length === 1 && !prev[0].isWelcome)) return prev;
+      return [
+        {
+          type: 'ai',
+          text: getWelcomeMessage(),
+          isWelcome: true
+        }
+      ];
+    });
+    return () => {
+      window.speechSynthesis?.removeEventListener?.('voiceschanged', loadVoices);
+    };
   }, []);
 
   useEffect(() => {
@@ -434,7 +478,7 @@ const CourseAI = ({ activeLesson, courseData }) => {
     const recognition = new SpeechRecognition();
     recognition.continuous = false;
     recognition.interimResults = false;
-    recognition.lang = 'en-US';
+    recognition.lang = ENGLISH_VOICE.code;
     recognition.onresult = (event) => {
       setInputValue(event.results[0][0].transcript);
       setIsListening(false);
@@ -442,15 +486,34 @@ const CourseAI = ({ activeLesson, courseData }) => {
     recognition.onerror = () => setIsListening(false);
     recognition.onend = () => setIsListening(false);
     recognitionRef.current = recognition;
+    return () => {
+      try {
+        recognition.stop();
+      } catch (err) {
+        // Some browsers throw if recognition was never started.
+      }
+    };
   }, []);
 
+  useEffect(() => {
+    localStorage.setItem('course_ai_muted', String(isMuted));
+    if (isMuted && window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+      setIsSpeaking(false);
+    }
+  }, [isMuted]);
+
   const speakResponse = (text) => {
-    if (!window.speechSynthesis || !text) return;
+    if (!window.speechSynthesis || !text || isMuted) return;
     window.speechSynthesis.cancel();
+    const voices = window.speechSynthesis.getVoices?.() || [];
+    if (voices.length > 0) {
+      voicesRef.current = voices;
+    }
     const utterance = new SpeechSynthesisUtterance(text.replace(/\n/g, ' '));
     utterance.rate = 0.92;
-    utterance.lang = 'en-US';
-    utterance.voice = voicesRef.current.find((voice) => voice.lang?.startsWith('en')) || null;
+    utterance.lang = ENGLISH_VOICE.code;
+    utterance.voice = getEnglishVoice(voices.length ? voices : voicesRef.current);
     utterance.onstart = () => setIsSpeaking(true);
     utterance.onend = () => setIsSpeaking(false);
     utterance.onerror = () => setIsSpeaking(false);
@@ -460,16 +523,20 @@ const CourseAI = ({ activeLesson, courseData }) => {
   const processQuery = (question) => {
     const matches = findBestMatches(question, knowledgeIndex, activeLessonEntry);
     const query = question.toLowerCase();
+    const directConcept = conceptAnswer(question);
+    let result;
 
     if (wantsPractice(query)) {
-      return buildPracticeAnswer(matches[0] || activeLessonEntry, question);
+      result = buildPracticeAnswer(matches[0] || activeLessonEntry, question);
+    } else if (directConcept?.score >= 12 && (!matches[0] || directConcept.score >= matches[0].score)) {
+      result = buildConceptAnswer(directConcept);
+    } else if (matches.length > 0 && matches[0].score >= 5) {
+      result = buildMatchedAnswer(question, matches, activeLessonEntry);
+    } else {
+      result = buildGeneralAnswer(question);
     }
 
-    if (matches.length > 0 && matches[0].score >= 5) {
-      return buildMatchedAnswer(question, matches, activeLessonEntry);
-    }
-
-    return buildGeneralAnswer(question, activeLessonEntry);
+    return result;
   };
 
   const handleSend = (e, quickText) => {
@@ -502,7 +569,7 @@ const CourseAI = ({ activeLesson, courseData }) => {
     setIsListening(true);
   };
 
-  return (
+  const aiWidget = (
     <div className="course-ai-wrapper">
       <AnimatePresence>
         {isOpen && (
@@ -520,12 +587,23 @@ const CourseAI = ({ activeLesson, courseData }) => {
                 </div>
                 <div>
                   <h4 className="ai-title">AI Course Mentor</h4>
-                  <p className="ai-status">{isSpeaking ? 'Explaining aloud...' : 'Ready for any doubt'}</p>
+                  <p className="ai-status">{voiceStatus}</p>
                 </div>
               </div>
-              <button className="ai-close-btn" onClick={() => setIsOpen(false)} aria-label="Close AI mentor">
-                <FaTimes />
-              </button>
+              <div className="ai-header-actions">
+                <button
+                  type="button"
+                  className={`ai-sound-btn ${isMuted ? 'muted' : ''}`}
+                  onClick={() => setIsMuted((value) => !value)}
+                  aria-label={isMuted ? 'Unmute AI voice' : 'Mute AI voice'}
+                  title={isMuted ? 'Unmute voice' : 'Mute voice'}
+                >
+                  {isMuted ? 'MUTED' : 'MUTE'}
+                </button>
+                <button className="ai-close-btn" onClick={() => setIsOpen(false)} aria-label="Close AI mentor">
+                  <FaTimes />
+                </button>
+              </div>
             </div>
 
             <div className="ai-chat-body">
@@ -583,7 +661,8 @@ const CourseAI = ({ activeLesson, courseData }) => {
                 className={`ai-mic-btn ${isListening ? 'listening' : ''}`}
                 onClick={toggleListening}
                 disabled={!recognitionRef.current}
-                aria-label="Speak your question"
+                aria-label="Speak your question in English"
+                title="Speak in English"
               >
                 <FaMicrophone />
               </button>
@@ -604,6 +683,9 @@ const CourseAI = ({ activeLesson, courseData }) => {
       )}
     </div>
   );
+
+  if (typeof document === 'undefined') return aiWidget;
+  return createPortal(aiWidget, document.body);
 };
 
 export default CourseAI;
