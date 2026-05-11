@@ -6,7 +6,8 @@
 .ide-root {
   display: flex;
   height: 100vh;
-  background: #0f172a; /* Obsidian */
+  background: #0f172a;
+  /* Obsidian */
   color: #f8fafc;
   overflow: hidden;
   font-family: 'Inter', sans-serif;
@@ -54,9 +55,20 @@
   margin-bottom: 20px;
 }
 
-.ide-difficulty.easy { background: rgba(16, 185, 129, 0.1); color: #10b981; }
-.ide-difficulty.medium { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
-.ide-difficulty.hard { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+.ide-difficulty.easy {
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+}
+
+.ide-difficulty.medium {
+  background: rgba(245, 158, 11, 0.1);
+  color: #f59e0b;
+}
+
+.ide-difficulty.hard {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
 
 .ide-desc {
   color: #94a3b8;
@@ -65,12 +77,14 @@
 }
 
 .ide-constraints-list {
-  color: #94a3b8; /* Lighter gray for better visibility */
+  color: #94a3b8;
+  /* Lighter gray for better visibility */
   font-size: 0.85rem;
   line-height: 1.8;
 }
 
-.ide-constraints-list b, .ide-constraints-list strong {
+.ide-constraints-list b,
+.ide-constraints-list strong {
   color: #e2e8f0;
 }
 
@@ -97,6 +111,7 @@
   align-items: center;
   justify-content: space-between;
 }
+
 .ide-toolbar-left {
   display: flex;
   align-items: center;
@@ -124,6 +139,7 @@
   background: #0f172a;
   color: #e2e8f0;
 }
+
 .ide-status-pill {
   background: rgba(16, 185, 129, 0.1);
   color: #10b981;
@@ -146,9 +162,20 @@
 }
 
 @keyframes pulse {
-  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
-  70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
-  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  }
+
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
+  }
+
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
 }
 
 /* --- EDITOR --- */
@@ -294,7 +321,8 @@
   text-align: center;
   border: 1px solid rgba(255, 255, 255, 0.05);
   max-width: 500px;
-  color: white; /* Ensure base text is white */
+  color: white;
+  /* Ensure base text is white */
 }
 
 .ide-lock-card h2 {
@@ -303,7 +331,8 @@
 }
 
 .ide-lock-card p {
-  color: #94a3b8; /* Professional light gray */
+  color: #94a3b8;
+  /* Professional light gray */
 }
 
 .ide-lock-icon {
@@ -328,7 +357,7 @@
   z-index: 2500;
   border-radius: 20px;
   overflow: hidden;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
   border: 2px solid rgba(255, 160, 3, 0.5);
   background: #000;
 }
@@ -362,4 +391,37 @@
   background: #10b981;
   border-radius: 50%;
   animation: pulse 1.5s infinite;
+}
+
+/* --- EXTRA INFO (HINTS & ALGO) --- */
+.ide-extra-info {
+  margin-top: 32px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  padding-top: 24px;
+}
+
+.ide-info-section {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.ide-info-section h6 {
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: #94a3b8;
+  letter-spacing: 1px;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ide-info-text {
+  font-size: 0.85rem;
+  color: #e2e8f0;
+  line-height: 1.6;
+  margin: 0;
 }

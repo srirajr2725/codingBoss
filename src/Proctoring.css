@@ -12,7 +12,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  pointer-events: none; /* Let clicks pass through if needed, though usually modal */
+  pointer-events: none;
+  /* Let clicks pass through if needed, though usually modal */
   backdrop-filter: blur(8px) saturate(50%);
   background: rgba(0, 0, 0, 0.4);
 }
@@ -28,8 +29,13 @@
 }
 
 @keyframes flashRed {
-  from { opacity: 0.1; }
-  to { opacity: 0.4; }
+  from {
+    opacity: 0.1;
+  }
+
+  to {
+    opacity: 0.4;
+  }
 }
 
 .alert-content {
@@ -46,11 +52,27 @@
 }
 
 @keyframes slideInShake {
-  0% { transform: translateY(50px) scale(0.8); opacity: 0; }
-  50% { transform: translateY(-10px) scale(1.05); }
-  70% { transform: translateX(-5px); }
-  85% { transform: translateX(5px); }
-  100% { transform: translateY(0) scale(1); opacity: 1; }
+  0% {
+    transform: translateY(50px) scale(0.8);
+    opacity: 0;
+  }
+
+  50% {
+    transform: translateY(-10px) scale(1.05);
+  }
+
+  70% {
+    transform: translateX(-5px);
+  }
+
+  85% {
+    transform: translateX(5px);
+  }
+
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
 }
 
 .proctor-start-screen {
@@ -206,9 +228,20 @@
 }
 
 @keyframes pulseAnim {
-  0% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.5); opacity: 0.5; }
-  100% { transform: scale(1); opacity: 1; }
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  50% {
+    transform: scale(1.5);
+    opacity: 0.5;
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 @media (max-width: 560px) {

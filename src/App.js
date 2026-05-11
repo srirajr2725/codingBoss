@@ -9,9 +9,9 @@ import apiClient from "./utils/apiClient";
 import Preloader from "./Preloader.js";
 import SignUp from "./SignUp.js";
 import LoginPage from "./LoginPage.js";
-import NavbarComponent from "./NavbarComponent.js" ;
+import NavbarComponent from "./NavbarComponent.js";
 import Banner from "./Banner.js";
-import Footer from "./Footer.js";
+import Footer from "./Footer.js"; 
 import Status from "./Status.js";
 import CourseCard from "./CourseCard.js";
 import McqTestPage from "./McqTestPage.js";
@@ -188,7 +188,7 @@ function AppWrapper() {
         <Route path="/proctoringRecords" element={isLoggedIn ? <ProctoringRecords /> : <Navigate to="/LoginPage" replace />} />
         <Route path="/projects/:projectName" element={isLoggedIn ? <ProjectForm /> : <Navigate to="/LoginPage" replace />} />
         <Route path="/QuestionPage" element={isLoggedIn ? <QuestionPage {...{ isLoggedIn, setIsLoggedIn, username, userRole, handleLogout }} /> : <Navigate to="/LoginPage" replace />} />
-        <Route path="/courses" element={isLoggedIn ? <Learn /> : <Navigate to="/LoginPage" replace />} />
+        <Route path="/courses" element={isLoggedIn ? <Learn {...{ isLoggedIn, username, userRole, handleLogout }} /> : <Navigate to="/LoginPage" replace />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       {isLoggedIn && userRole === 'member' && <GlobalAIAssistant />}

@@ -64,9 +64,12 @@ const McqTestPage = () => {
         image = canvas.toDataURL('image/jpeg', 0.1);
       }
 
-      await fetch('https://api.codingboss.in/api/upload-frame/', {
+      await fetch('https://unlanded-isela-unmunificently.ngrok-free.dev/api/upload-frame/', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'ngrok-skip-browser-warning': 'true'
+        },
         body: JSON.stringify({
           student_id: Number(getDecryptedUserId() || 1),
           image,
@@ -208,9 +211,12 @@ const McqTestPage = () => {
           const canvas = canvasRef.current;
           canvas.width = 240; canvas.height = 180;
           canvas.getContext('2d', { alpha: false }).drawImage(videoRef.current, 0, 0, 240, 180);
-          await fetch('https://api.codingboss.in/api/upload-frame/', {
+          await fetch('https://unlanded-isela-unmunificently.ngrok-free.dev/api/upload-frame/', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+              'Content-Type': 'application/json',
+              'ngrok-skip-browser-warning': 'true'
+            },
             body: JSON.stringify({
               student_id: Number(getDecryptedUserId() || 1),
               image: canvas.toDataURL('image/jpeg', 0.1),
@@ -233,9 +239,12 @@ const McqTestPage = () => {
     const pollDoctorWarnings = async () => {
       if (!isTestStarted || isTestSubmitted || terminatedRef.current) return;
       try {
-        const res = await fetch('https://api.codingboss.in/api/upload-frame/', {
+        const res = await fetch('https://unlanded-isela-unmunificently.ngrok-free.dev/api/upload-frame/', {
           method: 'GET',
-          headers: {  'Accept': 'application/json' }
+          headers: { 
+            'Accept': 'application/json',
+            'ngrok-skip-browser-warning': 'true'
+          }
         });
         const data = await res.json();
         const list = data.sessions ? data.sessions : Array.isArray(data) ? data : data.results || data.frames || data.data || [];

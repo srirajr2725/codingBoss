@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { FiRefreshCw, FiUser, FiAlertTriangle, FiCamera, FiX, FiClock, FiLayers } from 'react-icons/fi';
 import './ProctoringRecords.css';
+import { normalizeFrameSource } from '../utils/frameSource';
 
-const API_URL = 'https://api.codingboss.in/api/upload-frame/';
+const API_URL = 'https://unlanded-isela-unmunificently.ngrok-free.dev/api/upload-frame/';
 
 const AuthorizedImage = ({ src, alt, style, className }) => {
   const [blobUrl, setBlobUrl] = useState(null);
@@ -10,11 +11,12 @@ const AuthorizedImage = ({ src, alt, style, className }) => {
   useEffect(() => {
     if (!src) return;
 
-    const secureSrc = src.replace(/^http:\/\//i, 'https://');
+    const secureSrc = normalizeFrameSource(src);
     let objectUrl = null;
     let isMounted = true;
+    setBlobUrl(secureSrc);
 
-    fetch(secureSrc)
+    fetch(secureSrc, { headers: { 'ngrok-skip-browser-warning': 'true' } })
       .then(res => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.blob();
@@ -45,7 +47,7 @@ const AuthorizedImage = ({ src, alt, style, className }) => {
       </div>
     );
   }
-  return <img src={blobUrl} alt={alt} style={{ width: '100%', height: '100%', objectFit: 'cover', ...(style || {}) }} className={className} />;
+  return <img src={blobUrl} alt={alt} style={{ width: '100%', height: '100%', objectFit: 'cover', ...(style || {}) }} className={className} onError={() => blobUrl !== src && setBlobUrl(src)} />;
 };
 
 const ProctoringRecords = () => {
@@ -71,7 +73,7 @@ const ProctoringRecords = () => {
       const res = await fetch(API_URL, {
         method: 'GET',
         headers: {
-          
+          'ngrok-skip-browser-warning': 'true',
           'Accept': 'application/json',
         }
       });
@@ -212,7 +214,7 @@ const ProctoringRecords = () => {
                 <div className="pr-live-badge"><div className="pr-live-dot"></div> LIVE</div>
                 {record.latest_frame_url || record.image ? (
                   <AuthorizedImage
-                    src={record.latest_frame_url || (record.image.startsWith('data:') ? record.image : `data:image/jpeg;base64,${record.image}`)}
+                    src={record.latest_frame_url || record.image}
                     alt={`Student ${record.student_name}`}
                     onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }}
                   />
@@ -256,7 +258,7 @@ const ProctoringRecords = () => {
             </div>
             {selectedFrame.latest_frame_url || selectedFrame.image ? (
               <AuthorizedImage
-                src={selectedFrame.latest_frame_url || (selectedFrame.image.startsWith('data:') ? selectedFrame.image : `data:image/jpeg;base64,${selectedFrame.image}`)}
+                src={selectedFrame.latest_frame_url || selectedFrame.image}
                 alt="Enlarged Frame"
                 style={{ width: '100%', borderRadius: '16px', marginTop: '16px', border: '2px solid #e2e8f0', boxShadow: '0 8px 24px rgba(0,0,0,0.1)' }}
               />

@@ -9,7 +9,7 @@ import {
   Alert,
 } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
-import { FaTerminal, FaCode, FaBrain, FaChevronRight, FaExclamationTriangle, FaShieldAlt } from 'react-icons/fa';
+import { FaTerminal, FaCode, FaBrain, FaChevronRight, FaExclamationTriangle, FaShieldAlt, FaLightbulb } from 'react-icons/fa';
 import Navbar from "./NavbarComponent";
 import apiClient from "./utils/apiClient";
 import "./ProgrammingTestPage.css";
@@ -38,39 +38,64 @@ const ProgrammingTestPage = ({
         setLoading(true);
         setError("");
 
-        const data = await apiClient("compiler/questions/", "GET");
-        let questionsArray = data;
-
-        if (data && !Array.isArray(data)) {
-          if (Array.isArray(data.questions)) {
-            questionsArray = data.questions.map((q, idx) => {
-              if (data.base_tests && data.base_tests[idx]) {
-                return { ...q, base_tests: [data.base_tests[idx]] };
-              }
-              return q;
-            });
-          } else if (Array.isArray(data.base_tests)) {
-            questionsArray = data.base_tests;
-          } else if (Array.isArray(data.data)) {
-            questionsArray = data.data;
+        // Using the new endpoint specified by the user
+        const response = await fetch("https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/test-cases/", {
+          headers: {
+            'Accept': 'application/json',
+            'ngrok-skip-browser-warning': 'true'
           }
+        });
+        
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        
+        const data = await response.json();
+        let questionsArray = [];
+
+        if (Array.isArray(data)) {
+          questionsArray = data;
+        } else if (data && data.questions && Array.isArray(data.questions)) {
+          questionsArray = data.questions;
+        } else if (data && data.data && Array.isArray(data.data)) {
+          questionsArray = data.data;
+        } else {
+          // Fallback to legacy structure if new one fails
+          const legacyData = await apiClient("compiler/questions/", "GET");
+          questionsArray = Array.isArray(legacyData) ? legacyData : (legacyData.questions || []);
         }
 
-        if (!Array.isArray(questionsArray)) {
-          throw new Error("Invalid API format");
-        }
+        // Map fields to ensure consistency
+        const normalizedQuestions = questionsArray.map(q => ({
+          ...q,
+          id: q.id || q.question_id || q.question,
+          title: q.title || q.name || "Untitled Challenge",
+          question: typeof q.question === 'string' ? q.question : (q.problem_statement || "No description available."),
+          difficulty: q.difficulty || q.level || "Low",
+          hints: q.hints || q.hint || "",
+          algorithm: q.algorithm || q.algo || "",
+          example_code: q.example_programs || q.example_code || q.code_example || ""
+        }));
 
-        setQuestions(questionsArray);
+        setQuestions(normalizedQuestions);
 
-        // Default Filter
-        const initialFiltered = questionsArray.filter((q) => {
-          const diff = q.level || q.difficulty || "Low";
+        // Default Filter (Low)
+        const initialFiltered = normalizedQuestions.filter((q) => {
+          const diff = q.difficulty || "Low";
           return diff.toLowerCase() === "low";
         });
         setFilteredQuestions(initialFiltered);
       } catch (err) {
         console.error("Fetch Error:", err);
-        setError("Unable to load challenges. Please check your connection.");
+        setError("Unable to load challenges. Falling back to primary server.");
+        
+        // Fallback attempt
+        try {
+          const fallbackData = await apiClient("compiler/questions/", "GET");
+          const array = Array.isArray(fallbackData) ? fallbackData : (fallbackData.questions || []);
+          setQuestions(array);
+          setFilteredQuestions(array.filter(q => (q.difficulty || q.level || "Low").toLowerCase() === "low"));
+        } catch (fallbackErr) {
+          setError("All systems are down. Please try again later.");
+        }
       } finally {
         setLoading(false);
       }
@@ -194,19 +219,45 @@ const ProgrammingTestPage = ({
             {filteredQuestions.length > 0 ? (
               filteredQuestions.map((question) => (
                 <Card key={question.id} className="programming-card">
-                  <Card.Body className="d-flex justify-content-between align-items-center">
-                    <div className="problem-info">
-                      <div className="problem-icon-wrapper">
-                        {getDifficultyIcon(filterLevel)}
+                  <Card.Body>
+                    <div className="d-flex justify-content-between align-items-center mb-3">
+                      <div className="problem-info">
+                        <div className="problem-icon-wrapper">
+                          {getDifficultyIcon(filterLevel)}
+                        </div>
+                        <p className="problem-text">{question.question}</p>
                       </div>
-                      <p className="problem-text">{question.question}</p>
+                      <Button
+                        className="start-btn"
+                        onClick={() => handleStart(question)}
+                      >
+                        Start Challenge <FaChevronRight className="ms-2" />
+                      </Button>
                     </div>
-                    <Button
-                      className="start-btn"
-                      onClick={() => handleStart(question)}
-                    >
-                      Start Challenge <FaChevronRight className="ms-2" />
-                    </Button>
+                    
+                    {/* Extra Info: Hints, Algorithm, Example Code */}
+                    <div className="problem-details-grid">
+                      {question.hints && (
+                        <div className="detail-item">
+                          <h6><FaLightbulb className="me-2 text-warning" /> Hint</h6>
+                          <p className="small text-muted" style={{ whiteSpace: 'pre-wrap' }}>{question.hints}</p>
+                        </div>
+                      )}
+                      {question.algorithm && (
+                        <div className="detail-item">
+                          <h6><FaBrain className="me-2 text-primary" /> Algorithm</h6>
+                          <p className="small text-muted" style={{ whiteSpace: 'pre-wrap' }}>{question.algorithm}</p>
+                        </div>
+                      )}
+                      {question.example_code && (
+                        <div className="detail-item full-width">
+                          <h6><FaCode className="me-2 text-success" /> Example Code</h6>
+                          <pre className="example-code-block">
+                            <code>{question.example_code}</code>
+                          </pre>
+                        </div>
+                      )}
+                    </div>
                   </Card.Body>
                 </Card>
               ))

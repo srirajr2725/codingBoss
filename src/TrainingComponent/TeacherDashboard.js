@@ -4,16 +4,12 @@ import {
   FiMonitor, FiPower, FiSettings, FiLogOut, FiGrid
 } from 'react-icons/fi';
 import './DoctorDashboard.css'; // Reuse the ultra-modern proctoring styles
+import { normalizeFrameSource } from '../utils/frameSource';
 
-const API_URL = 'https://api.codingboss.in/api/upload-frame/';
+const API_URL = 'https://unlanded-isela-unmunificently.ngrok-free.dev/api/upload-frame/';
 
 const getFrameSource = (frame) => {
-  const source = frame?.latest_frame_url || frame?.frame_url || frame?.image_url || frame?.image || null;
-  if (!source || typeof source !== 'string') return null;
-  if (source.startsWith('data:') || source.startsWith('http://') || source.startsWith('https://')) {
-    return source;
-  }
-  return `data:image/jpeg;base64,${source}`;
+  return frame?.latest_frame_url || frame?.frame_url || frame?.image_url || frame?.image || null;
 };
 
 const getFrameTime = (frame) => (
@@ -32,11 +28,12 @@ const AuthorizedImage = ({ src, alt, className }) => {
       return;
     }
 
-    const secureSrc = src.replace(/^http:\/\//i, 'https://');
+    const secureSrc = normalizeFrameSource(src);
     let objectUrl = null;
     let isMounted = true;
+    setDisplaySrc(secureSrc);
 
-    fetch(secureSrc, { headers: {  } })
+    fetch(secureSrc, { headers: { 'ngrok-skip-browser-warning': 'true' } })
       .then(res => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.blob();
@@ -58,7 +55,7 @@ const AuthorizedImage = ({ src, alt, className }) => {
   }, [src]);
 
   if (!displaySrc) return <div className="no-feed-placeholder"><FiCamera /> Loading...</div>;
-  return <img src={displaySrc} alt={alt} className={className} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />;
+  return <img src={displaySrc} alt={alt} className={className} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={() => displaySrc !== src && setDisplaySrc(src)} />;
 };
 
 const TeacherDashboard = ({ handleLogout, username }) => {
@@ -81,7 +78,7 @@ const TeacherDashboard = ({ handleLogout, username }) => {
       const res = await fetch(API_URL, {
         method: 'GET',
         headers: {
-          
+          'ngrok-skip-browser-warning': 'true',
           'Accept': 'application/json',
         }
       });

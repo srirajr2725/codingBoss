@@ -101,7 +101,7 @@ const Dashboard = ({
       case 'Start Learn': return <CourseCard />;
       case 'Your Status': return <Status setAccess={setAccess} />;
       case 'Task': return <Test />;
-      case 'Courses': return <Learn />;
+      case 'Courses': return <Learn isLoggedIn={isLoggedIn} username={username} userRole={userRole} handleLogout={handleLogout} />;
       case 'Assignments': return <Assignment />;
       case 'Company': return <CompanyCards progress={progress} setSelectedTab={setSelectedTab} />;
       case 'Profile': return <UserForm setSelectedTab={setSelectedTab} />;

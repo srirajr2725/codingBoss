@@ -193,17 +193,46 @@ const normalizeCourse = (data, defaultImage, color, badge) => {
 
             const exampleExplanation = t.example?.explanation || t.content?.example?.explanation;
             if (exampleExplanation) {
-              blocks.push({ type: 'list', title: 'Code Explanation', items: normalizeListItems(
-                typeof exampleExplanation === 'object'
-                  ? Object.entries(exampleExplanation).map(([key, value]) => ({ name: key, explanation: compactText(value) }))
-                  : [exampleExplanation]
-              ) });
+              blocks.push({
+                type: 'list', title: 'Code Explanation', items: normalizeListItems(
+                  typeof exampleExplanation === 'object'
+                    ? Object.entries(exampleExplanation).map(([key, value]) => ({ name: key, explanation: compactText(value) }))
+                    : [exampleExplanation]
+                )
+              });
             }
 
             return blocks.length > 0 ? blocks : [{ type: 'text', value: topicTitle || JSON.stringify(t) }];
           })
         };
       })
+    };
+  }
+
+  // Handle API format (simplified)
+  if (data.name && data.topics) {
+    const title = data.name;
+    return {
+      id: data.slug || String(data.id),
+      title: title,
+      description: data.short_description || data.description || "",
+      imageUrl: defaultImage,
+      badge: badge || data.level || "Standard",
+      duration: data.duration || "Flexible",
+      level: data.level || "All Levels",
+      students: "10k+",
+      rating: "4.8",
+      color: color || "#3b82f6",
+      curriculum: (data.topics || []).map((topic, i) => ({
+        id: `topic-${i}`,
+        title: topic,
+        type: "chapter",
+        dur: "15m read",
+        contentBlocks: [
+          { type: 'topic', title: topic, value: `In this module, we will explore ${topic} in depth, covering its core principles and practical implementations.` },
+          { type: 'text', value: data.description || "Start your journey into this technical specialization." }
+        ]
+      }))
     };
   }
 
@@ -216,18 +245,23 @@ const normalizeCourse = (data, defaultImage, color, badge) => {
   return legacy;
 };
 
-let courses = [];
+let staticCourses = [];
 try {
-  courses = [
+  staticCourses = [
     normalizeCourse(javaData, JavaLogo, "#f89820", "Comprehensive"),
     normalizeCourse(pythonData, PythonLogo, "#eab308", "AI/Backend Track"),
     normalizeCourse(cData, CLogo, "#5c6bc0", "Hardware Track")
   ].filter(Boolean);
 } catch (err) {
-  console.error("Failed to normalize courses", err);
+  console.error("Failed to normalize static courses", err);
 }
 
-const Learn = () => {
+const Learn = ({ isLoggedIn, username: usernameProp = '', userRole = '', handleLogout }) => {
+  // Resolve username from prop or localStorage fallback
+  const username = usernameProp || localStorage.getItem('username') || 'Student';
+
+  const [courses, setCourses] = useState(staticCourses);
+  const [isLoading, setIsLoading] = useState(true);
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [activeLesson, setActiveLesson] = useState(null);
   const [activeTab, setActiveTab] = useState('chapter');
@@ -238,6 +272,39 @@ const Learn = () => {
   const [isCompleted, setIsCompleted] = useState(false);
   const [selectedOption, setSelectedOption] = useState(null);
   const [showExplanation, setShowExplanation] = useState(false);
+
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        setIsLoading(true);
+        const response = await fetch('https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/course-details/', {
+          headers: { 'ngrok-skip-browser-warning': 'true' }
+        });
+        const data = await response.json();
+
+        if (Array.isArray(data)) {
+          const apiCourses = data.map(item => {
+            let logo = JavaLogo;
+            let color = "#3b82f6";
+            if (item.slug === 'java') { logo = JavaLogo; color = "#f89820"; }
+            if (item.slug === 'python') { logo = PythonLogo; color = "#eab308"; }
+            if (item.slug === 'c') { logo = CLogo; color = "#5c6bc0"; }
+
+            return normalizeCourse(item, logo, color, item.level);
+          });
+
+          setCourses(apiCourses.length > 0 ? apiCourses : staticCourses);
+        }
+      } catch (err) {
+        console.error("Failed to fetch courses from API", err);
+        setCourses(staticCourses);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchCourses();
+  }, []);
 
   // SLIDER STATES
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -546,15 +613,7 @@ const Learn = () => {
             </div>
           </div>
 
-          <header className="lrn-hero-ultra">
-            <div className="lrn-container">
-              <div className="lrn-hero-content">
-                <span className="lrn-badge-premium"><span className="lrn-badge-dot"></span>Secure Learning Environment</span>
-                <h1 className="lrn-hero-h1">Master <span className="lrn-gradient">Engineering</span> Skills</h1>
-                <p className="lrn-hero-p">Professional grade tracks designed for deep technical mastery.</p>
-              </div>
-            </div>
-          </header>
+
 
           <section className="lrn-section">
             <div className="lrn-container">
@@ -563,7 +622,19 @@ const Learn = () => {
                 <div className="lrn-search-box"><FaCode /><input type="text" placeholder="Search tracks..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} /></div>
               </div>
               <div className="lrn-card-grid">
-                {filteredCourses.map(course => (
+                {isLoading ? (
+                  // Skeleton Loaders
+                  [1, 2, 3].map(i => (
+                    <div key={i} className="lrn-course-card skeleton">
+                      <div className="lrn-card-body-inner" style={{ height: '300px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                        <div className="skeleton-box" style={{ height: '60px', width: '60px', borderRadius: '12px', background: '#e2e8f0' }}></div>
+                        <div className="skeleton-box" style={{ height: '30px', width: '70%', background: '#e2e8f0' }}></div>
+                        <div className="skeleton-box" style={{ height: '20px', width: '100%', background: '#e2e8f0' }}></div>
+                        <div className="skeleton-box" style={{ height: '20px', width: '90%', background: '#e2e8f0' }}></div>
+                      </div>
+                    </div>
+                  ))
+                ) : filteredCourses.map(course => (
                   <div key={course.id} className="lrn-course-card" onClick={() => startSecureLearning(course)}>
                     <div className="lrn-card-band" style={{ background: course.color }}></div>
                     <div className="lrn-card-body-inner">
@@ -585,105 +656,191 @@ const Learn = () => {
           </section>
         </div>
       ) : (
-        <div className="lrn-dashboard ultra-modern">
-          {/* TOP BAR AS SEEN IN IMAGE */}
-          <header className="lrn-db-header">
-            <div className="lrn-db-header-left">
-              <div className="lrn-db-logo">
-                <FaCode />
-                <span>Coding<strong>Boss</strong></span>
-              </div>
+        <div className="w3-learn-page">
+          {/* ── W3SCHOOLS-STYLE TOP NAV ── */}
+          <nav className="w3-topnav">
+            <div className="w3-topnav-logo">
+              <FaCode /> CodingBoss
             </div>
-            <div className="lrn-db-header-right">
-              <div className="lrn-db-user-pill">
-                <span className="user-email">sri2@gmail.com</span>
-                <div className="user-progress">
-                  <span>0%</span>
-                  <FaChevronRight />
-                </div>
+            <span className="w3-topnav-course-name">
+              {selectedCourse?.title} Tutorial
+            </span>
+            <div className="w3-topnav-actions">
+              <div className="w3-user-chip">
+                <div className="w3-user-dot"></div>
+                {username || 'Student'}
               </div>
+              <button className="w3-nav-btn exit-btn" onClick={handleExitCourse}>
+                <FaArrowLeft /> Exit
+              </button>
             </div>
-          </header>
+          </nav>
 
-          <div className="lrn-db-layout">
-            <aside className="lrn-db-sidebar">
-              <nav className="lrn-db-nav">
+          {/* ── PROGRESS BAR ── */}
+          {(() => {
+            const total = selectedCourse?.curriculum?.length || 1;
+            const done = Object.values(lessonProgress).filter(Boolean).length;
+            const pct = Math.round((done / total) * 100);
+            return (
+              <div className="w3-progress-bar-track">
+                <div className="w3-progress-bar-fill" style={{ width: `${pct}%` }} />
+              </div>
+            );
+          })()}
+
+          <div className="w3-body-layout">
+            {/* ── LEFT SIDEBAR ── */}
+            <aside className="w3-sidebar">
+              <div className="w3-sidebar-header">
+                <FaBookOpen />
+                {selectedCourse?.title}
+              </div>
+              <nav className="w3-sidebar-nav">
                 {selectedCourse?.curriculum.map((item, idx) => (
                   <div
                     key={item.id}
-                    className={`lrn-db-nav-item ${activeLesson?.id === item.id ? 'active' : ''}`}
+                    className={`w3-sidebar-item ${activeLesson?.id === item.id ? 'active' : ''}`}
                     onClick={() => setActiveLesson(item)}
                   >
-                    <span className="nav-number">{idx + 1}.</span>
-                    <span className="nav-title">{item.title}</span>
-                    {lessonProgress[item.id] && <FaCheckCircle className="nav-check" />}
+                    <span className="w3-sidebar-num">{idx + 1}.</span>
+                    <span>{item.title}</span>
+                    {lessonProgress[item.id] && (
+                      <FaCheckCircle className="w3-sidebar-check" />
+                    )}
                   </div>
                 ))}
               </nav>
-            </aside>
 
-            <main className="lrn-db-main">
-              <div className="lrn-db-viewport">
-                <div className="lrn-content-container">
-                  <div className="lrn-article-header">
-                    <h1 className="lrn-article-title">{activeLesson?.title}</h1>
-                    <div className="lrn-article-meta">
-                      <span><FaClock /> 30m read</span>
-                      <span><FaLayerGroup /> Chapter</span>
+              {/* ── PROGRESS FOOTER ── */}
+              {(() => {
+                const total = selectedCourse?.curriculum?.length || 1;
+                const done = Object.values(lessonProgress).filter(Boolean).length;
+                const pct = Math.round((done / total) * 100);
+                return (
+                  <div className="w3-sidebar-progress">
+                    <div className="w3-sidebar-progress-label">
+                      <span>Progress</span>
+                      <span>{pct}%</span>
+                    </div>
+                    <div className="w3-sidebar-progress-track">
+                      <div className="w3-sidebar-progress-fill" style={{ width: `${pct}%` }} />
                     </div>
                   </div>
+                );
+              })()}
+            </aside>
 
-                  <div className="lrn-article-body chatgpt-style" style={{ '--course-color': selectedCourse?.color || '#2563eb' }}>
-                    {activeLesson?.type === 'chapter' && activeLesson.contentBlocks && activeLesson.contentBlocks.map((block, idx) => (
-                      <div key={idx} className={`lrn-block block-${block.type}`}>
-                        {block.type === 'topic' && (
-                          <section className="lrn-topic-card">
-                            <div className="lrn-topic-icon"><FaRobot /></div>
-                            <div>
-                              <h2>{block.title}</h2>
-                              {block.value && <p>{block.value}</p>}
-                            </div>
-                          </section>
-                        )}
 
-                        {block.type === 'subtopic' && <h3 className="lrn-subtopic-title">{block.title}</h3>}
-
-                        {block.type === 'text' && (
-                          <p className="lrn-ai-paragraph">{block.value}</p>
-                        )}
-
-                        {block.type === 'point' && (
-                          <div className="lrn-ai-point">
-                            <span>{block.label}</span>
-                            <p>{block.value}</p>
-                          </div>
-                        )}
-
-                        {block.type === 'list' && (
-                          <div className="lrn-ai-list">
-                            {block.title && <h3>{block.title}</h3>}
-                            <ul>
-                              {block.items?.map((item, itemIdx) => (
-                                <li key={itemIdx}>
-                                  {item.label && <strong>{item.label}</strong>}
-                                  <span>{item.text}</span>
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        )}
-
-                        {block.type === 'code' && (
-                          <div className="lrn-code-wrapper">
-                            <div className="lrn-code-title"><FaCode /> Example</div>
-                            <pre><code>{block.value}</code></pre>
-                          </div>
-                        )}
-                      </div>
-                    ))}
+            {/* ── MAIN CONTENT ── */}
+            <main className="w3-main-content">
+              {activeLesson && (
+                <>
+                  {/* Breadcrumb */}
+                  <div className="w3-page-breadcrumb">
+                    <button
+                      style={{ background: 'none', border: 'none', color: '#04AA6D', fontWeight: 600, cursor: 'pointer', fontSize: '0.9rem' }}
+                      onClick={handleExitCourse}
+                    >
+                      Home
+                    </button>
+                    <FaChevronRight style={{ fontSize: '0.65rem', color: '#999' }} />
+                    <span style={{ color: '#04AA6D', fontWeight: 600 }}>{selectedCourse?.title}</span>
+                    <FaChevronRight style={{ fontSize: '0.65rem', color: '#999' }} />
+                    <span>{activeLesson.title}</span>
                   </div>
-                </div>
-              </div>
+
+                  {/* Page Title */}
+                  <h1 className="w3-page-title">{activeLesson.title}</h1>
+                  <hr className="w3-hr" />
+
+                  {/* Content Blocks */}
+                  {activeLesson.contentBlocks?.map((block, idx) => (
+                    <div key={idx}>
+                      {block.type === 'topic' && (
+                        <>
+                          <h2 className="w3-content-h2">{block.title}</h2>
+                          {block.value && <p className="w3-content-p">{block.value}</p>}
+                        </>
+                      )}
+
+                      {block.type === 'text' && (
+                        <p className="w3-content-p">{block.value}</p>
+                      )}
+
+                      {block.type === 'subtopic' && (
+                        <h3 className="w3-content-h3">{block.title}</h3>
+                      )}
+
+                      {block.type === 'list' && (
+                        <>
+                          {block.title && <h3 className="w3-content-h3">{block.title}</h3>}
+                          <ul className="w3-content-list">
+                            {block.items?.map((item, i) => (
+                              <li key={i}>
+                                {item.label && <strong>{item.label}: </strong>}
+                                {item.text}
+                              </li>
+                            ))}
+                          </ul>
+                        </>
+                      )}
+
+                      {block.type === 'code' && (
+                        <div className="w3-example-box">
+                          <div className="w3-example-label">Example</div>
+                          <div className="w3-example-code">
+                            <pre>{block.value}</pre>
+                          </div>
+                          <button className="w3-try-btn">
+                            <FaPlay style={{ fontSize: '0.7rem' }} /> Try it Yourself »
+                          </button>
+                        </div>
+                      )}
+
+                      {block.type === 'point' && (
+                        <div className="w3-note-box">
+                          <strong>{block.label}: </strong>{block.value}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+
+                  {/* ── BOTTOM NAVIGATION ── */}
+                  {(() => {
+                    const curr = selectedCourse?.curriculum || [];
+                    const currIdx = curr.findIndex(l => l.id === activeLesson.id);
+                    const prevLesson = currIdx > 0 ? curr[currIdx - 1] : null;
+                    const nextLesson = currIdx < curr.length - 1 ? curr[currIdx + 1] : null;
+                    return (
+                      <div className="w3-bottom-nav">
+                        <button
+                          className="w3-bottom-btn"
+                          disabled={!prevLesson}
+                          onClick={() => prevLesson && setActiveLesson(prevLesson)}
+                        >
+                          <FaChevronLeft /> Previous
+                        </button>
+
+                        <button
+                          className={`w3-mark-complete-btn ${lessonProgress[activeLesson.id] ? 'marked' : ''}`}
+                          onClick={() => toggleLessonComplete(activeLesson.id)}
+                        >
+                          <FaCheckCircle />
+                          {lessonProgress[activeLesson.id] ? 'Completed ✓' : 'Mark Complete'}
+                        </button>
+
+                        <button
+                          className="w3-bottom-btn"
+                          disabled={!nextLesson}
+                          onClick={() => nextLesson && setActiveLesson(nextLesson)}
+                        >
+                          Next <FaChevronRight />
+                        </button>
+                      </div>
+                    );
+                  })()}
+                </>
+              )}
             </main>
           </div>
         </div>
