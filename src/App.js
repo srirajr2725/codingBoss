@@ -23,7 +23,7 @@ import Dashboard from "./Dashboard.js";
 import Userdashboard from "./CollegeAdminDashboard.js";
 import Admindashboardg from "./CollegeStudentDashboard.js";
 import UploadQuestions from "./Uploadquestions.js";
-import TestPage from "./Testpage.js";
+import TestPage from "./TestPage.js";
 import Company from "./Company.js";
 import Assignments from "./Assignments.js";
 import InstructionPage from './InstructionPage.jsx';
