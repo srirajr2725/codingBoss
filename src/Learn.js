@@ -6,7 +6,8 @@ import {
   FaGraduationCap, FaShieldAlt, FaWhatsapp, FaInfoCircle,
   FaCode, FaClipboardList, FaArrowLeft, FaChevronRight,
   FaLightbulb, FaBookOpen, FaLayerGroup, FaQuoteLeft,
-  FaClock, FaSignal, FaTrophy, FaPlay, FaChevronLeft, FaTimesCircle, FaExclamationTriangle, FaRobot, FaVolumeUp, FaVolumeMute, FaMicrophone, FaTimes, FaPaperPlane, FaTerminal
+  FaClock, FaSignal, FaTrophy, FaPlay, FaChevronLeft, FaTimesCircle, FaExclamationTriangle, FaRobot, FaVolumeUp, FaVolumeMute, FaMicrophone, FaTimes, FaPaperPlane, FaTerminal,
+  FaUserGraduate, FaAward, FaPlayCircle
 } from 'react-icons/fa';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -143,6 +144,7 @@ const normalizeCourse = (data, defaultImage, color, badge) => {
       students: "15k+",
       rating: "4.9",
       color: color,
+      code_examples: data.code_examples || [],
       curriculum: rawModules.map((mod, i) => {
         if (!mod) return { id: "mod-" + i, title: "Empty Chapter", contentBlocks: [] };
 
@@ -226,11 +228,17 @@ const normalizeCourse = (data, defaultImage, color, badge) => {
       rating: "4.9",
       color: color || "#5c6bc0",
       outcomes: data.outcomes || [],
+      code_examples: data.code_examples || [],
       curriculum: (data.topics || []).map((topicStr, i) => {
         // Split by first newline if exists to separate title and desc
         const parts = topicStr.split('\n');
         const mTitle = parts[0] || `Module ${i + 1}`;
         const mDesc = parts.slice(1).join('\n').trim();
+
+        const moduleCode = (data.code_examples || []).filter(ex => 
+          ex.module === mTitle.split(':')[0].trim() || 
+          ex.module === `Module ${i + 1}`
+        );
 
         return {
           id: `topic-${i}`,
@@ -239,7 +247,11 @@ const normalizeCourse = (data, defaultImage, color, badge) => {
           dur: "45m read",
           contentBlocks: [
             { type: 'topic', title: mTitle, value: mDesc || `Explore the core principles of ${mTitle} in this comprehensive session.` },
-            { type: 'text', value: mDesc ? "This module covers deep technical concepts and practical implementations." : data.description }
+            ...moduleCode.map(ex => ({
+              type: 'code',
+              label: ex.title,
+              value: ex.code
+            }))
           ]
         };
       })
@@ -277,6 +289,7 @@ const Learn = ({ isLoggedIn, username: usernameProp = '', userRole = '', handleL
   const [activeTab, setActiveTab] = useState('chapter');
   const [lessonProgress, setLessonProgress] = useState({});
   const [viewMode, setViewMode] = useState('listing');
+  const [sidebarTab, setSidebarTab] = useState('overview');
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState('All');
   const [isCompleted, setIsCompleted] = useState(false);
@@ -531,7 +544,7 @@ const Learn = ({ isLoggedIn, username: usernameProp = '', userRole = '', handleL
                     <div className="lrn-card-image-wrapper">
                       <img src={course.id === 'java' ? JavaLogo : course.id === 'python' ? PythonLogo : CLogo} alt={course.title} className="lrn-card-banner" />
                       <div className="lrn-card-overlay">
-                         <div className="lrn-card-badge">PREMIUM</div>
+                        <div className="lrn-card-badge">PREMIUM</div>
                       </div>
                     </div>
                     <div className="lrn-card-content">
@@ -561,9 +574,6 @@ const Learn = ({ isLoggedIn, username: usernameProp = '', userRole = '', handleL
             <div className="w3-topnav-logo">
               <FaCode /> CodingBoss
             </div>
-            <span className="w3-topnav-course-name">
-              {selectedCourse?.title} Programming Studio
-            </span>
             <div className="w3-topnav-actions">
               <button
                 className="w3-nav-btn lab-btn"
@@ -598,30 +608,82 @@ const Learn = ({ isLoggedIn, username: usernameProp = '', userRole = '', handleL
                 <FaBookOpen />
                 {selectedCourse?.id === 'c' ? 'C Programming' : selectedCourse?.title}
               </div>
-              <nav className="w3-sidebar-nav">
-                <button
-                  className="w3-sidebar-run-btn"
-                  onClick={() => {
-                    setLabLang(selectedCourse?.id === 'c' ? 'c' : selectedCourse?.id === 'python' ? 'python' : 'java');
-                    setShowLab(true);
-                  }}
+              <div className="w3-sidebar-tabs">
+                <button 
+                  className={`w3-sidebar-tab ${sidebarTab === 'overview' ? 'active' : ''}`}
+                  onClick={() => setSidebarTab('overview')}
                 >
-                  <FaPlay /> RUN COMPILER
+                  <FaInfoCircle /> Overview
                 </button>
-                {selectedCourse?.curriculum.map((item, idx) => (
-                  <div
-                    key={item.id}
-                    className={`w3-sidebar-item ${activeLesson?.id === item.id ? 'active' : ''}`}
-                    onClick={() => setActiveLesson(item)}
-                  >
-                    <span className="w3-sidebar-num">{idx + 1}.</span>
-                    <span>{item.title}</span>
-                    {lessonProgress[item.id] && (
-                      <FaCheckCircle className="w3-sidebar-check" />
+                <button 
+                  className={`w3-sidebar-tab ${sidebarTab === 'curriculum' ? 'active' : ''}`}
+                  onClick={() => setSidebarTab('curriculum')}
+                >
+                  <FaClipboardList /> Curriculum
+                </button>
+                <button 
+                  className={`w3-sidebar-tab ${sidebarTab === 'examples' ? 'active' : ''}`}
+                  onClick={() => setSidebarTab('examples')}
+                >
+                  <FaCode /> Library
+                </button>
+              </div>
+
+              <div className="w3-sidebar-lessons">
+                {sidebarTab === 'examples' ? (
+                  <div className="w3-examples-list">
+                    {selectedCourse?.code_examples?.length > 0 ? (
+                      selectedCourse.code_examples.map((ex, i) => (
+                        <div key={i} className="w3-example-item">
+                          <div className="w3-example-header">
+                            <span className="w3-example-module">{ex.module}</span>
+                            <h5 className="w3-example-title">{ex.title}</h5>
+                          </div>
+                          <div className="w3-example-actions">
+                            <button 
+                              className="w3-example-btn"
+                              onClick={() => {
+                                setLabCode(ex.code);
+                                setLabLang(ex.language?.toLowerCase() || 'java');
+                                setShowLab(true);
+                              }}
+                            >
+                              <FaPlay /> Run in Lab
+                            </button>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="w3-empty-state">
+                        <FaCode style={{ fontSize: '2rem', opacity: 0.3, marginBottom: '10px' }} />
+                        <p>No code examples available for this track.</p>
+                      </div>
                     )}
                   </div>
-                ))}
-              </nav>
+                ) : (
+                  selectedCourse?.curriculum?.map((lesson, idx) => (
+                    <div
+                      key={lesson.id}
+                      className={`w3-lesson-item ${activeLesson?.id === lesson.id ? 'active' : ''} ${lessonProgress[lesson.id] ? 'completed' : ''}`}
+                      onClick={() => {
+                        setActiveLesson(lesson);
+                        setSidebarTab('curriculum');
+                      }}
+                    >
+                      <div className="w3-lesson-status">
+                        {lessonProgress[lesson.id] ? <FaCheckCircle /> : <span>{idx + 1}</span>}
+                      </div>
+                      <div className="w3-lesson-info">
+                        <div className="w3-lesson-title">{lesson.title}</div>
+                        {lesson.contentBlocks?.filter(b => b.type === 'code').map((b, bi) => (
+                          <div key={bi} className="w3-lesson-subtitle">{b.label}</div>
+                        ))}
+                        <div className="w3-lesson-dur">{lesson.dur}</div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
 
               {/* ── PROGRESS FOOTER ── */}
               {(() => {
@@ -645,18 +707,83 @@ const Learn = ({ isLoggedIn, username: usernameProp = '', userRole = '', handleL
 
             {/* ── MAIN CONTENT ── */}
             <main className="w3-main-content">
-              {activeLesson && (
+              {sidebarTab === 'overview' ? (
+                <div className="lrn-overview-container">
+                  <div className="lrn-overview-hero" style={{ '--accent': selectedCourse?.color }}>
+                    <div className="lrn-hero-content">
+                      <span className="lrn-hero-badge">{selectedCourse?.level}</span>
+                      <h1>{selectedCourse?.title}</h1>
+                      <p className="lrn-hero-desc">{selectedCourse?.description}</p>
+                      <div className="lrn-hero-stats">
+                        <div className="lrn-stat-item">
+                          <FaClock /> <span>{selectedCourse?.duration}</span>
+                        </div>
+                        <div className="lrn-stat-item">
+                          <FaUserGraduate /> <span>{selectedCourse?.students} Enrolled</span>
+                        </div>
+                        <div className="lrn-stat-item">
+                          <FaStar color="#f59e0b" /> <span>{selectedCourse?.rating} Rating</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="lrn-overview-grid">
+                    <div className="lrn-outcomes-section">
+                      <h3 className="lrn-section-label">What you will learn</h3>
+                      <div className="lrn-outcomes-list">
+                        {(selectedCourse?.outcomes || []).map((outcome, i) => (
+                          <div key={i} className="lrn-outcome-card">
+                            <div className="lrn-outcome-icon"><FaCheckCircle /></div>
+                            <p>{outcome}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="lrn-features-section">
+                      <h3 className="lrn-section-label">Course Features</h3>
+                      <div className="lrn-features-list">
+                        <div className="lrn-feature-item">
+                          <FaPlayCircle /> <span>{selectedCourse?.curriculum?.length} Modules</span>
+                        </div>
+                        <div className="lrn-feature-item">
+                          <FaCode /> <span>{selectedCourse?.code_examples?.length} Code Examples</span>
+                        </div>
+                        <div className="lrn-feature-item">
+                          <FaAward /> <span>Professional Certification</span>
+                        </div>
+                        <div className="lrn-feature-item">
+                          <FaTerminal /> <span>Hands-on Practice Lab</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="lrn-cta-footer">
+                    <button className="lrn-start-btn" onClick={() => setSidebarTab('curriculum')}>
+                      START LEARNING NOW <FaChevronRight />
+                    </button>
+                  </div>
+                </div>
+              ) : !activeLesson ? (
+                <div className="w3-empty-state-main">
+                  <img src={selectedCourse?.imageUrl} alt="Course" />
+                  <h2>Select a module to start learning</h2>
+                  <p>Experience the most advanced curriculum in the industry.</p>
+                  <button className="lrn-empty-btn" onClick={() => setSidebarTab('curriculum')}>View Syllabus</button>
+                </div>
+              ) : (
                 <>
-                  {/* Breadcrumb */}
                   <div className="w3-page-breadcrumb">
                     <button
-                      style={{ background: 'none', border: 'none', color: '#04AA6D', fontWeight: 600, cursor: 'pointer', fontSize: '0.9rem' }}
+                      style={{ background: 'none', border: 'none', color: 'var(--ultra-primary)', fontWeight: 600, cursor: 'pointer', fontSize: '0.9rem' }}
                       onClick={handleExitCourse}
                     >
                       Home
                     </button>
                     <FaChevronRight style={{ fontSize: '0.65rem', color: '#999' }} />
-                    <span style={{ color: '#04AA6D', fontWeight: 600 }}>{selectedCourse?.title}</span>
+                    <span style={{ color: 'var(--ultra-primary)', fontWeight: 600 }}>{selectedCourse?.title}</span>
                     <FaChevronRight style={{ fontSize: '0.65rem', color: '#999' }} />
                     <span>{activeLesson.title}</span>
                   </div>
@@ -664,118 +791,115 @@ const Learn = ({ isLoggedIn, username: usernameProp = '', userRole = '', handleL
                   <h1 className="w3-page-title">{activeLesson.title}</h1>
                   <hr className="w3-hr" />
 
-                  {/* Course Overview / Outcomes if it's the first lesson */}
-                  {activeLesson.id === selectedCourse?.curriculum[0]?.id && selectedCourse?.outcomes?.length > 0 && (
-                    <div className="w3-outcomes-box" style={{ background: '#ecfdf5', border: '2px solid #bbf7d0', padding: '24px', borderRadius: '16px', marginBottom: '32px' }}>
-                      <h3 style={{ color: '#064e3b', marginTop: 0, display: 'flex', alignItems: 'center', gap: '10px', fontSize: '1.4rem' }}>
-                        <FaTrophy /> What you will learn
-                      </h3>
-                      <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '16px' }}>
-                        {selectedCourse.outcomes.map((outcome, i) => (
-                          <li key={i} style={{ display: 'flex', gap: '12px', fontSize: '1.05rem', color: '#065f46', fontWeight: 500 }}>
-                            <FaCheckCircle style={{ color: '#10b981', marginTop: '4px', flexShrink: 0 }} />
-                            {outcome}
-                          </li>
-                        ))}
-                      </ul>
+                  {/* Content Blocks */}
+                  {activeLesson.contentBlocks?.length > 0 ? (
+                    activeLesson.contentBlocks.map((block, idx) => (
+                      <div key={idx}>
+                        {block.type === 'topic' && block.title !== activeLesson.title && (
+                          <>
+                            <h2 className="w3-content-h2">{block.title}</h2>
+                            {block.value && <p className="w3-content-p" style={{ whiteSpace: 'pre-wrap' }}>{block.value}</p>}
+                          </>
+                        )}
+
+                        {block.type === 'topic' && block.title === activeLesson.title && (
+                          <p className="w3-content-p" style={{ whiteSpace: 'pre-wrap' }}>{block.value}</p>
+                        )}
+
+                        {block.type === 'text' && (
+                          <p className="w3-content-p" style={{ whiteSpace: 'pre-wrap' }}>{block.value}</p>
+                        )}
+
+                        {block.type === 'subtopic' && (
+                          <h3 className="w3-content-h3">{block.title}</h3>
+                        )}
+
+                        {block.type === 'list' && (
+                          <>
+                            {block.title && <h3 className="w3-content-h3">{block.title}</h3>}
+                            <ul className="w3-content-list">
+                              {block.items?.map((item, i) => (
+                                <li key={i}>
+                                  {item.label && <strong>{item.label}: </strong>}
+                                  {item.text}
+                                </li>
+                              ))}
+                            </ul>
+                          </>
+                        )}
+
+                        {block.type === 'code' && (
+                          <div className="w3-example-box">
+                            <div className="w3-example-code">
+                              <pre>{block.value}</pre>
+                            </div>
+                            <div className="w3-example-actions">
+                              <button
+                                className={`w3-run-btn ${isInlineCompiling[idx] ? 'loading' : ''}`}
+                                onClick={async () => {
+                                  const blockId = idx;
+                                  setIsInlineCompiling(prev => ({ ...prev, [blockId]: true }));
+                                  try {
+                                    const response = await fetch('https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/practice-run/', {
+                                      method: 'POST',
+                                      headers: {
+                                        'Content-Type': 'application/json',
+                                        'ngrok-skip-browser-warning': 'true'
+                                      },
+                                      body: JSON.stringify({
+                                        source_code: block.value,
+                                        language: selectedCourse?.id === 'c' ? 'c' : selectedCourse?.id === 'python' ? 'python' : 'java',
+                                        stdin: ""
+                                      })
+                                    });
+                                    const data = await response.json();
+                                    setInlineOutputs(prev => ({ ...prev, [blockId]: data.stdout || data.stderr || "No output." }));
+                                  } catch (err) {
+                                    setInlineOutputs(prev => ({ ...prev, [blockId]: "❌ Run failed." }));
+                                  } finally {
+                                    setIsInlineCompiling(prev => ({ ...prev, [blockId]: false }));
+                                  }
+                                }}
+                              >
+                                {isInlineCompiling[idx] ? <div className="spinner" /> : <FaPlay />} Run Code
+                              </button>
+                              <button
+                                className="w3-try-btn"
+                                onClick={() => {
+                                  setLabCode(block.value);
+                                  setLabLang(selectedCourse?.id === 'c' ? 'c' : selectedCourse?.id === 'python' ? 'python' : 'java');
+                                  setShowLab(true);
+                                }}
+                              >
+                                <FaLayerGroup style={{ fontSize: '0.7rem' }} /> Open in Lab »
+                              </button>
+                            </div>
+                            {inlineOutputs[idx] && (
+                              <div className="w3-inline-output">
+                                <div className="w3-output-header">Result:</div>
+                                <pre>{inlineOutputs[idx]}</pre>
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        {block.type === 'point' && (
+                          <div className="w3-note-box">
+                            <strong>{block.label}: </strong>{block.value}
+                          </div>
+                        )}
+                      </div>
+                    ))
+                  ) : (
+                    <div className="w3-raw-module-body">
+                      {/* Handling topics from the massive JSON format */}
+                      <div className="w3-content-block">
+                        <p className="w3-content-p" style={{ whiteSpace: 'pre-wrap', fontSize: '1.1rem', lineHeight: '1.8', color: '#334155' }}>
+                          {activeLesson.rawDescription}
+                        </p>
+                      </div>
                     </div>
                   )}
-
-                  {/* Content Blocks */}
-                  {activeLesson.contentBlocks?.map((block, idx) => (
-                    <div key={idx}>
-                      {block.type === 'topic' && (
-                        <>
-                          <h2 className="w3-content-h2">{block.title}</h2>
-                          {block.value && <p className="w3-content-p">{block.value}</p>}
-                        </>
-                      )}
-
-                      {block.type === 'text' && (
-                        <p className="w3-content-p">{block.value}</p>
-                      )}
-
-                      {block.type === 'subtopic' && (
-                        <h3 className="w3-content-h3">{block.title}</h3>
-                      )}
-
-                      {block.type === 'list' && (
-                        <>
-                          {block.title && <h3 className="w3-content-h3">{block.title}</h3>}
-                          <ul className="w3-content-list">
-                            {block.items?.map((item, i) => (
-                              <li key={i}>
-                                {item.label && <strong>{item.label}: </strong>}
-                                {item.text}
-                              </li>
-                            ))}
-                          </ul>
-                        </>
-                      )}
-
-                      {block.type === 'code' && (
-                        <div className="w3-example-box">
-                          <div className="w3-example-label">Example</div>
-                          <div className="w3-example-code">
-                            <pre>{block.value}</pre>
-                          </div>
-                          <div className="w3-example-actions">
-                            <button
-                              className={`w3-run-btn ${isInlineCompiling[idx] ? 'loading' : ''}`}
-                              onClick={async () => {
-                                const blockId = idx;
-                                setIsInlineCompiling(prev => ({ ...prev, [blockId]: true }));
-                                try {
-                                  const response = await fetch('https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/practice-run/', {
-                                    method: 'POST',
-                                    headers: {
-                                      'Content-Type': 'application/json',
-                                      'ngrok-skip-browser-warning': 'true'
-                                    },
-                                    body: JSON.stringify({
-                                      source_code: block.value,
-                                      language: selectedCourse?.id === 'c' ? 'c' : selectedCourse?.id === 'python' ? 'python' : 'java',
-                                      stdin: ""
-                                    })
-                                  });
-                                  const data = await response.json();
-                                  setInlineOutputs(prev => ({ ...prev, [blockId]: data.stdout || data.stderr || "No output." }));
-                                } catch (err) {
-                                  setInlineOutputs(prev => ({ ...prev, [blockId]: "❌ Run failed." }));
-                                } finally {
-                                  setIsInlineCompiling(prev => ({ ...prev, [blockId]: false }));
-                                }
-                              }}
-                            >
-                              {isInlineCompiling[idx] ? <div className="spinner" /> : <FaPlay />} Run Code
-                            </button>
-                            <button
-                              className="w3-try-btn"
-                              onClick={() => {
-                                setLabCode(block.value);
-                                setLabLang(selectedCourse?.id === 'c' ? 'c' : selectedCourse?.id === 'python' ? 'python' : 'java');
-                                setShowLab(true);
-                              }}
-                            >
-                              <FaLayerGroup style={{ fontSize: '0.7rem' }} /> Open in Lab »
-                            </button>
-                          </div>
-                          {inlineOutputs[idx] && (
-                            <div className="w3-inline-output">
-                              <div className="w3-output-header">Result:</div>
-                              <pre>{inlineOutputs[idx]}</pre>
-                            </div>
-                          )}
-                        </div>
-                      )}
-
-                      {block.type === 'point' && (
-                        <div className="w3-note-box">
-                          <strong>{block.label}: </strong>{block.value}
-                        </div>
-                      )}
-                    </div>
-                  ))}
 
                   {/* ── BOTTOM NAVIGATION ── */}
                   {(() => {

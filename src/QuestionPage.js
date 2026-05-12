@@ -99,7 +99,7 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
     if (videoRef.current && cameraStream) {
       videoRef.current.srcObject = cameraStream;
     }
-  }, [cameraStream]);
+  }, [cameraStream, isTestStarted]);
 
   // ── DETECTION STATUS SYNC ──
   useEffect(() => {
@@ -485,12 +485,22 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 320, height: 240 } });
       setCameraStream(stream);
-      if (document.documentElement.requestFullscreen) {
-        await document.documentElement.requestFullscreen();
-        setIsTestStarted(true);
-        setStartTime(Date.now());
+      
+      // Attempt fullscreen but don't block if it fails
+      try {
+        if (document.documentElement.requestFullscreen) {
+          await document.documentElement.requestFullscreen();
+        }
+      } catch (fErr) {
+        console.warn("Fullscreen request denied or unsupported.");
       }
-    } catch (err) { toast.error("❌ Camera and Fullscreen required!"); }
+
+      setIsTestStarted(true);
+      setStartTime(Date.now());
+    } catch (err) { 
+      console.error("Test start failed:", err);
+      toast.error("❌ Camera access is required to start the session!"); 
+    }
   };
 
   const handleCompile = async () => {
