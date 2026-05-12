@@ -38,9 +38,39 @@ const McqTestPage = () => {
   const [isTestStarted, setIsTestStarted] = useState(false);
   const [isTestSubmitted, setIsTestSubmitted] = useState(false);
   const [cameraStream, setCameraStream] = useState(null);
+  const [isDetectionEnabled, setIsDetectionEnabled] = useState(false);
   
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
+
+  // PERMANENT FIX: Suppress cross-origin "Script error." (from Face-API) to stop React overlay crashes
+  useEffect(() => {
+    const handleGlobalError = (event) => {
+      if (event.message === 'Script error.' || (event.error && event.error.message === 'Script error.')) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.hidden && isTestStarted && !isTestSubmitted && isDetectionEnabled) {
+        triggerWarning("Tab switching is strictly prohibited!", "tab_switch", true);
+      }
+    };
+
+    window.addEventListener('error', handleGlobalError, true);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      window.removeEventListener('error', handleGlobalError, true);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (videoRef.current && cameraStream) {
+      videoRef.current.srcObject = cameraStream;
+    }
+  }, [cameraStream, isTestStarted]);
   const isTrackingRef = useRef(false);
   const lastWarningTimeRef = useRef(0);
   const isUploadingRef = useRef(false);
@@ -56,7 +86,7 @@ const McqTestPage = () => {
   const uploadViolationFrame = async () => {
     try {
       let image = null;
-      if (videoRef.current && canvasRef.current) {
+      if (videoRef.current && canvasRef.current && videoRef.current.readyState >= 2) {
         const canvas = canvasRef.current;
         canvas.width = 240;
         canvas.height = 180;
@@ -77,7 +107,7 @@ const McqTestPage = () => {
           violation_type: lastViolationRef.current?.type || null,
           violation_message: lastViolationRef.current?.message || null,
           violation_count: violationCountRef.current,
-          terminated: false
+          terminated: terminatedRef.current
         })
       });
     } catch (err) {}
@@ -97,10 +127,10 @@ const McqTestPage = () => {
       const next = prev + 1;
       violationCountRef.current = next;
       lastViolationRef.current = { type, message: msg, count: next, at: new Date().toISOString() };
-      if (next >= 4) { // 3 Warnings, 4th is Terminate
+      if (next >= 3) { // Disqualified on 3rd violation
         terminatedRef.current = true;
         uploadViolationFrame();
-        toast.error("DISQUALIFIED! Too many violations.");
+        toast.error("🚫 DISQUALIFIED! Too many violations. Test submitted.");
         setIsTestSubmitted(true);
         setTimeout(() => submitTest({}), 1000);
       } else {
@@ -116,7 +146,7 @@ const McqTestPage = () => {
     let timeoutId;
 
     const startFaceTracking = async () => {
-      if (!isTestStarted || !videoRef.current || !window.faceapi || isTrackingRef.current || document.hidden) {
+      if (!isTestStarted || !isDetectionEnabled || !videoRef.current || videoRef.current.readyState < 2 || !window.faceapi || !window.faceapi.detectSingleFace || isTrackingRef.current || document.hidden) {
         timeoutId = setTimeout(startFaceTracking, 1000);
         return;
       }
@@ -178,8 +208,8 @@ const McqTestPage = () => {
       if (!window.faceapi) {
         const script = document.createElement("script");
         script.src = "https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js";
-        script.async = true;
         script.crossOrigin = "anonymous";
+        script.async = true;
         script.onload = async () => {
           try {
             const MODEL_URL = "https://justadudewhohacks.github.io/face-api.js/models";
@@ -205,12 +235,15 @@ const McqTestPage = () => {
     let intervalId;
     if (isTestStarted && cameraStream) {
       intervalId = setInterval(async () => {
-        if (isUploadingRef.current || !videoRef.current || !canvasRef.current) return;
+        if (isTestSubmitted || isUploadingRef.current || !videoRef.current || !canvasRef.current) return;
         isUploadingRef.current = true;
         try {
+          const video = videoRef.current;
+          if (video.readyState < 2 || video.videoWidth === 0) return; // Wait for video data
+
           const canvas = canvasRef.current;
-          canvas.width = 240; canvas.height = 180;
-          canvas.getContext('2d', { alpha: false }).drawImage(videoRef.current, 0, 0, 240, 180);
+          canvas.width = 160; canvas.height = 120; // Smaller for speed
+          canvas.getContext('2d', { alpha: false }).drawImage(video, 0, 0, 160, 120);
           await fetch('https://unlanded-isela-unmunificently.ngrok-free.dev/api/upload-frame/', {
             method: 'POST',
             headers: { 
@@ -224,11 +257,11 @@ const McqTestPage = () => {
               violation_type: lastViolationRef.current?.type || null,
               violation_message: lastViolationRef.current?.message || null,
               violation_count: violationCountRef.current,
-              terminated: false
+              terminated: terminatedRef.current
             })
           });
         } catch (e) {} finally { isUploadingRef.current = false; }
-      }, 15000);
+      }, 3000);
     }
     return () => clearInterval(intervalId);
   }, [isTestStarted, cameraStream]);
@@ -297,7 +330,32 @@ const McqTestPage = () => {
 
     if (isTestStarted) {
        if (!window.lastDoctorDetectCountRef) window.lastDoctorDetectCountRef = { current: 0 };
-       intervalId = setInterval(pollDoctorWarnings, 5000);
+       intervalId = setInterval(pollDoctorWarnings, 2000);
+    }
+    return () => clearInterval(intervalId);
+  }, [isTestStarted, isTestSubmitted]);
+
+  // 🔥 ENGINE: POLLING FOR DETECTION ENABLED STATUS
+  useEffect(() => {
+    let intervalId;
+    const checkDetectionStatus = async () => {
+      if (!isTestStarted || isTestSubmitted) return;
+      try {
+        const studentId = getDecryptedUserId() || 1;
+        const res = await fetch(`https://unlanded-isela-unmunificently.ngrok-free.dev/api/toggle-detection/?user_id=${studentId}`, {
+          headers: { 'ngrok-skip-browser-warning': 'true' }
+        });
+        const data = await res.json();
+        // Assuming the response structure is like {"is_detection_enabled": true, ...}
+        if (data.is_detection_enabled !== undefined) {
+          setIsDetectionEnabled(!!data.is_detection_enabled);
+        }
+      } catch (err) {}
+    };
+
+    if (isTestStarted) {
+      checkDetectionStatus();
+      intervalId = setInterval(checkDetectionStatus, 5000);
     }
     return () => clearInterval(intervalId);
   }, [isTestStarted, isTestSubmitted]);
@@ -347,19 +405,47 @@ const McqTestPage = () => {
     setCompletionLoading(true);
     const normalizedSubtype = String(subtype || '').trim();
     const normalizedCategory = filterCategory || 'Technical';
+    // Sanitize answers to avoid backend 500 errors on empty selections
+    const sanitizedAnswers = Object.fromEntries(
+      Object.entries(answers || {}).filter(([_, value]) => value !== "" && value !== null)
+    );
+
+    const userId = Number(getDecryptedUserId());
+    if (!userId) {
+      toast.error("User ID missing. Please login again.");
+      setCompletionLoading(false);
+      return;
+    }
+
+    const payload = {
+      user_id: userId,
+      type: detectedType || normalizedCategory || "Technical",
+      subtype: normalizedSubtype || "General",
+      answers: sanitizedAnswers,
+      hints_used: 0
+    };
+
+    console.log("SUBMITTING TEST PAYLOAD:", payload);
+
     try {
-      const response = await apiClient('compiler/evaluate/', 'POST', {
-        user_id: Number(getDecryptedUserId()),
-        type: detectedType || normalizedCategory,
-        subtype: normalizedSubtype,
-        answers: answers,
+      const response = await fetch('https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/evaluate/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
       });
-      if (response) {
+      if (response.ok) {
         toast.success("Test Submitted!");
         localStorage.setItem(`mcq_completed_${getDecryptedUserId()}_${normalizedSubtype}_${normalizedCategory}`, 'true');
         setTimeout(() => navigate('/UserDashboard', { replace: true }), 1000);
       }
-    } catch (error) { toast.error("Submission failed."); } finally { setCompletionLoading(false); }
+    } catch (error) { 
+      console.error("SUBMISSION ERROR:", error);
+      toast.error(`Submission failed: ${error.message || 'Unknown Error'}`); 
+    } finally { 
+      setCompletionLoading(false); 
+    }
   };
 
   if (isTestCompleted) return <Container className="mt-5 text-center"><Alert variant="danger"><h4>🚫 Test already attended</h4></Alert></Container>;

@@ -7,7 +7,16 @@ body {
   padding: 0;
   min-height: 100vh;
   width: 100%;
-  overflow-x: hidden; /* Prevent horizontal scroll bug */
+  overflow-x: hidden;
+  /* Prevent horizontal scroll bug */
+}
+
+/* ── GLOBAL AI LOCKDOWN ── */
+body.hide-global-ai .global-ai-container {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
 }
 
 body {
@@ -31,6 +40,7 @@ body {
     display: none;
   }
 }
+
 /* --- Proctoring Interface --- */
 .proctoring-dashboard {
   position: fixed;
@@ -50,7 +60,7 @@ body {
   border-radius: 16px;
   overflow: hidden;
   border: 3px solid #6366f1;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
   position: relative;
 }
 
@@ -60,11 +70,12 @@ body {
   object-fit: cover;
 }
 
-.camera-status, .screen-status {
+.camera-status,
+.screen-status {
   position: absolute;
   top: 10px;
   left: 10px;
-  background: rgba(0,0,0,0.6);
+  background: rgba(0, 0, 0, 0.6);
   padding: 4px 8px;
   border-radius: 6px;
   font-size: 0.65rem;
@@ -81,7 +92,7 @@ body {
   padding: 12px 16px;
   border-radius: 12px;
   border: 1px solid #e2e8f0;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   position: relative;
 }
 
@@ -113,20 +124,36 @@ body {
 }
 
 @keyframes pulse-green {
-  0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
-  70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+  0% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  }
+
+  70% {
+    box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
 }
 
 @keyframes pulse-red {
-  0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
-  70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+  0% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+  }
+
+  70% {
+    box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+  }
 }
 
 /* Hide Global AI when Course UI or Learning Lab is present */
-.lrn-container ~ .global-ai-container,
-.lrn-db-main ~ .global-ai-container,
+.lrn-container~.global-ai-container,
+.lrn-db-main~.global-ai-container,
 body:has(.lrn-container) .global-ai-container,
 body:has(.lrn-db-main) .global-ai-container {
   display: none !important;

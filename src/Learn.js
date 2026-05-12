@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from "framer-motion";
 import {
   FaLock, FaCheckCircle, FaStar, FaRocket,
   FaGraduationCap, FaShieldAlt, FaWhatsapp, FaInfoCircle,
   FaCode, FaClipboardList, FaArrowLeft, FaChevronRight,
   FaLightbulb, FaBookOpen, FaLayerGroup, FaQuoteLeft,
-  FaClock, FaSignal, FaTrophy, FaPlay, FaChevronLeft, FaTimesCircle, FaExclamationTriangle, FaRobot, FaVolumeUp, FaVolumeMute, FaMicrophone, FaTimes, FaPaperPlane
+  FaClock, FaSignal, FaTrophy, FaPlay, FaChevronLeft, FaTimesCircle, FaExclamationTriangle, FaRobot, FaVolumeUp, FaVolumeMute, FaMicrophone, FaTimes, FaPaperPlane, FaTerminal
 } from 'react-icons/fa';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -14,15 +15,16 @@ import './Learn.css';
 import javaData from './data/java.json';
 import cData from './data/c.json';
 import pythonData from './data/python.json';
-import JavaLogo from './images/Java.png';
-import PythonLogo from './images/python.png';
-import CLogo from './images/c_program.png';
+import JavaLogo from './images/ultra_java_banner.png';
+import PythonLogo from './images/ultra_python_banner.png';
+import CLogo from './images/ultra_c_banner.png';
 
 // Slider Assets
 import slider1 from './images/slider1.png';
 import slider2 from './images/slider2.png';
 import slider3 from './images/slider3.png';
 import CourseAI from './CourseAI';
+import Editor from '@monaco-editor/react';
 
 const humanizeKey = (key = "") =>
   key
@@ -209,7 +211,7 @@ const normalizeCourse = (data, defaultImage, color, badge) => {
     };
   }
 
-  // Handle API format (simplified)
+  // Handle API format (simplified or new C format)
   if (data.name && data.topics) {
     const title = data.name;
     return {
@@ -217,22 +219,30 @@ const normalizeCourse = (data, defaultImage, color, badge) => {
       title: title,
       description: data.short_description || data.description || "",
       imageUrl: defaultImage,
-      badge: badge || data.level || "Standard",
-      duration: data.duration || "Flexible",
-      level: data.level || "All Levels",
-      students: "10k+",
-      rating: "4.8",
-      color: color || "#3b82f6",
-      curriculum: (data.topics || []).map((topic, i) => ({
-        id: `topic-${i}`,
-        title: topic,
-        type: "chapter",
-        dur: "15m read",
-        contentBlocks: [
-          { type: 'topic', title: topic, value: `In this module, we will explore ${topic} in depth, covering its core principles and practical implementations.` },
-          { type: 'text', value: data.description || "Start your journey into this technical specialization." }
-        ]
-      }))
+      badge: badge || data.level || "Expert Track",
+      duration: data.duration || "12 weeks",
+      level: data.level || "Beginner to Expert",
+      students: "15k+",
+      rating: "4.9",
+      color: color || "#5c6bc0",
+      outcomes: data.outcomes || [],
+      curriculum: (data.topics || []).map((topicStr, i) => {
+        // Split by first newline if exists to separate title and desc
+        const parts = topicStr.split('\n');
+        const mTitle = parts[0] || `Module ${i + 1}`;
+        const mDesc = parts.slice(1).join('\n').trim();
+
+        return {
+          id: `topic-${i}`,
+          title: mTitle,
+          type: "chapter",
+          dur: "45m read",
+          contentBlocks: [
+            { type: 'topic', title: mTitle, value: mDesc || `Explore the core principles of ${mTitle} in this comprehensive session.` },
+            { type: 'text', value: mDesc ? "This module covers deep technical concepts and practical implementations." : data.description }
+          ]
+        };
+      })
     };
   }
 
@@ -272,6 +282,24 @@ const Learn = ({ isLoggedIn, username: usernameProp = '', userRole = '', handleL
   const [isCompleted, setIsCompleted] = useState(false);
   const [selectedOption, setSelectedOption] = useState(null);
   const [showExplanation, setShowExplanation] = useState(false);
+
+  // ── PRACTICE LAB STATES ──
+  const [showLab, setShowLab] = useState(false);
+  const [labCode, setLabCode] = useState("");
+  const [labOutput, setLabOutput] = useState("");
+  const [isLabCompiling, setIsLabCompiling] = useState(false);
+  const [labLang, setLabLang] = useState("java");
+  const [labStdin, setLabStdin] = useState("");
+
+  // ── GLOBAL AI LOCKDOWN ──
+  useEffect(() => {
+    document.body.classList.add('hide-global-ai');
+    return () => document.body.classList.remove('hide-global-ai');
+  }, []);
+
+  // ── INLINE RUN STATES ──
+  const [inlineOutputs, setInlineOutputs] = useState({});
+  const [isInlineCompiling, setIsInlineCompiling] = useState({});
 
   useEffect(() => {
     const fetchCourses = async () => {
@@ -349,185 +377,6 @@ const Learn = ({ isLoggedIn, username: usernameProp = '', userRole = '', handleL
   const [isProctored, setIsProctored] = useState(false);
   const [tabSwitchCount, setTabSwitchCount] = useState(0);
 
-  const [showAIBot, setShowAIBot] = useState(false);
-  const [aiQuery, setAiQuery] = useState("");
-  const [aiMessages, setAiMessages] = useState([
-    { type: 'ai', text: "Hello! I am your AI Course Mentor. Ask me any doubts about this lesson and I will explain properly!" }
-  ]);
-  const [isBotThinking, setIsBotThinking] = useState(false);
-  const [isSpeaking, setIsSpeaking] = useState(false);
-  const [isListening, setIsListening] = useState(false);
-  const messagesEndRef = useRef(null);
-
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [aiMessages, showAIBot]);
-  const [isTaskMode, setIsTaskMode] = useState(false);
-  const [isTaskIDE, setIsTaskIDE] = useState(false);
-  const [taskEvaluation, setTaskEvaluation] = useState(null);
-
-
-
-  const toggleListening = () => {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRecognition) { toast.error("Voice recognition is not supported."); return; }
-    if (isListening) { setIsListening(false); return; }
-    const recognition = new SpeechRecognition();
-    recognition.onstart = () => { setIsListening(true); toast.info("Listening..."); };
-    recognition.onresult = (event) => { setAiQuery(event.results[0][0].transcript); setIsListening(false); };
-    recognition.onerror = () => { setIsListening(false); toast.error("Could not hear clearly."); };
-    recognition.start();
-  };
-
-  const utteranceRef = useRef(null);
-
-  const speakResponse = (text) => {
-    window.speechSynthesis.cancel();
-    if (!text) return;
-
-    const speak = () => {
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.rate = 0.9;
-      const voices = window.speechSynthesis.getVoices();
-
-      // Look for Tamil voice
-      const tamilVoice = voices.find(v =>
-        v.lang === 'ta-IN' ||
-        v.name.toLowerCase().includes('tamil') ||
-        v.lang.toLowerCase().includes('ta')
-      );
-
-      if (tamilVoice) {
-        utterance.voice = tamilVoice;
-        utterance.lang = 'ta-IN';
-      } else {
-        utterance.lang = 'en-US';
-      }
-
-      utterance.onstart = () => setIsSpeaking(true);
-      utterance.onend = () => setIsSpeaking(false);
-      window.speechSynthesis.speak(utterance);
-      utteranceRef.current = utterance;
-    };
-
-    if (window.speechSynthesis.getVoices().length === 0) {
-      window.speechSynthesis.onvoiceschanged = speak;
-    } else {
-      speak();
-    }
-  };
-
-  const stopSpeaking = () => { window.speechSynthesis.cancel(); setIsSpeaking(false); };
-
-  const filteredCourses = (courses || []).filter(course =>
-    course &&
-    course.title &&
-    typeof course.title === 'string' &&
-    course.title.toLowerCase().includes((searchQuery || "").toLowerCase())
-  );
-
-  useEffect(() => {
-    const saved = localStorage.getItem('cb_learn_progress');
-    if (saved) setLessonProgress(JSON.parse(saved));
-  }, []);
-
-  const startSecureLearning = async (course) => {
-    try {
-      if (document.documentElement.requestFullscreen) await document.documentElement.requestFullscreen();
-      setSelectedCourse(course);
-      setActiveLesson(course.curriculum[0]);
-      setViewMode('dashboard');
-      setIsProctored(true);
-      setShowAIBot(true);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    } catch (err) { toast.error("❌ Fullscreen required!"); }
-  };
-
-  const handleAISubmit = useCallback((e) => {
-    if (e) e.preventDefault();
-    if (!aiQuery.trim()) return;
-
-    const userQ = aiQuery;
-    setAiMessages(prev => [...prev, { type: 'user', text: userQ }]);
-    setAiQuery("");
-    setIsBotThinking(true);
-
-    setTimeout(() => {
-      let aiExplanation = "எனக்கு புரிகிறது. உங்கள் கேள்வியை ஆராய்கிறேன்.";
-      let aiCode = "";
-
-      const lowerQuery = userQ.toLowerCase();
-      let matchedBlock = null;
-
-      // Check current lesson for context
-      if (activeLesson && activeLesson.contentBlocks) {
-        matchedBlock = activeLesson.contentBlocks.find(block =>
-          (block.term && block.term.toLowerCase().includes(lowerQuery)) ||
-          (block.value && block.value.toLowerCase().includes(lowerQuery)) ||
-          (block.title && block.title.toLowerCase().includes(lowerQuery))
-        );
-      }
-
-      if (matchedBlock) {
-        if (matchedBlock.type === 'definition') {
-          aiExplanation = `இந்த பாடத்தில் ${matchedBlock.term} என்பது மிகவும் முக்கியமானது. ${matchedBlock.value} இதை நன்றாக புரிந்து கொள்ளுங்கள்.`;
-        } else if (matchedBlock.type === 'step') {
-          aiExplanation = `${matchedBlock.title} க்கான படிமுறை: ${matchedBlock.value}`;
-        } else if (matchedBlock.type === 'code') {
-          aiExplanation = `இதோ அதற்கான கோட் (Code). இதை கவனித்து பாருங்கள்!`;
-          aiCode = matchedBlock.value;
-        } else {
-          aiExplanation = matchedBlock.value;
-        }
-      } else if (activeLesson && activeLesson.type === 'test') {
-        aiExplanation = `நீங்கள் இப்போது "${activeLesson.question}" என்ற கேள்வியில் உள்ளீர்கள். முந்தைய பாடங்களை நினைத்து பாருங்கள்!`;
-      } else {
-        // Generic fallback with extensive Tamil logic
-        if (selectedCourse?.title.toLowerCase().includes('java')) {
-          if (lowerQuery.includes('jvm') || lowerQuery.includes('virtual machine')) {
-            aiExplanation = "JVM (Java Virtual Machine) என்பது ஜாவா புரோகிராம்களை இயக்க உதவும் ஒரு இன்ஜின். நீங்கள் எழுதும் ஜாவா கோட் Bytecode ஆக மாறும், அதை JVM தான் கணிப்பொறிக்கு புரியும் Machine Code ஆக மாற்றும்.";
-          } else if (lowerQuery.includes('oop') || lowerQuery.includes('object')) {
-            aiExplanation = "OOPs (Object Oriented Programming) என்பது நிஜ உலக பொருட்களை (Objects) அடிப்படையாக வைத்து புரோகிராம் எழுதும் முறை. Class என்பது அச்சு (Blueprint), Object என்பது அதிலிருந்து உருவாகும் நிஜ பொருள்.";
-          } else if (lowerQuery.includes('inheritance')) {
-            aiExplanation = "Inheritance என்பது ஒரு Class-இன் பண்புகளை மற்றொரு Class பெற்றுக்கொள்வது. இது கோட் மறுபயன்பாட்டை (Code Reusability) அதிகரிக்கிறது.";
-          } else if (lowerQuery.includes('array')) {
-            aiExplanation = "Array என்பது ஒரே வகையான பல டேட்டாக்களை (Data) ஒரே பெயரில் சேமித்து வைக்க உதவும் ஒரு கட்டமைப்பு. இதில் உள்ள ஒவ்வொரு மதிப்பையும் Index மூலம் அணுகலாம்.";
-          } else {
-            aiExplanation = "ஜாவா (Java) மிகவும் வலிமையான மொழி. நீங்கள் கேட்கும் கேள்வி '" + userQ + "' பற்றி இன்னும் ஆழமாக படிக்க உங்கள் பாடத்திட்டத்தை (Curriculum) கவனமாக படிக்கவும்!";
-          }
-        } else if (selectedCourse?.title.toLowerCase().includes('python')) {
-          if (lowerQuery.includes('list') || lowerQuery.includes('array')) {
-            aiExplanation = "பைத்தானில் List என்பது பல மதிப்புகளை ஒரே மாறிக்குள் (Variable) சேமிக்க பயன்படும் ஒரு Data Structure. இது மாற்றக்கூடியது (Mutable).";
-          } else if (lowerQuery.includes('dictionary') || lowerQuery.includes('dict')) {
-            aiExplanation = "Dictionary என்பது Key-Value ஜோடியாக டேட்டாவை சேமிக்கும் முறை. உதாரணத்திற்கு 'name': 'Arun' என்று சேமித்து வைக்கலாம்.";
-          } else if (lowerQuery.includes('function') || lowerQuery.includes('def')) {
-            aiExplanation = "Function என்பது ஒரு குறிப்பிட்ட வேலையை செய்ய எழுதப்படும் ஒரு கோட் பிளாக் (Block of Code). பைத்தானில் இதை 'def' என்ற keyword மூலம் உருவாக்கலாம்.";
-          } else {
-            aiExplanation = "பைத்தான் (Python) மிகவும் எளிமையான மொழி. உங்கள் கேள்வி '" + userQ + "' அருமையானது. தொடர்ந்து பயிற்சி செய்யுங்கள்!";
-          }
-        } else if (selectedCourse?.title.toLowerCase().includes('c ')) { // C programming
-          if (lowerQuery.includes('pointer')) {
-            aiExplanation = "பாயிண்டர் (Pointer) என்பது C மொழியில் உள்ள ஒரு சிறப்பு Variable. இது மற்றொரு Variable-இன் மெமரி முகவரியை (Memory Address) சேமிக்க பயன்படுகிறது. இது மிகவும் வேகமானது!";
-            aiCode = "int x = 10;\nint *ptr = &x;";
-          } else if (lowerQuery.includes('malloc') || lowerQuery.includes('memory')) {
-            aiExplanation = "Dynamic Memory Allocation-க்கு malloc() பயன்படுகிறது. இது Heap Memory-ல் உங்களுக்கு தேவையான இடத்தை ஒதுக்கி தரும். பயன்படுத்திய பின் free() செய்ய மறக்காதீர்கள்!";
-          } else if (lowerQuery.includes('struct')) {
-            aiExplanation = "Structure (struct) என்பது பல வகையான Data type-களை ஒன்றாக இணைத்து ஒரே பெயரில் பயன்படுத்த உதவும் ஒரு வசதி.";
-          } else {
-            aiExplanation = "C மொழி அனைத்து மொழிகளுக்கும் தாய் (Mother of all languages). மெமரி (Memory) எப்படி வேலை செய்கிறது என்று புரிந்து கொண்டால் இது மிக எளிது!";
-          }
-        } else {
-          aiExplanation = "உங்கள் கேள்வி எனக்கு புரிகிறது. இதை பற்றி மேலும் அறிய உங்கள் பாடத்திட்டத்தின் தற்போதைய பகுதியை கவனமாக படிக்கவும்.";
-        }
-      }
-
-      const newMsg = { type: 'ai', text: aiExplanation, code: aiCode };
-      setAiMessages(prev => [...prev, newMsg]);
-      speakResponse(aiExplanation);
-      setIsBotThinking(false);
-    }, 1500);
-  }, [aiQuery, activeLesson, selectedCourse]);
-
   const handleExitCourse = useCallback(() => {
     if (document.fullscreenElement) document.exitFullscreen().catch(() => { });
     setIsProctored(false);
@@ -539,6 +388,24 @@ const Learn = ({ isLoggedIn, username: usernameProp = '', userRole = '', handleL
     const updated = { ...lessonProgress, [lessonId]: !lessonProgress[lessonId] };
     setLessonProgress(updated);
     localStorage.setItem('cb_learn_progress', JSON.stringify(updated));
+  };
+
+  const filteredCourses = (courses || []).filter(course =>
+    course &&
+    course.title &&
+    typeof course.title === 'string' &&
+    course.title.toLowerCase().includes((searchQuery || "").toLowerCase())
+  );
+
+  const startSecureLearning = async (course) => {
+    try {
+      if (document.documentElement.requestFullscreen) await document.documentElement.requestFullscreen();
+      setSelectedCourse(course);
+      setActiveLesson(course.curriculum[0]);
+      setViewMode('dashboard');
+      setIsProctored(true);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (err) { toast.error("❌ Fullscreen required!"); }
   };
 
   return (
@@ -617,10 +484,27 @@ const Learn = ({ isLoggedIn, username: usernameProp = '', userRole = '', handleL
 
           <section className="lrn-section">
             <div className="lrn-container">
-              <div className="lrn-section-header">
-                <div><p className="lrn-section-eyebrow">Engineering Tracks</p><h2 className="lrn-section-title">Professional Curriculum</h2></div>
-                <div className="lrn-search-box"><FaCode /><input type="text" placeholder="Search tracks..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} /></div>
-              </div>
+              <motion.div
+                className="lrn-section-header"
+                initial={{ opacity: 0, x: -20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+              >
+                <div>
+                  <p className="lrn-section-eyebrow">Engineering Tracks</p>
+                  <h2 className="lrn-section-title">Professional Curriculum</h2>
+                </div>
+                <div className="lrn-search-box">
+                  <FaCode />
+                  <input
+                    type="text"
+                    placeholder="Search tracks..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </div>
+              </motion.div>
+
               <div className="lrn-card-grid">
                 {isLoading ? (
                   // Skeleton Loaders
@@ -634,22 +518,37 @@ const Learn = ({ isLoggedIn, username: usernameProp = '', userRole = '', handleL
                       </div>
                     </div>
                   ))
-                ) : filteredCourses.map(course => (
-                  <div key={course.id} className="lrn-course-card" onClick={() => startSecureLearning(course)}>
-                    <div className="lrn-card-band" style={{ background: course.color }}></div>
-                    <div className="lrn-card-body-inner">
-                      <div className="lrn-card-icon-row">
-                        <div className="lrn-card-icon-box" style={{ background: `${course.color}12` }}><img src={course.imageUrl} alt="" /></div>
-                        <span className="lrn-card-badge" style={{ background: course.color }}>{course.badge}</span>
-                      </div>
-                      <h3 className="lrn-card-h3">{course.title}</h3>
-                      <p className="lrn-card-desc">{course.description}</p>
-                      <div className="lrn-card-footer-row">
-                        <div className="lrn-card-rating"><FaStar /> <span>{course.rating}</span></div>
-                        <button className="lrn-enroll-btn" style={{ color: course.color }}>Start Secure Learning <FaChevronRight /></button>
+                ) : filteredCourses.map((course, idx) => (
+                  <motion.div
+                    key={course.id}
+                    className={`lrn-course-card ultra-card card-${course.id}`}
+                    onClick={() => startSecureLearning(course)}
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: idx * 0.1 }}
+                  >
+                    <div className="lrn-card-image-wrapper">
+                      <img src={course.id === 'java' ? JavaLogo : course.id === 'python' ? PythonLogo : CLogo} alt={course.title} className="lrn-card-banner" />
+                      <div className="lrn-card-overlay">
+                         <div className="lrn-card-badge">PREMIUM</div>
                       </div>
                     </div>
-                  </div>
+                    <div className="lrn-card-content">
+                      <div className="lrn-card-meta">
+                        <span className="lrn-card-level">Beginner to Expert</span>
+                        <div className="lrn-card-rating"><FaStar /> 4.9</div>
+                      </div>
+                      <h3 className="lrn-card-title">{course.title}</h3>
+                      <p className="lrn-card-desc">{course.description}</p>
+                      <div className="lrn-card-footer">
+                        <span className="lrn-card-modules"><FaLayerGroup /> {course.modules?.length || 0} Modules</span>
+                        <button className="lrn-card-btn">
+                          Start Mastery <FaChevronRight />
+                        </button>
+                      </div>
+                    </div>
+                  </motion.div>
                 ))}
               </div>
             </div>
@@ -657,19 +556,24 @@ const Learn = ({ isLoggedIn, username: usernameProp = '', userRole = '', handleL
         </div>
       ) : (
         <div className="w3-learn-page">
-          {/* ── W3SCHOOLS-STYLE TOP NAV ── */}
+          {/* ── ULTRA STUDIO TOP NAV ── */}
           <nav className="w3-topnav">
             <div className="w3-topnav-logo">
               <FaCode /> CodingBoss
             </div>
             <span className="w3-topnav-course-name">
-              {selectedCourse?.title} Tutorial
+              {selectedCourse?.title} Programming Studio
             </span>
             <div className="w3-topnav-actions">
-              <div className="w3-user-chip">
-                <div className="w3-user-dot"></div>
-                {username || 'Student'}
-              </div>
+              <button
+                className="w3-nav-btn lab-btn"
+                onClick={() => {
+                  setLabLang(selectedCourse?.id === 'c' ? 'c' : selectedCourse?.id === 'python' ? 'python' : 'java');
+                  setShowLab(true);
+                }}
+              >
+                <FaPlay /> RUN CODE
+              </button>
               <button className="w3-nav-btn exit-btn" onClick={handleExitCourse}>
                 <FaArrowLeft /> Exit
               </button>
@@ -689,13 +593,21 @@ const Learn = ({ isLoggedIn, username: usernameProp = '', userRole = '', handleL
           })()}
 
           <div className="w3-body-layout">
-            {/* ── LEFT SIDEBAR ── */}
             <aside className="w3-sidebar">
               <div className="w3-sidebar-header">
                 <FaBookOpen />
-                {selectedCourse?.title}
+                {selectedCourse?.id === 'c' ? 'C Programming' : selectedCourse?.title}
               </div>
               <nav className="w3-sidebar-nav">
+                <button
+                  className="w3-sidebar-run-btn"
+                  onClick={() => {
+                    setLabLang(selectedCourse?.id === 'c' ? 'c' : selectedCourse?.id === 'python' ? 'python' : 'java');
+                    setShowLab(true);
+                  }}
+                >
+                  <FaPlay /> RUN COMPILER
+                </button>
                 {selectedCourse?.curriculum.map((item, idx) => (
                   <div
                     key={item.id}
@@ -749,9 +661,25 @@ const Learn = ({ isLoggedIn, username: usernameProp = '', userRole = '', handleL
                     <span>{activeLesson.title}</span>
                   </div>
 
-                  {/* Page Title */}
                   <h1 className="w3-page-title">{activeLesson.title}</h1>
                   <hr className="w3-hr" />
+
+                  {/* Course Overview / Outcomes if it's the first lesson */}
+                  {activeLesson.id === selectedCourse?.curriculum[0]?.id && selectedCourse?.outcomes?.length > 0 && (
+                    <div className="w3-outcomes-box" style={{ background: '#ecfdf5', border: '2px solid #bbf7d0', padding: '24px', borderRadius: '16px', marginBottom: '32px' }}>
+                      <h3 style={{ color: '#064e3b', marginTop: 0, display: 'flex', alignItems: 'center', gap: '10px', fontSize: '1.4rem' }}>
+                        <FaTrophy /> What you will learn
+                      </h3>
+                      <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '16px' }}>
+                        {selectedCourse.outcomes.map((outcome, i) => (
+                          <li key={i} style={{ display: 'flex', gap: '12px', fontSize: '1.05rem', color: '#065f46', fontWeight: 500 }}>
+                            <FaCheckCircle style={{ color: '#10b981', marginTop: '4px', flexShrink: 0 }} />
+                            {outcome}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
 
                   {/* Content Blocks */}
                   {activeLesson.contentBlocks?.map((block, idx) => (
@@ -791,9 +719,53 @@ const Learn = ({ isLoggedIn, username: usernameProp = '', userRole = '', handleL
                           <div className="w3-example-code">
                             <pre>{block.value}</pre>
                           </div>
-                          <button className="w3-try-btn">
-                            <FaPlay style={{ fontSize: '0.7rem' }} /> Try it Yourself »
-                          </button>
+                          <div className="w3-example-actions">
+                            <button
+                              className={`w3-run-btn ${isInlineCompiling[idx] ? 'loading' : ''}`}
+                              onClick={async () => {
+                                const blockId = idx;
+                                setIsInlineCompiling(prev => ({ ...prev, [blockId]: true }));
+                                try {
+                                  const response = await fetch('https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/practice-run/', {
+                                    method: 'POST',
+                                    headers: {
+                                      'Content-Type': 'application/json',
+                                      'ngrok-skip-browser-warning': 'true'
+                                    },
+                                    body: JSON.stringify({
+                                      source_code: block.value,
+                                      language: selectedCourse?.id === 'c' ? 'c' : selectedCourse?.id === 'python' ? 'python' : 'java',
+                                      stdin: ""
+                                    })
+                                  });
+                                  const data = await response.json();
+                                  setInlineOutputs(prev => ({ ...prev, [blockId]: data.stdout || data.stderr || "No output." }));
+                                } catch (err) {
+                                  setInlineOutputs(prev => ({ ...prev, [blockId]: "❌ Run failed." }));
+                                } finally {
+                                  setIsInlineCompiling(prev => ({ ...prev, [blockId]: false }));
+                                }
+                              }}
+                            >
+                              {isInlineCompiling[idx] ? <div className="spinner" /> : <FaPlay />} Run Code
+                            </button>
+                            <button
+                              className="w3-try-btn"
+                              onClick={() => {
+                                setLabCode(block.value);
+                                setLabLang(selectedCourse?.id === 'c' ? 'c' : selectedCourse?.id === 'python' ? 'python' : 'java');
+                                setShowLab(true);
+                              }}
+                            >
+                              <FaLayerGroup style={{ fontSize: '0.7rem' }} /> Open in Lab »
+                            </button>
+                          </div>
+                          {inlineOutputs[idx] && (
+                            <div className="w3-inline-output">
+                              <div className="w3-output-header">Result:</div>
+                              <pre>{inlineOutputs[idx]}</pre>
+                            </div>
+                          )}
                         </div>
                       )}
 
@@ -822,19 +794,19 @@ const Learn = ({ isLoggedIn, username: usernameProp = '', userRole = '', handleL
                         </button>
 
                         <button
-                          className={`w3-mark-complete-btn ${lessonProgress[activeLesson.id] ? 'marked' : ''}`}
-                          onClick={() => toggleLessonComplete(activeLesson.id)}
-                        >
-                          <FaCheckCircle />
-                          {lessonProgress[activeLesson.id] ? 'Completed ✓' : 'Mark Complete'}
-                        </button>
-
-                        <button
                           className="w3-bottom-btn"
-                          disabled={!nextLesson}
-                          onClick={() => nextLesson && setActiveLesson(nextLesson)}
+                          style={{ background: 'var(--ultra-primary)', color: '#fff' }}
+                          onClick={() => {
+                            toggleLessonComplete(activeLesson.id);
+                            if (nextLesson) {
+                              setActiveLesson(nextLesson);
+                            } else {
+                              toast.success("🎉 Course Completed!");
+                              handleExitCourse();
+                            }
+                          }}
                         >
-                          Next <FaChevronRight />
+                          {lessonProgress[activeLesson.id] ? 'Next Lesson' : 'Complete & Next'} <FaChevronRight />
                         </button>
                       </div>
                     );
@@ -845,7 +817,128 @@ const Learn = ({ isLoggedIn, username: usernameProp = '', userRole = '', handleL
           </div>
         </div>
       )}
-      <CourseAI activeLesson={activeLesson} courseData={selectedCourse} />
+      {isLoggedIn && userRole === 'member' && <CourseAI activeLesson={activeLesson} courseData={selectedCourse} />}
+
+      {/* ── PRACTICE LAB OVERLAY (using Portal for true full-screen) ── */}
+      {typeof document !== 'undefined' && createPortal(
+        <AnimatePresence>
+          {showLab && (
+            <motion.div
+              className="lrn-lab-overlay"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className="lrn-lab-header">
+                <div className="lrn-lab-title">
+                  <FaCode /> <span>PRACTICE LAB</span>
+                  <span className="lrn-lab-subtitle">Experiment with your logic</span>
+                </div>
+                <div className="lrn-lab-actions">
+                  <button
+                    className={`lrn-lab-run ${isLabCompiling ? 'loading' : ''}`}
+                    onClick={async () => {
+                      if (!labCode.trim()) return toast.warning("Enter some code!");
+                      setIsLabCompiling(true);
+                      setLabOutput("Compiling and executing...");
+                      try {
+                        const response = await fetch('https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/practice-run/', {
+                          method: 'POST',
+                          headers: {
+                            'Content-Type': 'application/json',
+                            'ngrok-skip-browser-warning': 'true'
+                          },
+                          body: JSON.stringify({
+                            source_code: labCode,
+                            language: labLang,
+                            stdin: labStdin
+                          })
+                        });
+                        const data = await response.json();
+                        setLabOutput(data.stdout || data.stderr || "No output returned.");
+                      } catch (err) {
+                        setLabOutput("❌ Execution failed. Please check your connection.");
+                      } finally {
+                        setIsLabCompiling(false);
+                      }
+                    }}
+                  >
+                    {isLabCompiling ? <div className="spinner" /> : <FaPlay />} RUN CODE
+                  </button>
+                  <select
+                    className="lrn-lab-select"
+                    value={labLang}
+                    onChange={(e) => setLabLang(e.target.value)}
+                  >
+                    <option value="java">Java</option>
+                    <option value="python">Python</option>
+                    <option value="c">C</option>
+                    <option value="cpp">C++</option>
+                  </select>
+                  <button className="lrn-lab-close" onClick={() => setShowLab(false)}>
+                    <FaTimes />
+                  </button>
+                </div>
+              </div>
+
+              <div className="lrn-lab-body">
+                <div className="lrn-lab-editor">
+                  <Editor
+                    height="100%"
+                    language={labLang === 'c' || labLang === 'cpp' ? 'cpp' : labLang}
+                    value={labCode}
+                    theme="light"
+                    onChange={(val) => setLabCode(val)}
+                    options={{
+                      fontSize: 14,
+                      minimap: { enabled: false },
+                      scrollbar: { vertical: 'hidden', horizontal: 'hidden' },
+                      lineNumbers: 'on',
+                      roundedSelection: true,
+                      padding: { top: 20 }
+                    }}
+                  />
+                </div>
+                <div className="lrn-lab-console">
+                  <div className="lrn-console-header">
+                    <span><FaTerminal /> CONSOLE</span>
+                    <div className="lrn-console-actions">
+                      <button
+                        className={`lrn-console-run ${isLabCompiling ? 'loading' : ''}`}
+                        onClick={() => document.querySelector('.lrn-lab-run')?.click()}
+                      >
+                        {isLabCompiling ? <div className="spinner" /> : <FaPlay />} Run
+                      </button>
+                      <button onClick={() => setLabOutput("")}>Clear</button>
+                    </div>
+                  </div>
+
+                  <div className="lrn-lab-input-section">
+                    <div className="lrn-input-header">STANDARD INPUT (STDIN)</div>
+                    <textarea
+                      placeholder="Enter program input here... (Ctrl+Enter to Run)"
+                      value={labStdin}
+                      onChange={(e) => setLabStdin(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && e.ctrlKey) {
+                          e.preventDefault();
+                          document.querySelector('.lrn-lab-run')?.click();
+                        }
+                      }}
+                    />
+                  </div>
+
+                  <div className="lrn-console-body">
+                    <pre>{labOutput || "Output will appear here..."}</pre>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
     </div>
   );
 };

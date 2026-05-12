@@ -136,13 +136,13 @@ const Dashboard = ({
           ))}
         </nav>
 
-        <div style={{ padding: '24px', background: 'rgba(255,255,255,0.03)', borderRadius: '24px', marginTop: 'auto' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: '#94a3b8', marginBottom: '10px', fontWeight: 700 }}>
+        <div className="sd-progress-box">
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--ultra-text-muted)', marginBottom: '10px', fontWeight: 700 }}>
             <span>OVERALL PROGRESS</span>
-            <span>{progress || 0}%</span>
+            <span style={{ color: 'var(--ultra-text-main)' }}>{progress || 0}%</span>
           </div>
-          <div style={{ height: '6px', background: 'rgba(255,255,255,0.1)', borderRadius: '10px', overflow: 'hidden' }}>
-            <div style={{ width: `${progress || 0}%`, height: '100%', background: 'linear-gradient(90deg, #FFA003, #ff7e00)', borderRadius: '10px' }}></div>
+          <div className="sd-progress-bar">
+            <div className="sd-progress-fill" style={{ width: `${progress || 0}%` }}></div>
           </div>
         </div>
       </aside>
@@ -157,6 +157,7 @@ const Dashboard = ({
           handleLogout={handleLogout}
           progress={progress}
           setProgress={setProgress}
+          isDashboard={true}
         />
         <div className="sd-topbar-placeholder"></div>
         <main className="sd-content-area">

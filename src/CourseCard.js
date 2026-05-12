@@ -7,9 +7,18 @@ import {
   FaQuoteLeft, FaWhatsapp
 } from 'react-icons/fa';
 import './CourseCard.css';
-import banner1 from './images/Banner1.png';
-import banner2 from './images/Banner2.png';
-import courseImg from './images/course.png';
+import banner1 from './images/ultra_python_banner.png';
+import banner2 from './images/ultra_nextjs_banner.png';
+import banner3 from './images/ultra_java_banner.png';
+import slider1 from './images/slider1.png';
+import slider2 from './images/slider2.png';
+import slider3 from './images/slider3.png';
+
+import courseCImg from './images/course_c.png';
+import courseJsImg from './images/course_js.png';
+import courseReactImg from './images/course_react.png';
+import coursePythonImg from './images/course_python.png';
+import courseJavaImg from './images/course_java.png';
 
 /* ─── Scroll-Reveal Hook ─── */
 function useScrollReveal() {
@@ -41,58 +50,40 @@ function Counter({ end, suffix = '' }) {
   return <span ref={ref}>{count}{suffix}</span>;
 }
 
-/* ─── Floating Particles Background ─── */
-function FloatingParticles() {
-  const particles = Array.from({ length: 20 }, (_, i) => ({
-    id: i,
-    size: Math.random() * 6 + 3,
-    x: Math.random() * 100,
-    y: Math.random() * 100,
-    delay: Math.random() * 8,
-    duration: Math.random() * 10 + 8,
-  }));
-  return (
-    <div className="cc-particles" aria-hidden="true">
-      {particles.map(p => (
-        <div key={p.id} className="cc-particle" style={{
-          width: p.size, height: p.size,
-          left: `${p.x}%`, top: `${p.y}%`,
-          animationDelay: `${p.delay}s`,
-          animationDuration: `${p.duration}s`,
-        }} />
-      ))}
-    </div>
-  );
-}
-
 export default function CourseCard() {
   const [currentView, setCurrentView] = useState('main');
   const [currentAdIndex, setCurrentAdIndex] = useState(0);
   const [activeTab, setActiveTab] = useState(0);
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [testimonialIndex, setTestimonialIndex] = useState(0);
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const [progress, setProgress] = useState(0);
+  const SLIDE_INTERVAL = 4500;
 
-  // Mouse glow effect
+  // Auto-progress timer for slider
   useEffect(() => {
-    const handleMouse = (e) => setMousePos({ x: e.clientX, y: e.clientY });
-    window.addEventListener('mousemove', handleMouse);
-    return () => window.removeEventListener('mousemove', handleMouse);
-  }, []);
+    setProgress(0);
+    const step = 100 / (SLIDE_INTERVAL / 50);
+    const progTimer = setInterval(() => setProgress(p => Math.min(p + step, 100)), 50);
+    const slideTimer = setTimeout(() => {
+      setCurrentAdIndex(p => (p + 1) % ads.length);
+    }, SLIDE_INTERVAL);
+    return () => { clearInterval(progTimer); clearTimeout(slideTimer); };
+  // eslint-disable-next-line
+  }, [currentAdIndex]);
 
   /* ── DATA ── */
   const ads = [
-    { id: 1, title: "🚀 Limited Time: 50% Off Python Masterclass!", sub: "Enroll before the weekend to lock in this exclusive offer.", btn: "Claim Offer", img: banner1, color: "#4f46e5" },
-    { id: 2, title: "🔥 Next.js Premium Internship Starting Soon!", sub: "Work on real-world production apps with expert mentors.", btn: "Apply Now", img: banner2, color: "#0ea5e9" },
-    { id: 3, title: "🏆 Become a Certified Java Engineer Today", sub: "Unlock high-paying roles at top-tier software companies.", btn: "Get Certified", img: courseImg, color: "#f59e0b" }
+    { id: 1, title: "🚀 Python Masterclass — 50% Off!", sub: "Master Python from scratch to advanced. Enroll before the weekend.", btn: "Claim Offer", img: slider1, accent: "#4f46e5" },
+    { id: 2, title: "🔥 Next.js Premium Internship", sub: "Work on real-world production apps with expert industry mentors.", btn: "Apply Now", img: slider2, accent: "#0ea5e9" },
+    { id: 3, title: "🏆 Become a Certified Java Engineer", sub: "Unlock high-paying roles at top-tier software companies worldwide.", btn: "Get Certified", img: slider3, accent: "#f59e0b" },
   ];
 
   const courses = [
-    { id: 1, title: "C Programming", icon: "📘", description: "Learn fundamentals of C including pointers & memory management.", color: "#ef4444", level: "Beginner", duration: "6 weeks", pdfUrl: "/Clang.pdf", topics: ["Variables & Data Types", "Pointers & Memory", "Structures & Unions", "File I/O"] },
-    { id: 2, title: "JavaScript Mastery", icon: "⚡", description: "Master modern JS, async programming, closures and APIs.", color: "#f59e0b", level: "Intermediate", duration: "8 weeks", pdfUrl: "/javascript.pdf", topics: ["ES6+ Syntax", "Async/Await", "DOM Manipulation", "REST APIs"] },
-    { id: 3, title: "React Development", icon: "⚛️", description: "Build scalable frontend apps with React Hooks & Context.", color: "#6366f1", level: "Advanced", duration: "10 weeks", pdfUrl: "/dummy.pdf", topics: ["Components & JSX", "Hooks & Context", "React Router", "Redux Toolkit"] },
-    { id: 4, title: "Python Programming", icon: "🐍", description: "From basics to automation, data science and web development.", color: "#10b981", level: "Beginner", duration: "6 weeks", pdfUrl: "/PythonCB.pdf", topics: ["Syntax & OOP", "File Handling", "Django Basics", "Data Libraries"] },
-    { id: 5, title: "Java Programming", icon: "☕", description: "Core Java, OOP principles, collections, and Spring Boot APIs.", color: "#0ea5e9", level: "Intermediate", duration: "9 weeks", pdfUrl: "/java.pdf", topics: ["OOP & Collections", "Exception Handling", "Spring Boot", "JPA & Hibernate"] },
+    { id: 1, title: "C Programming Masterclass", icon: "📘", image: courseCImg, description: "Master the foundation of all modern programming languages. Learn pointers, memory management, and build robust CLI applications.", color: "#3b82f6", level: "Beginner to Pro", duration: "6 weeks", pdfUrl: "/Clang.pdf", topics: ["Variables & Data Types", "Pointers & Memory", "Structures & Unions", "File I/O", "Data Structures Basics"] },
+    { id: 2, title: "JavaScript ES6+ & Async", icon: "⚡", image: courseJsImg, description: "Deep dive into the language of the web. Master closures, async/await, DOM APIs, and advanced functional programming concepts.", color: "#f59e0b", level: "Intermediate", duration: "8 weeks", pdfUrl: "/javascript.pdf", topics: ["ES6+ Syntax", "Async/Await", "DOM Manipulation", "REST APIs", "Event Loop Mechanics"] },
+    { id: 3, title: "React.js Production Level", icon: "⚛️", image: courseReactImg, description: "Build scalable, high-performance web applications using modern React Hooks, Context API, Redux Toolkit, and Next.js foundations.", color: "#06b6d4", level: "Advanced", duration: "10 weeks", pdfUrl: "/dummy.pdf", topics: ["Components & JSX", "Custom Hooks", "React Router", "Redux Toolkit", "Performance Optimization"] },
+    { id: 4, title: "Python for Data & Web", icon: "🐍", image: coursePythonImg, description: "A comprehensive journey through Python. Automate tasks, build REST APIs with Django, and analyze data with Pandas.", color: "#10b981", level: "Beginner to Pro", duration: "8 weeks", pdfUrl: "/PythonCB.pdf", topics: ["Syntax & OOP", "File Handling", "Django Basics", "Data Libraries", "Web Scraping"] },
+    { id: 5, title: "Enterprise Java & Spring Boot", icon: "☕", image: courseJavaImg, description: "Become an enterprise-ready engineer. Learn Core Java OOP principles, Multithreading, and build microservices with Spring Boot.", color: "#ef4444", level: "Intermediate", duration: "10 weeks", pdfUrl: "/java.pdf", topics: ["OOP & Collections", "Exception Handling", "Multithreading", "Spring Boot", "JPA & Hibernate"] },
   ];
 
   const features = [
@@ -125,12 +116,6 @@ export default function CourseCard() {
     { name: "Django", emoji: "🎸", color: "#0ea5e9" }, { name: "DSA", emoji: "🔗", color: "#8b5cf6" },
   ];
 
-  /* ── EFFECTS ── */
-  useEffect(() => {
-    const timer = setInterval(() => setCurrentAdIndex(p => (p + 1) % ads.length), 4000);
-    return () => clearInterval(timer);
-  }, [ads.length]);
-
   useEffect(() => {
     const timer = setInterval(() => setTestimonialIndex(p => (p + 1) % testimonials.length), 5000);
     return () => clearInterval(timer);
@@ -149,26 +134,49 @@ export default function CourseCard() {
   const renderMain = () => (
     <div className="cc-animate">
 
-      {/* ── AD BANNER ── */}
+      {/* ── SLIDER BANNER ── */}
       <div className="cc-ad-container">
         <AnimatePresence mode="wait">
-          <motion.div key={currentAdIndex} initial={{ opacity: 0, x: 100 }} animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -100 }} transition={{ duration: 0.6, ease: "easeOut" }}
-            className="cc-ad-banner">
+          <motion.div key={currentAdIndex}
+            initial={{ opacity: 0, scale: 1.03 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.97 }}
+            transition={{ duration: 0.55, ease: "easeOut" }}
+            className="cc-ad-banner"
+          >
+            {/* Background image */}
             <div className="cc-ad-image-bg">
-              <img src={ads[currentAdIndex].img} alt={ads[currentAdIndex].title} />
-              <div className="cc-ad-overlay" style={{ background: `linear-gradient(to bottom, transparent 0%, ${ads[currentAdIndex].color}dd 90%)` }}></div>
+              <img src={ads[currentAdIndex].img} alt={ads[currentAdIndex].title} loading="lazy" />
+              <div className="cc-ad-overlay" />
             </div>
+            {/* Content */}
             <div className="cc-ad-content">
-              <div className="cc-ad-badge">⭐ PREMIUM OFFER</div>
+              <div className="cc-ad-badge" style={{ background: ads[currentAdIndex].accent }}>⭐ PREMIUM OFFER</div>
               <h2 className="cc-ad-title">{ads[currentAdIndex].title}</h2>
               <p className="cc-ad-sub">{ads[currentAdIndex].sub}</p>
+              <button className="cc-ad-btn" style={{ background: ads[currentAdIndex].accent }}>
+                {ads[currentAdIndex].btn} <FaArrowRight />
+              </button>
             </div>
-            <button className="cc-ad-btn">{ads[currentAdIndex].btn} <FaArrowRight /></button>
           </motion.div>
         </AnimatePresence>
-        <div className="cc-ad-dots">
-          {ads.map((_, i) => <div key={i} className={`cc-ad-dot ${i === currentAdIndex ? 'active' : ''}`} onClick={() => setCurrentAdIndex(i)} />)}
+
+        {/* Navigation arrows */}
+        <button className="cc-slider-arrow cc-slider-prev" onClick={() => setCurrentAdIndex(p => (p - 1 + ads.length) % ads.length)}>
+          <FaArrowLeft />
+        </button>
+        <button className="cc-slider-arrow cc-slider-next" onClick={() => setCurrentAdIndex(p => (p + 1) % ads.length)}>
+          <FaArrowRight />
+        </button>
+
+        {/* Dots + progress */}
+        <div className="cc-slider-footer">
+          <div className="cc-ad-dots">
+            {ads.map((_, i) => <div key={i} className={`cc-ad-dot ${i === currentAdIndex ? 'active' : ''}`} onClick={() => setCurrentAdIndex(i)} />)}
+          </div>
+          <div className="cc-slider-progress">
+            <div className="cc-slider-bar" style={{ width: `${progress}%`, background: ads[currentAdIndex].accent }} />
+          </div>
         </div>
       </div>
 
@@ -227,6 +235,48 @@ export default function CourseCard() {
               <div className="cc-card-footer">
                 <span className="cc-card-explore">Explore Now <FaArrowRight /></span>
                 <div className="cc-card-arrow"><FaArrowRight /></div>
+              </div>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+
+      {/* ── CERTIFIED COURSES (DIRECTLY ON MAIN PAGE) ── */}
+      <div className="cc-section-header" style={{ marginTop: '40px' }}>
+        <span className="cc-eyebrow">Top Rated</span>
+        <h2 className="cc-section-title">Premium <span>Courses</span></h2>
+      </div>
+      <div className="cc-feature-grid">
+        {courses.map(course => (
+          <motion.div
+            key={course.id}
+            className="cc-feature-card"
+            style={{ '--card-color': course.color, '--card-bg': `${course.color}15` }}
+            whileHover={{ y: -10 }}
+            onClick={() => { setSelectedCourse(course); setCurrentView('pdf'); }}
+          >
+            <div className="cc-card-inner" style={{ padding: '24px' }}>
+              <div className="cc-card-image" style={{ width: '100%', height: '180px', borderRadius: '16px', overflow: 'hidden', marginBottom: '20px', position: 'relative' }}>
+                <img src={course.image} alt={course.title} style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.4s' }} />
+                <div className="cc-card-stat-pill" style={{ position: 'absolute', top: '12px', right: '12px', background: 'rgba(0,0,0,0.6)', color: 'white', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                  {course.level}
+                </div>
+              </div>
+              <h3 className="cc-card-title">{course.title}</h3>
+              <p className="cc-card-desc" style={{ marginBottom: '16px' }}>{course.description}</p>
+              
+              <div className="cc-topic-list">
+                {course.topics.slice(0, 3).map((t, i) => (
+                  <div key={i} className="cc-topic-row">
+                    <FaCheckCircle style={{ color: course.color }} />
+                    <span>{t}</span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="cc-card-footer" style={{ marginTop: 'auto' }}>
+                <span className="cc-card-explore">Start Course — {course.duration} <FaArrowRight /></span>
+                <div className="cc-card-arrow"><FaPlay /></div>
               </div>
             </div>
           </motion.div>
@@ -392,10 +442,12 @@ export default function CourseCard() {
             whileHover={{ y: -10 }}
             onClick={() => { setSelectedCourse(course); setCurrentView('pdf'); }}
           >
-            <div className="cc-card-inner">
-              <div className="cc-card-top-row">
-                <div className="cc-card-icon" style={{ fontSize: '2rem' }}>{course.icon}</div>
-                <div className="cc-card-stat-pill">{course.level}</div>
+            <div className="cc-card-inner" style={{ padding: '24px' }}>
+              <div className="cc-card-image" style={{ width: '100%', height: '180px', borderRadius: '16px', overflow: 'hidden', marginBottom: '20px', position: 'relative' }}>
+                <img src={course.image} alt={course.title} style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.4s' }} />
+                <div className="cc-card-stat-pill" style={{ position: 'absolute', top: '12px', right: '12px', background: 'rgba(0,0,0,0.6)', color: 'white', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                  {course.level}
+                </div>
               </div>
               <h3 className="cc-card-title">{course.title}</h3>
               <p className="cc-card-desc" style={{ marginBottom: '16px' }}>{course.description}</p>
@@ -437,14 +489,6 @@ export default function CourseCard() {
 
   return (
     <div className="cc-container">
-      {/* Mouse spotlight glow */}
-      <div className="cc-mouse-glow" style={{
-        left: mousePos.x,
-        top: mousePos.y,
-      }} />
-      {/* Floating background particles */}
-      <FloatingParticles />
-
       <div className="cc-content">
         {currentView === 'main' && renderMain()}
         {currentView === 'courses' && renderCourses()}

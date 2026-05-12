@@ -1,56 +1,81 @@
 /* ══════════════════════════════════════════════
-   ULTRA STUDENT DASHBOARD SYSTEM
-   Premium Sidebar & Navigation
+   ULTRA STUDENT DASHBOARD SYSTEM - PURE CSS
+   Premium Glassmorphism Sidebar & Navigation
    ══════════════════════════════════════════════ */
 
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+:root {
+  --ultra-bg: #f8fafc;
+  --ultra-sidebar-bg: #0f172a;
+  --ultra-accent: #FFA003;
+  --ultra-accent-glow: rgba(255, 160, 3, 0.4);
+  --ultra-text-main: #ffffff;
+  --ultra-text-muted: #94a3b8;
+  --ultra-font: 'Plus Jakarta Sans', sans-serif;
+}
+
 .sd-root {
-  background: #f8fafc;
+  background: var(--ultra-bg);
   height: 100vh;
   width: 100%;
   display: flex;
   overflow: hidden; 
+  font-family: var(--ultra-font);
 }
 
+/* FLOATING SIDEBAR - Ultra Modern */
 .sd-sidebar {
   width: 280px;
   min-width: 280px;
-  background: #0f172a;
-  /* Deep Obsidian */
-  padding: 32px 16px;
+  background: var(--ultra-sidebar-bg);
+  border-radius: 24px;
+  margin: 16px 0 16px 16px;
+  padding: 32px 20px;
   display: flex;
   flex-direction: column;
-  box-shadow: 10px 0 30px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.15);
   z-index: 1100;
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  height: 100vh;
+  height: calc(100vh - 32px);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Subtle inner glow for sidebar */
+.sd-sidebar::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: radial-gradient(circle at top right, rgba(255,160,3,0.05), transparent 60%);
+  pointer-events: none;
 }
 
 .sd-sidebar-header {
-  padding: 0 16px 40px;
-  margin-bottom: 20px;
+  padding: 0 8px 30px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
 }
 
 .sd-sidebar-title {
-  font-size: 1.5rem;
+  font-size: 1.6rem;
   font-weight: 800;
-  color: white;
-  letter-spacing: -1px;
+  color: var(--ultra-text-main);
+  letter-spacing: -0.5px;
   display: flex;
   align-items: center;
   gap: 12px;
+  margin: 0;
 }
 
 .sd-sidebar-title b {
   display: flex;
   align-items: center;
-  gap: 8px;
-  color: #ffffff;
-  /* coding - white for visibility on dark */
+  gap: 4px;
+  color: var(--ultra-text-main);
 }
 
 .sd-sidebar-title span {
-  color: #FFA003;
-  /* boss - orange */
+  color: var(--ultra-accent);
 }
 
 .sd-nav-list {
@@ -58,31 +83,39 @@
   flex-direction: column;
   gap: 8px;
   flex: 1;
+  margin-top: 20px;
+  overflow-y: auto;
 }
+
+.sd-nav-list::-webkit-scrollbar { display: none; }
 
 .sd-nav-item {
   display: flex;
   align-items: center;
   gap: 16px;
-  padding: 14px 20px;
-  border-radius: 14px;
+  padding: 14px 18px;
+  border-radius: 16px;
   cursor: pointer;
-  transition: all 0.2s;
-  color: #94a3b8;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  color: var(--ultra-text-muted);
   font-weight: 600;
   position: relative;
 }
 
 .sd-nav-item:hover {
+  color: var(--ultra-text-main);
   background: rgba(255, 255, 255, 0.05);
-  color: white;
+  transform: translateX(4px);
 }
 
 .sd-nav-item.active {
-  background: #FFA003;
-  /* Orange accent */
+  background: linear-gradient(135deg, var(--ultra-accent), #ff7e00);
   color: white;
-  box-shadow: 0 8px 20px rgba(255, 160, 3, 0.2);
+  box-shadow: 0 8px 20px var(--ultra-accent-glow);
+}
+
+.sd-nav-item.active:hover {
+  transform: none;
 }
 
 .sd-nav-item.locked {
@@ -91,9 +124,39 @@
 }
 
 .sd-nav-icon {
-  font-size: 1.2rem;
+  font-size: 1.3rem;
   display: flex;
   align-items: center;
+}
+
+.sd-nav-text {
+  font-size: 0.95rem;
+  letter-spacing: 0.3px;
+}
+
+/* Progress Box */
+.sd-progress-box {
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 20px;
+  margin-top: auto;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.sd-progress-bar {
+  height: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  overflow: hidden;
+  margin-top: 12px;
+}
+
+.sd-progress-fill {
+  background: linear-gradient(90deg, #FFA003, #ff7e00);
+  height: 100%;
+  border-radius: 12px;
+  box-shadow: 0 0 10px rgba(255, 160, 3, 0.4);
+  transition: width 1s ease-out;
 }
 
 /* MAIN AREA */
@@ -105,81 +168,71 @@
   overflow-y: auto; 
   overflow-x: hidden;
   position: relative;
+  background: var(--ultra-bg);
 }
 
-.sd-topbar-placeholder {
-  height: 40px;
+.sd-main-wrapper::-webkit-scrollbar {
+  width: 8px;
+}
+.sd-main-wrapper::-webkit-scrollbar-track {
+  background: transparent;
+}
+.sd-main-wrapper::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
 }
 
 .sd-content-area {
-  padding: 0 20px 60px;
+  padding: 0 32px 60px;
   flex: 1;
-}
-
-/* Progress area in sidebar */
-.sd-progress-box {
-  padding: 24px;
-  background: rgba(255, 255, 255, 0.03);
-  border-radius: 24px;
-  marginTop: auto;
-}
-
-.sd-progress-bar {
-  height: 6px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
-  overflow: hidden;
-}
-
-.sd-progress-fill {
-  background: linear-gradient(90deg, #FFA003, #ff7e00);
-  height: 100%;
-  border-radius: 10px;
-}
-
-/* Update Navbar for Dashboard */
-.sd-root .navigation-container {
-  position: sticky;
-  top: 0;
-  left: 0;
+  max-width: 1600px;
+  margin: 0 auto;
   width: 100%;
-  background: #ffffff;
-  z-index: 1000;
-  border-bottom: 1px solid #f1f5f9;
-  padding: 12px 0;
-  display: flex;
-  justify-content: flex-start;
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+  animation: ultraFadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-.sd-topbar-placeholder {
-  display: none; /* No longer needed with sticky navbar */
+@keyframes ultraFadeInUp {
+  0% { opacity: 0; transform: translateY(20px); }
+  100% { opacity: 1; transform: translateY(0); }
 }
+
+/* Make Navbar Transparent inside Dashboard */
+.sd-main-wrapper .navigation-container {
+  background: transparent !important;
+  border-bottom: none !important;
+  box-shadow: none !important;
+  backdrop-filter: blur(10px) !important;
+  margin-bottom: 20px;
+}
+
+/* Hide Logo in Navbar because it's in Sidebar */
+.sd-main-wrapper .navbar-brand {
+  display: none !important;
+}
+
+.sd-main-wrapper .navbar-collapse {
+  justify-content: flex-end !important;
+}
+
+/* RESPONSIVE */
 @media (max-width: 1024px) {
   .sd-sidebar {
-    width: 80px;
+    width: 88px;
+    min-width: 88px;
+    padding: 24px 12px;
+    margin: 16px 0 16px 16px;
   }
-
   .sd-nav-text,
   .sd-sidebar-title b span,
-  .sd-sidebar-title b b {
-    display: none;
-  }
-
-  .sd-main-wrapper {
-    margin-left: 80px;
-    width: calc(100% - 80px);
-  }
+  .sd-sidebar-title b b { display: none; }
+  .sd-sidebar-title { justify-content: center; }
+  .sd-nav-item { justify-content: center; padding: 14px 0; }
+  .sd-nav-icon { margin: 0; }
+  .sd-progress-box { display: none; }
 }
 
-@media (max-width: 600px) {
-  .sd-sidebar {
-    display: none;
-  }
-
-  .sd-main-wrapper {
-    margin-left: 0;
-    width: 100%;
-  }
+@media (max-width: 768px) {
+  .sd-sidebar { display: none; }
+  .sd-content-area { padding: 0 16px 40px; }
+  .sd-main-wrapper .navbar-brand { display: flex !important; } /* Show logo on mobile */
 }

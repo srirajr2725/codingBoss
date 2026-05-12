@@ -7,11 +7,11 @@
   position: sticky;
   top: 0;
   z-index: 1000;
-  background: rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   border-bottom: 1px solid rgba(226, 232, 240, 0.6);
-  padding: 12px 0;
+  padding: 5px 0;
   transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -29,10 +29,10 @@
 .brand-name {
   display: flex;
   align-items: center;
-  font-size: 1.6rem !important;
+  font-size: 1.15rem !important;
   font-weight: 900 !important;
   color: #0f172a !important;
-  letter-spacing: -1.5px;
+  letter-spacing: -0.5px;
   transition: all 0.3s;
 }
 
@@ -68,13 +68,13 @@
 
 /* --- BUTTONS --- */
 .get-started-btn {
-  border-radius: 14px !important;
-  padding: 12px 28px !important;
-  font-weight: 900 !important;
-  font-size: 0.95rem !important;
+  border-radius: 10px !important;
+  padding: 7px 18px !important;
+  font-weight: 800 !important;
+  font-size: 0.82rem !important;
   text-transform: none !important;
   transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
-  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.1) !important;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08) !important;
 }
 
 .btn-warning {
@@ -91,8 +91,8 @@
 
 /* --- PROGRESS CIRCLE --- */
 .progress-circle-outline {
-  width: 44px;
-  height: 44px;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
   background: conic-gradient(#FFA003 calc(var(--progress) * 1%), #f1f5f9 0);
   display: flex;
@@ -100,7 +100,7 @@
   justify-content: center;
   position: relative;
   transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
 }
 
 .progress-circle-outline:hover {
@@ -111,8 +111,8 @@
 .progress-circle-outline::after {
   content: '';
   position: absolute;
-  width: 36px;
-  height: 36px;
+  width: 28px;
+  height: 28px;
   background: white;
   border-radius: 50%;
 }

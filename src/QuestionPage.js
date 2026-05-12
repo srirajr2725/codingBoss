@@ -42,9 +42,97 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
   const [startTime, setStartTime] = useState(null);
   const [tabSwitchCount, setTabSwitchCount] = useState(0);
   const [cameraStream, setCameraStream] = useState(null);
+  const [isDetectionEnabled, setIsDetectionEnabled] = useState(false);
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const [showHint, setShowHint] = useState(false);
+  const [showAlgorithm, setShowAlgorithm] = useState(false);
+  const [showExample, setShowExample] = useState(false);
+  const [confirmAction, setConfirmAction] = useState(null); // 'hint' | 'algorithm' | 'example'
+
+  const handleConfirmAction = () => {
+    if (confirmAction === 'hint') setShowHint(true);
+    if (confirmAction === 'algorithm') setShowAlgorithm(true);
+    if (confirmAction === 'example') setShowExample(true);
+    setConfirmAction(null);
+  };
+
+  const handleToggleHint = () => {
+    if (!showHint) setConfirmAction('hint');
+    else setShowHint(false);
+  };
+
+  const handleToggleAlgorithm = () => {
+    if (!showAlgorithm) setConfirmAction('algorithm');
+    else setShowAlgorithm(false);
+  };
+
+  const handleToggleExample = () => {
+    if (!showExample) setConfirmAction('example');
+    else setShowExample(false);
+  };
+
+  // PERMANENT FIX: Suppress cross-origin "Script error." (from Monaco/Face-API) to stop React overlay crashes
+  useEffect(() => {
+    const handleGlobalError = (event) => {
+      if (event.message === 'Script error.' || (event.error && event.error.message === 'Script error.')) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.hidden && isTestStarted && !isTestSubmitted && isDetectionEnabled) {
+        triggerWarning("Tab switching is strictly prohibited!", "tab_switch", true);
+      }
+    };
+
+    window.addEventListener('error', handleGlobalError, true);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      window.removeEventListener('error', handleGlobalError, true);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (videoRef.current && cameraStream) {
+      videoRef.current.srcObject = cameraStream;
+    }
+  }, [cameraStream]);
+
+  // ── DETECTION STATUS SYNC ──
+  useEffect(() => {
+    let isMounted = true;
+    const checkDetection = async () => {
+      try {
+        const studentId = getDecryptedUserId();
+        if (!studentId) return;
+
+        const response = await fetch(`https://unlanded-isela-unmunificently.ngrok-free.dev/api/upload-frame/?student_id=${studentId}&user_id=${studentId}`, {
+          headers: { 'ngrok-skip-browser-warning': 'true' }
+        });
+        const data = await response.json();
+
+        if (isMounted) {
+          const sessions = data.sessions || [];
+          const mySession = sessions.find(s => (s.student_id || s.user_id) === studentId);
+          if (mySession && mySession.is_detection_enabled !== undefined) {
+            setIsDetectionEnabled(mySession.is_detection_enabled);
+          }
+        }
+      } catch (err) {
+        console.warn("Detection sync error:", err.message);
+      }
+    };
+
+    const timer = setInterval(checkDetection, 4000);
+    checkDetection();
+    return () => {
+      isMounted = false;
+      clearInterval(timer);
+    };
+  }, [isTestStarted]);
 
   const isTrackingRef = useRef(false);
   const lastWarningTimeRef = useRef(0);
@@ -61,7 +149,7 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
   const uploadViolationFrame = async () => {
     try {
       let image = null;
-      if (videoRef.current && canvasRef.current) {
+      if (videoRef.current && canvasRef.current && videoRef.current.readyState >= 2) {
         const canvas = canvasRef.current;
         canvas.width = 240;
         canvas.height = 180;
@@ -89,64 +177,35 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
   };
 
 
-  /* ================= STATIC DATA REPOSITORY ================= */
-  const STATIC_EXTRAS = {
-    // String Reversal / Basic Challenges
-    "1": {
-      hints: "1. You can iterate through the string backwards.\n2. In many languages, you can convert the string to a character array and reverse it.\n3. Use a StringBuilder or similar for efficient concatenation.",
-      algorithm: "1. Read the input string.\n2. Create an empty result string or a buffer.\n3. Loop from the last character (length-1) down to 0.\n4. Append each character to your result.\n5. Print or return the final result.",
-      example_code: "public String reverse(String s) {\n    return new StringBuilder(s).reverse().toString();\n}"
-    },
-    // Trapped Rain Water
-    "15": {
-      hints: "1. For every index, trapped water depends on the minimum of left maximum and right maximum heights.\n2. You can use two arrays to store left and right max heights for each index.\n3. Alternatively, a two-pointer approach can solve this in O(1) extra space.",
-      algorithm: "1. Create two arrays left_max and right_max of size n.\n2. left_max[i] stores the maximum height from index 0 to i.\n3. right_max[i] stores the maximum height from index i to n-1.\n4. Trapped water at index i = min(left_max[i], right_max[i]) - height[i].\n5. Sum up the water at each index to get the total.",
-      example_code: "public int trap(int[] height) {\n    if (height.length == 0) return 0;\n    int n = height.length;\n    int[] leftMax = new int[n];\n    int[] rightMax = new int[n];\n    \n    leftMax[0] = height[0];\n    for (int i = 1; i < n; i++) leftMax[i] = Math.max(height[i], leftMax[i-1]);\n    \n    rightMax[n-1] = height[n-1];\n    for (int i = n-2; i >= 0; i--) rightMax[i] = Math.max(height[i], rightMax[i+1]);\n    \n    int water = 0;\n    for (int i = 0; i < n; i++) {\n        water += Math.min(leftMax[i], rightMax[i]) - height[i];\n    }\n    return water;\n}"
-    },
-    "19": {
-      hints: "1. For every index, trapped water depends on the minimum of left maximum and right maximum heights.\n2. Use two pointers to avoid extra space.",
-      algorithm: "1. Initialize two pointers left and right.\n2. Maintain left_max and right_max variables.\n3. Move the pointer with the smaller max height and calculate trapped water.",
-      example_code: "// Two pointer solution\nint trap(int[] height) { ... }"
-    },
-    "default": {
-      hints: "1. Break the problem into smaller logical steps.\n2. Consider edge cases (empty input, single element).\n3. Think about the most efficient data structure (Array, Map, Stack).",
-      algorithm: "1. Initialize necessary variables and data structures.\n2. Iterate through the input data.\n3. Apply the core transformation logic.\n4. Handle special cases or termination conditions.\n5. Return or print the final result.",
-      example_code: "// Template Solution\npublic class Solution {\n    public static void main(String[] args) {\n        // Step 1: Initialize\n        // Step 2: Logic\n        // Step 3: Output\n    }\n}"
-    }
-  };
-
   useEffect(() => {
     const fetchFullQuestionData = async () => {
       // Use what we have from state first
       let currentData = question || { title: "Coding Challenge", description: "Loading challenge details..." };
-      
-      // Apply static extras as a solid base immediately
-      const lookupId = questionId?.toString() || "default";
-      const staticEntry = STATIC_EXTRAS[lookupId] || STATIC_EXTRAS["default"];
-      currentData = { ...currentData, ...staticEntry };
       setQuestionData(currentData);
 
       if (!questionId) return;
 
       try {
-        // Attempt enrichment from ngrok
-        fetch(`https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/test-cases/`, {
+        // Fetch hints, algorithm, and example_programs strictly from ngrok test-cases
+        const langParam = selectedLanguage === 'Python' ? 'python' : selectedLanguage;
+        fetch(`https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/test-cases/?language=${langParam}`, {
           headers: { 'ngrok-skip-browser-warning': 'true' }
         })
-        .then(res => res.json())
-        .then(tcData => {
-          const allItems = Array.isArray(tcData) ? tcData : (tcData.questions || tcData.data || []);
-          const found = allItems.find(q => (q.id || q.question_id) == questionId || q.question == questionId);
-          if (found) {
-            setQuestionData(prev => ({
-              ...prev,
-              ...found,
-              hints: found.hints || prev?.hints,
-              algorithm: found.algorithm || prev?.algorithm,
-              example_code: found.example_programs || found.example_code || prev?.example_code
-            }));
-          }
-        }).catch(() => {});
+          .then(res => res.json())
+          .then(tcData => {
+            const allItems = Array.isArray(tcData) ? tcData : (tcData.results || tcData.questions || tcData.data || []);
+            // Filter by questionId
+            const found = allItems.find(q => String(q.id || q.question_id) === String(questionId) || String(q.question) === String(questionId));
+
+            if (found) {
+              setQuestionData(prev => ({
+                ...prev,
+                hints: found.hints || prev?.hints,
+                algorithm: found.algorithm || prev?.algorithm,
+                example_code: found.example_programs || prev?.example_code
+              }));
+            }
+          }).catch((err) => { console.error("Test cases fetch failed:", err); });
 
         // Sync Primary API info
         const primaryData = await apiClient(`compiler/question/?question_id=${questionId}`, 'GET');
@@ -160,12 +219,12 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
           }));
         }
       } catch (err) {
-        console.error("Fetch failed, static data remains active.");
+        console.error("Primary fetch failed.");
       }
     };
 
     fetchFullQuestionData();
-  }, [questionId]);
+  }, [questionId, selectedLanguage]);
 
   useEffect(() => {
     if (startTime && !isTestSubmitted) {
@@ -175,6 +234,30 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
       return () => clearInterval(interval);
     }
   }, [startTime, isTestSubmitted]);
+
+  // 🔥 ENGINE: POLLING FOR DETECTION ENABLED STATUS
+  useEffect(() => {
+    let intervalId;
+    const checkDetectionStatus = async () => {
+      if (!isTestStarted || isTestSubmitted) return;
+      try {
+        const studentId = getDecryptedUserId() || 1;
+        const res = await fetch(`https://unlanded-isela-unmunificently.ngrok-free.dev/api/toggle-detection/?user_id=${studentId}`, {
+          headers: { 'ngrok-skip-browser-warning': 'true' }
+        });
+        const data = await res.json();
+        if (data.is_detection_enabled !== undefined) {
+          setIsDetectionEnabled(!!data.is_detection_enabled);
+        }
+      } catch (err) { }
+    };
+
+    if (isTestStarted) {
+      checkDetectionStatus();
+      intervalId = setInterval(checkDetectionStatus, 5000);
+    }
+    return () => clearInterval(intervalId);
+  }, [isTestStarted, isTestSubmitted]);
 
   const triggerWarning = (msg, type = "proctoring_violation", bypassCooldown = false) => {
     const now = Date.now();
@@ -190,10 +273,10 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
       const next = prev + 1;
       violationCountRef.current = next;
       lastViolationRef.current = { type, message: msg, count: next, at: new Date().toISOString() };
-      if (next >= 4) {
+      if (next >= 3) {
         terminatedRef.current = true;
         uploadViolationFrame();
-        toast.error("🚫 DISQUALIFIED! Too many violations.");
+        toast.error("🚫 DISQUALIFIED! Too many violations. Test submitted.");
         setIsTestSubmitted(true);
         setTimeout(() => navigate('/UserDashboard'), 1000);
       } else {
@@ -208,7 +291,7 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
     let timeoutId;
 
     const startFaceTracking = async () => {
-      if (!isTestStarted || !videoRef.current || !window.faceapi || isTrackingRef.current || document.hidden || isTestSubmitted) {
+      if (!isTestStarted || !isDetectionEnabled || !videoRef.current || videoRef.current.readyState < 2 || videoRef.current.videoWidth === 0 || !window.faceapi || !window.faceapi.detectSingleFace || isTrackingRef.current || document.hidden || isTestSubmitted) {
         timeoutId = setTimeout(startFaceTracking, 1000);
         return;
       }
@@ -263,8 +346,8 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
       if (!window.faceapi) {
         const script = document.createElement("script");
         script.src = "https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js";
-        script.async = true;
         script.crossOrigin = "anonymous";
+        script.async = true;
         script.onload = async () => {
           try {
             const MODEL_URL = "https://justadudewhohacks.github.io/face-api.js/models";
@@ -288,13 +371,19 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
     let timeoutId;
     const uploadFrame = async () => {
       if (!isTestStarted || !cameraStream || !videoRef.current || isUploadingRef.current || isTestSubmitted) {
-        timeoutId = setTimeout(uploadFrame, 15000); return;
+        timeoutId = setTimeout(uploadFrame, 3000); return;
       }
       isUploadingRef.current = true;
       try {
+        const video = videoRef.current;
+        if (!video || video.readyState < 2 || video.videoWidth === 0) {
+          isUploadingRef.current = false;
+          timeoutId = setTimeout(uploadFrame, 3000);
+          return;
+        }
         const canvas = canvasRef.current;
         canvas.width = 240; canvas.height = 180;
-        canvas.getContext('2d').drawImage(videoRef.current, 0, 0, 240, 180);
+        canvas.getContext('2d').drawImage(video, 0, 0, 240, 180);
         await fetch('https://unlanded-isela-unmunificently.ngrok-free.dev/api/upload-frame/', {
           method: 'POST',
           headers: {
@@ -311,7 +400,7 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
             terminated: false
           })
         });
-      } catch (err) { } finally { isUploadingRef.current = false; timeoutId = setTimeout(uploadFrame, 15000); }
+      } catch (err) { } finally { isUploadingRef.current = false; timeoutId = setTimeout(uploadFrame, 3000); }
     };
     if (isTestStarted && cameraStream) uploadFrame();
     return () => clearTimeout(timeoutId);
@@ -418,6 +507,61 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
     } catch (err) { setOutput("Execution error."); } finally { setIsCompiling(false); }
   };
 
+  const submitSolution = async () => {
+    const currentUserId = getDecryptedUserId();
+
+    if (!currentUserId) {
+      toast.error("Session expired. Please login again.");
+      navigate("/LoginPage");
+      return;
+    }
+
+    if (!questionId) {
+      toast.error("Challenge metadata missing. Please restart the challenge.");
+      return;
+    }
+
+    if (!sourceCode.trim()) {
+      toast.warning("Please enter some code before submitting.");
+      return;
+    }
+
+    setIsCompiling(true);
+    console.log("Submitting Solution for ID:", questionId, "User:", currentUserId);
+
+    try {
+      const response = await fetch('https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/run-test/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'ngrok-skip-browser-warning': 'true'
+        },
+        body: JSON.stringify({
+          user_id: Number(currentUserId),
+          question_id: questionId,
+          language: selectedLanguage === 'Python' ? 'python' : selectedLanguage,
+          source_code: sourceCode,
+          hint_used: showHint,
+          algorithm_used: showAlgorithm,
+          example_program_used: showExample
+        })
+      });
+
+      if (response.ok) {
+        toast.success("Solution Submitted Successfully!");
+        setIsTestSubmitted(true);
+        setTimeout(() => navigate('/UserDashboard'), 1500);
+      }
+    } catch (error) {
+      console.error("IDE Submission Error:", error);
+      toast.error(`Submission Failed: ${error.message || "Server Error"}`);
+    } finally {
+      setIsCompiling(false);
+    }
+  };
+
+  const monacoLang = selectedLanguage.toLowerCase() === 'cpp' ? 'cpp' : selectedLanguage.toLowerCase();
+
   if (!isTestStarted) return (
     <div className="ide-lock-screen">
       <div className="ide-lock-card">
@@ -432,6 +576,19 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
   return (
     <div className="ide-root coding-scope">
       <ToastContainer theme="dark" position="top-center" />
+      {confirmAction && (
+        <div className="ide-modal-overlay">
+          <div className="ide-modal">
+            <FaExclamationTriangle className="ide-modal-icon" />
+            <h3>Wait a moment!</h3>
+            <p>Viewing this section will cost you <strong>2 marks</strong>. Are you sure you want to proceed?</p>
+            <div className="ide-modal-actions">
+              <button className="ide-btn-cancel" onClick={() => setConfirmAction(null)}>Cancel</button>
+              <button className="ide-btn-proceed" onClick={handleConfirmAction}>Proceed (-2 Marks)</button>
+            </div>
+          </div>
+        </div>
+      )}
       {showViolationOverlay && (
         <div className="security-alert-overlay">
           <div className="alert-flash-red"></div>
@@ -453,10 +610,10 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
           <div className={`ide-difficulty ${questionData?.difficulty?.toLowerCase() || 'medium'}`}>{questionData?.difficulty || 'Medium'}</div>
           <h4>{questionData?.title || 'Challenge'}</h4>
           <div className="ide-desc">{questionData?.description || questionData?.question || 'Loading...'}</div>
-          
+
           <div className="ide-extra-info">
             <div className="ide-info-section">
-              <h6 onClick={() => setShowHint(!showHint)} style={{ cursor: 'pointer' }}>
+              <h6 onClick={handleToggleHint} style={{ cursor: 'pointer', color: 'var(--ide-text-main)' }}>
                 <FaLightbulb className="text-warning" /> HINT {showHint ? '▲' : '▼'}
               </h6>
               {showHint && (
@@ -467,24 +624,32 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
             </div>
 
             <div className="ide-info-section">
-              <h6><FaBrain className="text-primary" /> ALGORITHM</h6>
-              <p className="ide-info-text" style={{ whiteSpace: 'pre-wrap' }}>
-                {questionData?.algorithm || "1. Initialize variables.\n2. Process input data using a loop or recursion.\n3. Apply core logic.\n4. Return result."}
-              </p>
+              <h6 onClick={handleToggleAlgorithm} style={{ cursor: 'pointer', color: 'var(--ide-text-main)' }}>
+                <FaBrain className="text-primary" /> ALGORITHM {showAlgorithm ? '▲' : '▼'}
+              </h6>
+              {showAlgorithm && (
+                <p className="ide-info-text" style={{ whiteSpace: 'pre-wrap' }}>
+                  {questionData?.algorithm || "1. Initialize variables.\n2. Process input data using a loop or recursion.\n3. Apply core logic.\n4. Return result."}
+                </p>
+              )}
             </div>
 
             <div className="ide-info-section">
-              <h6><FaCode className="text-success" /> EXAMPLE PROGRAM</h6>
-              <pre className="ide-info-text" style={{ 
-                background: 'rgba(0,0,0,0.3)', 
-                padding: '10px', 
-                borderRadius: '8px', 
-                fontSize: '0.75rem',
-                overflowX: 'auto',
-                marginTop: '8px'
-              }}>
-                <code>{questionData?.example_code || "// Solution template\npublic class Solution {\n    public static void main(String[] args) {\n        // Code goes here\n    }\n}"}</code>
-              </pre>
+              <h6 onClick={handleToggleExample} style={{ cursor: 'pointer', color: 'var(--ide-text-main)' }}>
+                <FaCode className="text-success" /> EXAMPLE PROGRAM {showExample ? '▲' : '▼'}
+              </h6>
+              {showExample && (
+                <pre className="ide-info-text" style={{
+                  background: 'rgba(0,0,0,0.3)',
+                  padding: '10px',
+                  borderRadius: '8px',
+                  fontSize: '0.75rem',
+                  overflowX: 'auto',
+                  marginTop: '8px'
+                }}>
+                  <code>{questionData?.example_code || "// Solution template\npublic class Solution {\n    public static void main(String[] args) {\n        // Code goes here\n    }\n}"}</code>
+                </pre>
+              )}
             </div>
           </div>
         </div>
@@ -507,11 +672,11 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
           <div className="text-muted small"><FaClock /> {formatTime(elapsedTime)}</div>
         </header>
         <div className="ide-editor-container">
-          <MonacoEditor height="100%" theme="vs-dark" language={selectedLanguage} value={sourceCode} onChange={(val) => setSourceCode(val)} options={{ fontSize: 14, minimap: { enabled: false } }} />
+          <MonacoEditor height="100%" theme="light" language={monacoLang} value={sourceCode} onChange={(val) => setSourceCode(val)} options={{ fontSize: 14, minimap: { enabled: false } }} />
         </div>
         <div className="ide-controls">
           <button className="ide-btn ide-btn-run" onClick={handleCompile} disabled={isCompiling}>{isCompiling ? "Compiling..." : "Run Code"}</button>
-          <button className="ide-btn ide-btn-submit" onClick={() => { setIsTestSubmitted(true); toast.success("Solution Submitted!"); setTimeout(() => navigate('/UserDashboard'), 1000); }}>Submit Solution</button>
+          <button className="ide-btn ide-btn-submit" onClick={submitSolution} disabled={isCompiling}>Submit Solution</button>
         </div>
         <div className="ide-console">
           <div className="ide-console-header">

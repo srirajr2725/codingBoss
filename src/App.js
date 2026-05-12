@@ -11,7 +11,7 @@ import SignUp from "./SignUp.js";
 import LoginPage from "./LoginPage.js";
 import NavbarComponent from "./NavbarComponent.js";
 import Banner from "./Banner.js";
-import Footer from "./Footer.js"; 
+import Footer from "./Footer.js";
 import Status from "./Status.js";
 import CourseCard from "./CourseCard.js";
 import McqTestPage from "./McqTestPage.js";
@@ -191,7 +191,7 @@ function AppWrapper() {
         <Route path="/courses" element={isLoggedIn ? <Learn {...{ isLoggedIn, username, userRole, handleLogout }} /> : <Navigate to="/LoginPage" replace />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-      {isLoggedIn && userRole === 'member' && <GlobalAIAssistant />}
+      {isLoggedIn && userRole === 'member' && !['course', 'learn', 'studio', 'question', 'mcq', 'test', 'doctor', 'proctor'].some(kw => (location.pathname + location.hash).toLowerCase().includes(kw)) && <GlobalAIAssistant />}
     </>
   );
 }

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Navbar, Nav, Button, Dropdown } from 'react-bootstrap';
 import { Link, useNavigate } from 'react-router-dom';
 import logo from './images/Codingboss-logo-1.png';
-import CryptoJS from "crypto-js";   
+import CryptoJS from "crypto-js";
 import './Navbar.css';
 import apiClient from './utils/apiClient';
 
@@ -110,9 +110,9 @@ const NavbarComponent = ({ isLoggedIn, setIsLoggedIn, userRole, handleLogout, pr
         <div className="navigation-container">
             <Navbar expand="lg" className="custom-navbar">
                 <Navbar.Brand className="brand-name" onClick={handleLogoClick}>
-                    <img 
-                        src={logo} 
-                        alt="CodingBoss Logo" 
+                    <img
+                        src={logo}
+                        alt="CodingBoss Logo"
                         style={{ height: '45px', marginRight: '12px', cursor: 'pointer' }}
                     />
                     <b style={{ cursor: 'pointer' }}>

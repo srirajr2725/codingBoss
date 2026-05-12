@@ -253,79 +253,115 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 10s linear;
-}
-
-.cc-ad-banner:hover .cc-ad-image-bg img {
-  transform: scale(1.1);
+  will-change: transform;
 }
 
 .cc-ad-overlay {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  inset: 0;
+  background: linear-gradient(to right, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.1) 100%);
   z-index: 1;
-  transition: all 0.5s ease;
 }
 
 .cc-ad-content {
   flex: 1;
   position: relative;
   z-index: 2;
+  max-width: 600px;
 }
 
 .cc-ad-badge {
-  background: rgba(255, 255, 255, 0.4); /* Increased opacity */
-  padding: 6px 16px;
+  padding: 6px 18px;
   border-radius: 99px;
   font-size: 0.75rem;
   font-weight: 900;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 1.5px;
   display: inline-block;
-  margin-bottom: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  margin-bottom: 20px;
+  color: white;
 }
 
 .cc-ad-title {
-  font-size: 2rem;
+  font-size: clamp(1.6rem, 3vw, 2.5rem);
   font-weight: 950;
   letter-spacing: -1px;
-  line-height: 1.1;
-  margin-bottom: 12px;
+  line-height: 1.15;
+  margin-bottom: 14px;
+  color: white;
 }
 
 .cc-ad-sub {
-  font-size: 1.1rem;
-  opacity: 0.9;
-  line-height: 1.5;
+  font-size: 1.05rem;
+  color: rgba(255,255,255,0.85);
+  line-height: 1.55;
+  margin-bottom: 28px;
 }
 
 .cc-ad-btn {
-  padding: 18px 36px;
-  background: white;
-  color: #0f172a;
+  padding: 14px 32px;
+  color: white;
   border: none;
-  border-radius: 18px;
+  border-radius: 14px;
   font-weight: 900;
+  font-size: 0.95rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: all 0.3s;
+  position: relative;
+  z-index: 2;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+}
+
+.cc-ad-btn:hover { transform: translateY(-2px) scale(1.03); }
+
+/* Slider navigation arrows */
+.cc-slider-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.25);
+  backdrop-filter: blur(8px);
+  color: white;
   font-size: 1rem;
   display: flex;
   align-items: center;
-  gap: 12px;
+  justify-content: center;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-  box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-  flex-shrink: 0;
-  position: relative;
-  z-index: 2;
-  margin-bottom: 10px;
+  transition: all 0.25s;
+}
+.cc-slider-arrow:hover { background: rgba(255,255,255,0.3); transform: translateY(-50%) scale(1.1); }
+.cc-slider-prev { left: 20px; }
+.cc-slider-next { right: 20px; }
+
+/* Slider footer: dots + progress */
+.cc-slider-footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-top: 20px;
 }
 
-.cc-ad-btn:hover {
-  transform: scale(1.05) translateY(-2px);
-  box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+.cc-slider-progress {
+  width: 200px;
+  height: 3px;
+  background: #e2e8f0;
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.cc-slider-bar {
+  height: 100%;
+  border-radius: 99px;
+  transition: width 0.05s linear;
 }
 
 .cc-ad-dots {

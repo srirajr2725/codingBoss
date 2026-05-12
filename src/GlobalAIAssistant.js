@@ -125,7 +125,7 @@ const GlobalAIAssistant = () => {
         aiResponse = "Taking you back to your central dashboard.";
         navigateTo = "/UserDashboard";
       }
-      
+
       // --- NLP Q&A Intents ---
       else if (currentInput.includes("what is") && currentInput.includes("array")) {
         aiResponse = "An array is a data structure consisting of a collection of elements, each identified by at least one index. They are incredibly fast for O(1) random access!";
@@ -155,12 +155,15 @@ const GlobalAIAssistant = () => {
     processAIRequest(inputValue);
   };
 
-  // Strictly hide on Course/Learn pages and Tests
-  const path = location.pathname.toLowerCase();
-  const isCourseRelated = path.includes('course') || path.includes('learn');
-  const isTestRelated = path.includes('test') || path.includes('mcq') || path.includes('question');
+  // Strictly hide on Course/Learn pages and Tests, or if not a student
+  const fullPath = (location.pathname + location.search + location.hash + window.location.hash).toLowerCase();
+  const isCourseRelated = fullPath.includes('course') || fullPath.includes('learn') || fullPath.includes('studio');
+  const isTestRelated = fullPath.includes('test') || fullPath.includes('mcq') || fullPath.includes('question');
 
-  if (isCourseRelated || isTestRelated) {
+  const storedRole = String(localStorage.getItem("role") || "").toLowerCase();
+  const isStudent = storedRole === 'member';
+
+  if (isCourseRelated || isTestRelated || !isStudent) {
     return null;
   }
 
@@ -214,8 +217,8 @@ const GlobalAIAssistant = () => {
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
               />
-              <button 
-                type="button" 
+              <button
+                type="button"
                 className={`ai-mic-btn ${isListening ? 'listening' : ''}`}
                 onClick={toggleListening}
               >

@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  FiCamera, FiAlertCircle, FiXCircle, FiRefreshCw, 
-  FiMonitor, FiPower, FiSettings, FiLogOut, FiGrid
+import {
+  FiCamera, FiAlertCircle, FiXCircle, FiRefreshCw,
+  FiMonitor, FiPower, FiSettings, FiLogOut, FiGrid, FiRadio
 } from 'react-icons/fi';
 import './DoctorDashboard.css'; // Reuse the ultra-modern proctoring styles
 import { normalizeFrameSource } from '../utils/frameSource';
 
 const API_URL = 'https://unlanded-isela-unmunificently.ngrok-free.dev/api/upload-frame/';
+const DETECTION_API = 'https://unlanded-isela-unmunificently.ngrok-free.dev/api/toggle-detection/';
 
 const getFrameSource = (frame) => {
   return frame?.latest_frame_url || frame?.frame_url || frame?.image_url || frame?.image || null;
@@ -64,6 +65,8 @@ const TeacherDashboard = ({ handleLogout, username }) => {
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
+  const [detectionStates, setDetectionStates] = useState({});
+  const [detectionLoading, setDetectionLoading] = useState({});
 
   useEffect(() => {
     fetchActiveTests();
@@ -72,20 +75,60 @@ const TeacherDashboard = ({ handleLogout, username }) => {
     return () => clearInterval(interval);
   }, []);
 
+  const toggleDetection = async (studentId) => {
+    const currentState = !!detectionStates[studentId];
+    // Optimistic Update: Change UI immediately
+    setDetectionStates(prev => ({ ...prev, [studentId]: !currentState }));
+    setDetectionLoading(prev => ({ ...prev, [studentId]: true }));
+
+    try {
+      const token = localStorage.getItem("token") || localStorage.getItem("user_token");
+      
+      const res = await fetch(DETECTION_API, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'ngrok-skip-browser-warning': 'true',
+          'Accept': 'application/json',
+          'Authorization': token ? `Bearer ${token}` : ''
+        },
+        body: JSON.stringify({ 
+          user_id: studentId,
+          student_id: studentId,
+          enabled: !currentState 
+        })
+      });
+
+      if (!res.ok) {
+        // Revert on failure
+        setDetectionStates(prev => ({ ...prev, [studentId]: currentState }));
+        console.error('Toggle Error:', res.status);
+      }
+    } catch (err) {
+      // Revert on error
+      setDetectionStates(prev => ({ ...prev, [studentId]: currentState }));
+      console.error('Toggle Error:', err);
+    } finally {
+      setDetectionLoading(prev => ({ ...prev, [studentId]: false }));
+    }
+  };
+
   const fetchActiveTests = async () => {
     setRefreshing(true);
     try {
+      const token = localStorage.getItem("token") || localStorage.getItem("user_token");
       const res = await fetch(API_URL, {
         method: 'GET',
         headers: {
           'ngrok-skip-browser-warning': 'true',
           'Accept': 'application/json',
+          'Authorization': token ? `Bearer ${token}` : ''
         }
       });
-      
+
       if (!res.ok) throw new Error(`Server responded with ${res.status}`);
       const data = await res.json();
-      
+
       const list = data.sessions
         ? data.sessions
         : Array.isArray(data) ? data : data.results || data.frames || data.data || [];
@@ -102,12 +145,14 @@ const TeacherDashboard = ({ handleLogout, username }) => {
           acc[key] = {
             id: key,
             name: r.student_name || `Student #${key}`,
-            test: 'Active Exam', 
+            test: 'Active Exam',
             status: r.flagged ? 'Warning' : 'Active',
             camera: 'Active',
             latestFrame: frameSource,
             timestamp: frameTime,
             lastFrameAt: frameTime,
+            headSwitchCount: r.violation_count || 0,
+            detectionEnabled: r.detection_enabled || false,
             isOffline: frameTime
               ? (now - new Date(frameTime).getTime()) > OFFLINE_THRESHOLD_MS
               : false,
@@ -125,7 +170,16 @@ const TeacherDashboard = ({ handleLogout, username }) => {
         return acc;
       }, {});
 
-      setActiveTests(Object.values(studentMap).filter(s => s.camera === 'Active' && !s.isOffline && s.latestFrame));
+      const mappedList = Object.values(studentMap);
+      
+      // Sync detection states
+      const newDetectionStates = {};
+      mappedList.forEach(s => {
+        newDetectionStates[s.id] = s.detectionEnabled;
+      });
+      setDetectionStates(prev => ({ ...prev, ...newDetectionStates }));
+
+      setActiveTests(mappedList.filter(s => s.camera === 'Active' && !s.isOffline && s.latestFrame));
       setError(null);
     } catch (err) {
       console.error('Fetch Error:', err);
@@ -133,18 +187,6 @@ const TeacherDashboard = ({ handleLogout, username }) => {
     } finally {
       setRefreshing(false);
       setLoading(false);
-    }
-  };
-
-  const handleMonitorStudent = (student) => {
-    setSelectedStudent(student);
-  };
-
-  const handleDeactivateCamera = (studentId) => {
-    if (window.confirm("Are you sure you want to approve camera deactivation for this student?")) {
-      setActiveTests(prev => prev.map(s => 
-        s.id === studentId ? { ...s, camera: 'Inactive' } : s
-      ));
     }
   };
 
@@ -214,65 +256,44 @@ const TeacherDashboard = ({ handleLogout, username }) => {
             {/* Live Camera Cluster */}
             <div className="camera-cluster">
               {liveTests.map(s => (
-                <div key={s.id} className={`camera-unit ${s.status === 'Warning' ? 'unit-flagged' : ''} ${s.isOffline || s.camera === 'Inactive' ? 'unit-offline' : ''}`}>
+                <div key={s.id} className={`camera-unit ${(s.status === 'Warning' || (s.headSwitchCount || 0) > 0) ? 'unit-flagged' : ''} ${s.isOffline || s.camera === 'Inactive' ? 'unit-offline' : ''}`}>
+                  {(s.status === 'Warning' || (s.headSwitchCount || 0) > 0) && (
+                    <div className="violation-overlay">
+                      <FiAlertCircle />
+                      <span>VIOLATION DETECTED</span>
+                    </div>
+                  )}
                   <div className="unit-header">
                     <span className="unit-name">{s.name}</span>
-                    {s.isOffline || s.camera === 'Inactive' ? (
-                      <span className="unit-offline-badge">OFFLINE</span>
-                    ) : s.status === 'Warning' ? (
-                      <span className="unit-request-flash">VIOLATION</span>
-                    ) : (
-                      <span className="unit-live-badge">LIVE</span>
-                    )}
-                  </div>
-                  
-                  <div className="unit-display">
-                    {s.isOffline || s.camera === 'Inactive' ? (
-                      <div className="offline-view">
-                        <FiPower className="off-icon" />
-                        <span>{s.camera === 'Inactive' ? 'FEED TERMINATED' : 'FEED OFFLINE'}</span>
-                        {s.lastFrameAt && (
-                          <span style={{ fontSize: '0.7rem', opacity: 0.6, marginTop: 4 }}>
-                            Last seen: {new Date(s.lastFrameAt).toLocaleTimeString()}
-                          </span>
-                        )}
-                      </div>
-                    ) : (
-                      <div className="feed-view">
-                        {s.latestFrame ? (
-                          <AuthorizedImage
-                            src={s.latestFrame}
-                            alt="Live Feed"
-                            className="live-img"
-                          />
-                        ) : (
-                          <div className="no-feed-placeholder">
-                            <FiCamera /> No Feed
-                          </div>
-                        )}
-                        <div className="feed-signal"><FiCamera /> LIVE</div>
-                        <div className="feed-metadata">
-                          <span className="f-exam">{s.test}</span>
-                          <span className="f-fps">Auto-Sync</span>
-                        </div>
-                      </div>
-                    )}
+                    {s.status === 'Warning' && <span className="unit-request-flash">⚠️ ALERT</span>}
                   </div>
 
-                  <div className="unit-controls">
-                    <div className="unit-meta">
-                      <span className={`badge-${s.status.toLowerCase()}`}>{s.status}</span>
-                    </div>
-                    <div className="unit-btns">
-                      {s.camera === 'Active' && !s.isOffline && (
-                        <button className="btn-deactivate" onClick={() => handleDeactivateCamera(s.id)}>
-                          INACTIVE
-                        </button>
+                  <div className="unit-display">
+                    <div className="feed-view">
+                      {s.latestFrame ? (
+                        <AuthorizedImage
+                          src={s.latestFrame}
+                          alt="Live Feed"
+                          className="live-img"
+                        />
+                      ) : (
+                        <div className="no-feed-placeholder">
+                          <FiCamera /> No Feed
+                        </div>
                       )}
-                      <button className="btn-details" onClick={() => handleMonitorStudent(s)}>
-                        <FiSettings />
-                      </button>
                     </div>
+                  </div>
+
+                  <div className="unit-controls" style={{ padding: '12px 20px' }}>
+                    <button
+                      className={`ultra-btn-detect ${detectionStates[s.id] ? 'detect-on' : 'detect-off'}`}
+                      onClick={() => toggleDetection(s.id)}
+                      disabled={detectionLoading[s.id]}
+                      style={{ width: '100%', justifyContent: 'center', padding: '8px' }}
+                    >
+                      <FiRadio className={detectionStates[s.id] ? 'detect-pulse' : ''} />
+                      {detectionLoading[s.id] ? '...' : detectionStates[s.id] ? 'Detection ON' : 'Detect Student'}
+                    </button>
                   </div>
                 </div>
               ))}

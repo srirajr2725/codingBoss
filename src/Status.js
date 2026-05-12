@@ -12,6 +12,8 @@ const Status = ({ isLoggedIn, setAccess }) => {
   const [userSpecificToken, setUserSpecificToken] = useState(() => localStorage.getItem("user_token") || "");
   const [programStats, setProgramStats] = useState({ totalTests: 0, averageMarks: 0 });
   const [programTotal, setProgramTotal] = useState("0 / 0");
+  const [programHistory, setProgramHistory] = useState([]);
+  const [programSummary, setProgramSummary] = useState(null);
   const [performanceData, setPerformanceData] = useState({ totalAttempts: 0, averageScore: 0, totalMarks: 0, maxMarks: 0 });
   const [isTaskUnlocked, setIsTaskUnlocked] = useState(true);
   const [isCourseUnlocked, setIsCourseUnlocked] = useState(true);
@@ -94,10 +96,30 @@ const Status = ({ isLoggedIn, setAccess }) => {
             maxMarks
           });
         }
-        const pData = await apiClient(`compiler/average_program_marks/?user_id=${userId}`, "GET");
-        if (pData) setProgramStats({ totalTests: pData.total_programs || 0, averageMarks: pData.avg_marks || 0 });
-        const tData = await apiClient(`compiler/total-program-marks/?user_id=${userId}`, "GET");
-        if (tData) setProgramTotal(tData.result || "0 / 0");
+        const token = localStorage.getItem("user_token") || localStorage.getItem("token") || "";
+        const headers = { 
+          "ngrok-skip-browser-warning": "true",
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+          ...(token ? { "Authorization": `Bearer ${token}` } : {})
+        };
+
+        // total-program-marks returns: { programs_done, total_scored, total_full_marks, result }
+        const tRes = await fetch(`https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/total-program-marks/?user_id=${userId}`, {
+          method: "GET", headers
+        });
+        const tData = tRes.ok ? await tRes.json() : null;
+        if (tData) {
+          setProgramStats({
+            totalTests: Number(tData.programs_done || 0),
+            averageMarks: tData.total_full_marks > 0
+              ? ((tData.total_scored / tData.total_full_marks) * 100).toFixed(1)
+              : 0
+          });
+          setProgramTotal(String(tData.result || "0 / 0"));
+          setProgramSummary(tData);
+        }
+
       } catch (err) { console.error(err); }
     };
     fetchStatus();
@@ -187,12 +209,7 @@ const Status = ({ isLoggedIn, setAccess }) => {
       {toast.show && <div className={`status-toast ${toast.type === 'error' ? 'bg-danger' : 'bg-success'}`}>{toast.message}</div>}
 
       <div className="st-header-card">
-        <div className="row align-items-center">
-          <div className="col-md-7">
-            <h2 className="st-welcome-h2">Student <span>Analytics</span></h2>
-            <p className="st-email-text">{userEmail}</p>
-          </div>
-        </div>
+        <h2 className="st-welcome-h2">Student <span>Analytics</span> <span style={{ fontSize: '0.9rem', fontWeight: 500, color: '#64748b', letterSpacing: 0 }}>&mdash; {userEmail}</span></h2>
       </div>
 
       <div className="st-tile-grid">
@@ -201,15 +218,19 @@ const Status = ({ isLoggedIn, setAccess }) => {
           <div className="st-tile-value">{performanceData.totalAttempts}</div>
         </div>
         <div className="st-tile">
-          <span className="st-tile-label"><FaTrophy /> AVERAGE SCORE</span>
+          <span className="st-tile-label"><FaTrophy /> MCQ AVG SCORE</span>
           <div className="st-tile-value" style={{ color: '#10b981' }}>{performanceData.averageScore}%</div>
         </div>
         <div className="st-tile">
-          <span className="st-tile-label"><FaChartLine /> PROG. AVG</span>
-          <div className="st-tile-value" style={{ color: '#6366f1' }}>{programStats.averageMarks}</div>
+          <span className="st-tile-label"><FaCheckCircle /> PROGRAMS DONE</span>
+          <div className="st-tile-value" style={{ color: '#6366f1' }}>{programStats.totalTests}</div>
         </div>
         <div className="st-tile">
-          <span className="st-tile-label"><FaStar /> TOTAL POINTS</span>
+          <span className="st-tile-label"><FaChartLine /> PROG. AVG MARKS</span>
+          <div className="st-tile-value" style={{ color: '#8b5cf6' }}>{programStats.averageMarks}</div>
+        </div>
+        <div className="st-tile">
+          <span className="st-tile-label"><FaStar /> TOTAL MARKS</span>
           <div className="st-tile-value" style={{ color: '#FFA003' }}>{programTotal}</div>
         </div>
       </div>
@@ -236,25 +257,68 @@ const Status = ({ isLoggedIn, setAccess }) => {
       </div>
 
       <h3 className="st-history-title"><FaHistory /> Test History</h3>
-      <div className="pb-5">
-        {mcqResults.length > 0 ? (
-          mcqResults.map((test, index) => (
-            <div key={index} className="st-history-card">
-              <div>
-                <span className="st-test-type">{test.type}</span>
-                <div className="st-test-subtype">{test.subtype}</div>
-              </div>
-              <div className="text-end">
-                <div className="st-test-marks">Marks: {test.marks} / {test.total_questions}</div>
-                <div className="st-test-percent" style={{ color: test.percentage >= 60 ? '#10b981' : '#ef4444' }}>
-                  {test.percentage}%
+      <div className="st-history-grid pb-5">
+        {/* LEFT — MCQ History */}
+        <div className="st-history-col">
+          <h6 className="st-history-col-title">📝 MCQ Tests</h6>
+          {mcqResults.length > 0 ? (
+            mcqResults.map((test, index) => (
+              <div key={index} className="st-history-card">
+                <div>
+                  <span className="st-test-type">{test.type}</span>
+                  <div className="st-test-subtype">{test.subtype}</div>
+                </div>
+                <div className="text-end">
+                  <div className="st-test-marks">Marks: {test.marks} / {test.total_questions}</div>
+                  <div className="st-test-percent" style={{ color: test.percentage >= 60 ? '#10b981' : '#ef4444' }}>
+                    {test.percentage}%
+                  </div>
                 </div>
               </div>
-            </div>
-          ))
-        ) : (
-          <div className="text-center py-5 text-muted">No test records found yet. Start learning to see results!</div>
-        )}
+            ))
+          ) : (
+            <div className="st-empty-state">No MCQ records yet.</div>
+          )}
+        </div>
+
+        {/* RIGHT — Program Summary */}
+        <div className="st-history-col">
+          <h6 className="st-history-col-title">💻 Programs</h6>
+          {programSummary ? (
+            <>
+              <div className="st-history-card">
+                <div>
+                  <span className="st-test-type">Programs Attended</span>
+                  <div className="st-test-subtype">Total submissions</div>
+                </div>
+                <div className="text-end">
+                  <div className="st-test-marks" style={{ fontSize: '1.5rem', fontWeight: 800, color: '#6366f1' }}>
+                    {programSummary.programs_done}
+                  </div>
+                </div>
+              </div>
+              <div className="st-history-card">
+                <div>
+                  <span className="st-test-type">Total Score</span>
+                  <div className="st-test-subtype">Scored / Full Marks</div>
+                </div>
+                <div className="text-end">
+                  <div className="st-test-marks">{programSummary.result}</div>
+                  <div className="st-test-percent" style={{ 
+                    color: programSummary.total_full_marks > 0 && (programSummary.total_scored / programSummary.total_full_marks) >= 0.6 ? '#10b981' : '#f59e0b',
+                    fontSize: '0.85rem' 
+                  }}>
+                    {programSummary.total_full_marks > 0
+                      ? `${((programSummary.total_scored / programSummary.total_full_marks) * 100).toFixed(1)}%`
+                      : '–'}
+                  </div>
+                </div>
+              </div>
+            </>
+          ) : (
+            <div className="st-empty-state">No program records yet.</div>
+          )}
+        </div>
       </div>
     </div>
   );

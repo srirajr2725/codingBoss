@@ -439,6 +439,11 @@ const CourseAI = ({ activeLesson, courseData }) => {
   const recognitionRef = useRef(null);
   const knowledgeIndex = useMemo(() => buildKnowledgeIndex(), []);
   const activeLessonEntry = useMemo(() => lessonToEntry(activeLesson, courseData), [activeLesson, courseData]);
+
+  // Strictly only for students
+  const userRole = localStorage.getItem("role");
+  if (userRole !== 'member') return null;
+
   const voiceStatus = isMuted ? 'Voice muted' : isSpeaking ? 'Speaking in English' : 'English voice ready';
 
   useEffect(() => {
@@ -507,13 +512,28 @@ const CourseAI = ({ activeLesson, courseData }) => {
     if (!window.speechSynthesis || !text || isMuted) return;
     window.speechSynthesis.cancel();
     const voices = window.speechSynthesis.getVoices?.() || [];
-    if (voices.length > 0) {
-      voicesRef.current = voices;
-    }
+    
     const utterance = new SpeechSynthesisUtterance(text.replace(/\n/g, ' '));
-    utterance.rate = 0.92;
-    utterance.lang = ENGLISH_VOICE.code;
-    utterance.voice = getEnglishVoice(voices.length ? voices : voicesRef.current);
+    utterance.rate = 0.95;
+
+    // Detect if text contains Tamil characters
+    const isTamil = /[\u0B80-\u0BFF]/.test(text);
+
+    if (isTamil) {
+      const tamilVoice = voices.find(v => 
+        v.lang === 'ta-IN' || 
+        v.name.toLowerCase().includes('tamil') || 
+        v.lang.toLowerCase().includes('ta')
+      );
+      if (tamilVoice) {
+        utterance.voice = tamilVoice;
+        utterance.lang = 'ta-IN';
+      }
+    } else {
+      utterance.lang = 'en-US';
+      utterance.voice = getEnglishVoice(voices.length ? voices : voicesRef.current);
+    }
+
     utterance.onstart = () => setIsSpeaking(true);
     utterance.onend = () => setIsSpeaking(false);
     utterance.onerror = () => setIsSpeaking(false);

@@ -3,12 +3,22 @@
 
 <head>
   <meta charset="UTF-8">
+  <script>
+    // PERMANENT FIX: Block Webpack from showing red overlays for cross-origin CDN errors.
+    // This runs before React boots, guaranteeing it intercepts the error first.
+    window.addEventListener('error', function(e) {
+      if (e.message === 'Script error.' || (e.error && e.error.message === 'Script error.')) {
+        e.stopImmediatePropagation(); // Kills the event before Webpack overlay sees it
+        e.preventDefault();
+      }
+    }, true);
+  </script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" href="%PUBLIC_URL%/favicon.ico?v=3" />
   <title>CodingBoss – Learn to Code, Build Your Future</title>
   <meta name="description" content="CodingBoss – Learn Java, C, and Python with structured courses, live tests, and industry-recognised certificates.">
   <!-- Razorpay Checkout SDK -->
-  <script src="https://checkout.razorpay.com/v1/checkout.js" crossorigin="anonymous"></script>
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 </head>
 
 <body>
