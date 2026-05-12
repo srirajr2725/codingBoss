@@ -1,50 +1,36 @@
 import React, { useEffect, useState } from "react";
 import { useInView } from "react-intersection-observer";
-import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import "./OurOfferings.css";
 
-// Import images
-import javaImg from "../src/images/Jaava.png";
-import pythonImg from "../src/images/py.png";
-import aiImg from "../src/images/ai.png";
-import dataImg from "../src/images/data.png";
-import cyberImg from "../src/images/cyber.png";
-import hciImg from "../src/images/HCI.png";
-import itImg from "../src/images/IT.png";
-import imageProcessingImg from "../src/images/imagep.png";
-import iotImg from "../src/images/IOT.png";
-import nlpImg from "../src/images/NLP.png";
-import visionImg from "../src/images/vision.png";
-import softwareEngImg from "../src/images/soft.png";
-import cloudImg from "../src/images/cloudcom.png";
-import mlImg from "../src/images/machine.png";
-import dlImg from "../src/images/deep.png";
-import softCompImg from "../src/images/softcomp.png";
-import ProjectForm from "./ProjectForm";
+// Import new ultra images
+import learnImg from "../src/images/ultra_learning_ad.png";
+import practiceImg from "../src/images/ultra_practice_ad.png";
+import testImg from "../src/images/ultra_testing_ad.png";
 
-const projects = [
-  { name: "Full Stack Java", img: javaImg },
-  { name: "Python Django", img: pythonImg },
-  { name: "Artificial Intelligence", img: aiImg },
-  { name: "Data Science", img: dataImg },
-  { name: "Cyber Security and Cryptography", img: cyberImg },
-  { name: "Human Computer Interaction and Information Systems", img: hciImg },
-  { name: "IT in Education/Business/Health Care/Law/Media", img: itImg },
-  { name: "Image Processing", img: imageProcessingImg },
-  { name: "Internet Of Things (IoT) & Embedded Systems", img: iotImg },
-  { name: "Natural Language Processing", img: nlpImg },
-  { name: "Vision Recognition", img: visionImg },
-  { name: "Software Engineering", img: softwareEngImg },
-  { name: "Cloud Computing", img: cloudImg },
-  { name: "Machine Learning", img: mlImg },
-  { name: "Deep Learning", img: dlImg },
-  { name: "Software Computing", img: softCompImg },
+const eliteFeatures = [
+  { 
+    name: "Advanced Learning", 
+    img: learnImg, 
+    tag: "CURRICULUM", 
+    desc: "Master industry-standard technologies with our deep-dive modules." 
+  },
+  { 
+    name: "Infinite Practice", 
+    img: practiceImg, 
+    tag: "STUDIO", 
+    desc: "Refine your coding logic in our high-performance virtual labs." 
+  },
+  { 
+    name: "Secure Testing", 
+    img: testImg, 
+    tag: "PROCTORING", 
+    desc: "Validate your skills with AI-monitored industrial examinations." 
+  },
 ];
 
 const OurOfferings = () => {
-  const navigate = useNavigate();
   const [scrollProgress, setScrollProgress] = useState(0);
-  const [selectedProject, setSelectedProject] = useState(null);
 
   useEffect(() => {
     const updateScrollProgress = () => {
@@ -58,14 +44,6 @@ const OurOfferings = () => {
     return () => window.removeEventListener("scroll", updateScrollProgress);
   }, []);
 
-  const handleBookNowClick = (project) => {
-    setSelectedProject(project); // Open chat for the clicked project
-  };
-
-  const closeChat = () => {
-    setSelectedProject(null); // Close chat
-  };
-
   return (
     <div className="offerings-container">
       {/* Scroll Progress Bar */}
@@ -74,39 +52,37 @@ const OurOfferings = () => {
       </div>
 
       <div className="category-header">
-        <span className="category-title">Projects</span>
-        <span className="category-tag for-students">For College Students</span>
+        <span className="category-title">Elite Ecosystem</span>
+        <span className="category-tag for-students">Next-Gen Education</span>
       </div>
 
-      <div className="offerings-list">
-        {projects.map((project, index) => {
+      <div className="offerings-list elite-grid">
+        {eliteFeatures.map((feature, index) => {
           const { ref, inView } = useInView({ triggerOnce: true, threshold: 0.2 });
           return (
-            <div
+            <motion.div
               key={index}
               ref={ref}
-              className={`project-card ${inView ? "visible" : ""}`}
+              className={`project-card feature-ad-card ${inView ? "visible" : ""}`}
+              initial={{ opacity: 0, y: 50 }}
+              animate={inView ? { opacity: 1, y: 0 } : {}}
+              transition={{ delay: index * 0.2, duration: 0.8 }}
             >
-              <div className="project-image-wrapper">
-                <img src={project.img} alt={project.name} className="project-image" />
+              <div className="project-image-wrapper static-ad">
+                <img src={feature.img} alt={feature.name} className="project-image ad-img" />
+                <div className="ad-overlay">
+                  <span className="ad-tag">{feature.tag}</span>
+                </div>
               </div>
-              <div className="project-info">
-                <h3>{project.name}</h3>
-                <button onClick={() => handleBookNowClick(project)} className="book-now-btn">
-                  Explore Project
-                </button>
+              <div className="project-info ad-info">
+                <h3>{feature.name}</h3>
+                <p className="ad-description">{feature.desc}</p>
+                <div className="ad-status-pill">Feature Active</div>
               </div>
-            </div>
+            </motion.div>
           );
         })}
       </div>
-
-      {/* Single Chat Window (renders on the left side) */}
-      {selectedProject && (
-        <div className="chat-window-left">
-          <ProjectForm project={selectedProject} closeChat={closeChat} />
-        </div>
-      )}
     </div>
   );
 };
