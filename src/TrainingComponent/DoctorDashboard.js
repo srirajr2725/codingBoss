@@ -14,10 +14,10 @@ import './DoctorDashboard.css';
 /* ================= CONFIG ================= */
 
 const API_URL =
-  'https://unlanded-isela-unmunificently.ngrok-free.dev/api/upload-frame/';
+  'https://api.codingboss.in/api/upload-frame/';
 
-const DETECTION_API = 
-  'https://unlanded-isela-unmunificently.ngrok-free.dev/api/toggle-detection/';
+const DETECTION_API =
+  'https://api.codingboss.in/api/toggle-detection/';
 
 const HEAD_SWITCH_LIMIT = 4;
 
@@ -195,11 +195,11 @@ const DoctorDashboard = ({
     // Optimistic Update: Change UI immediately
     setDetectionStates(prev => ({ ...prev, [studentId]: !currentState }));
     setDetectionLoading(prev => ({ ...prev, [studentId]: true }));
-    
+
     try {
       const token = localStorage.getItem("token") || localStorage.getItem("user_token");
       const url = DETECTION_API;
-      
+
       const res = await fetch(url, {
         method: 'POST',
         headers: {
@@ -208,13 +208,13 @@ const DoctorDashboard = ({
           'Accept': 'application/json',
           'Authorization': token ? `Bearer ${token}` : ''
         },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           user_id: studentId,
           student_id: studentId,
-          enabled: !currentState 
+          enabled: !currentState
         })
       });
-      
+
       if (!res.ok) {
         // Revert on failure
         setDetectionStates(prev => ({ ...prev, [studentId]: currentState }));
@@ -466,11 +466,11 @@ const DoctorDashboard = ({
             <div className="camera-cluster">
               {activeTests.map(
                 (student) => (
-                    <div
-                      key={student.id}
-                      className="camera-unit"
-                    >
-                      {/* Violation Alert Removed as requested */}
+                  <div
+                    key={student.id}
+                    className="camera-unit"
+                  >
+                    {/* Violation Alert Removed as requested */}
                     {/* HEADER */}
 
                     <div className="unit-header">

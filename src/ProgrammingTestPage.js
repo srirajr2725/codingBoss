@@ -39,15 +39,15 @@ const ProgrammingTestPage = ({
         setError("");
 
         // Using the new endpoint specified by the user
-        const response = await fetch("https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/test-cases/", {
+        const response = await fetch("https://api.codingboss.in/compiler/test-cases/", {
           headers: {
             'Accept': 'application/json',
             'ngrok-skip-browser-warning': 'true'
           }
         });
-        
+
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-        
+
         const data = await response.json();
         let questionsArray = [];
 
@@ -86,7 +86,7 @@ const ProgrammingTestPage = ({
       } catch (err) {
         console.error("Fetch Error:", err);
         setError("Unable to load challenges. Falling back to primary server.");
-        
+
         // Fallback attempt
         try {
           const fallbackData = await apiClient("compiler/questions/", "GET");
@@ -189,7 +189,7 @@ const ProgrammingTestPage = ({
         <header className="explorer-header mt-4">
           <h1 className="explorer-title">Coding Challenges</h1>
           <p className="explorer-subtitle">
-            Master your skills with real-world programming problems. 
+            Master your skills with real-world programming problems.
             Choose your difficulty and start building.
           </p>
         </header>
@@ -234,7 +234,7 @@ const ProgrammingTestPage = ({
                         Start Challenge <FaChevronRight className="ms-2" />
                       </Button>
                     </div>
-                    
+
                     {/* Extra Info: Hints, Algorithm, Example Code */}
                     <div className="problem-details-grid">
                       {question.hints && (

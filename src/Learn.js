@@ -235,8 +235,8 @@ const normalizeCourse = (data, defaultImage, color, badge) => {
         const mTitle = parts[0] || `Module ${i + 1}`;
         const mDesc = parts.slice(1).join('\n').trim();
 
-        const moduleCode = (data.code_examples || []).filter(ex => 
-          ex.module === mTitle.split(':')[0].trim() || 
+        const moduleCode = (data.code_examples || []).filter(ex =>
+          ex.module === mTitle.split(':')[0].trim() ||
           ex.module === `Module ${i + 1}`
         );
 
@@ -318,7 +318,7 @@ const Learn = ({ isLoggedIn, username: usernameProp = '', userRole = '', handleL
     const fetchCourses = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch('https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/course-details/', {
+        const response = await fetch('https://api.codingboss.in/compiler/course-details/', {
           headers: { 'ngrok-skip-browser-warning': 'true' }
         });
         const data = await response.json();
@@ -609,19 +609,19 @@ const Learn = ({ isLoggedIn, username: usernameProp = '', userRole = '', handleL
                 {selectedCourse?.id === 'c' ? 'C Programming' : selectedCourse?.title}
               </div>
               <div className="w3-sidebar-tabs">
-                <button 
+                <button
                   className={`w3-sidebar-tab ${sidebarTab === 'overview' ? 'active' : ''}`}
                   onClick={() => setSidebarTab('overview')}
                 >
                   <FaInfoCircle /> Overview
                 </button>
-                <button 
+                <button
                   className={`w3-sidebar-tab ${sidebarTab === 'curriculum' ? 'active' : ''}`}
                   onClick={() => setSidebarTab('curriculum')}
                 >
                   <FaClipboardList /> Curriculum
                 </button>
-                <button 
+                <button
                   className={`w3-sidebar-tab ${sidebarTab === 'examples' ? 'active' : ''}`}
                   onClick={() => setSidebarTab('examples')}
                 >
@@ -640,7 +640,7 @@ const Learn = ({ isLoggedIn, username: usernameProp = '', userRole = '', handleL
                             <h5 className="w3-example-title">{ex.title}</h5>
                           </div>
                           <div className="w3-example-actions">
-                            <button 
+                            <button
                               className="w3-example-btn"
                               onClick={() => {
                                 setLabCode(ex.code);
@@ -840,7 +840,7 @@ const Learn = ({ isLoggedIn, username: usernameProp = '', userRole = '', handleL
                                   const blockId = idx;
                                   setIsInlineCompiling(prev => ({ ...prev, [blockId]: true }));
                                   try {
-                                    const response = await fetch('https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/practice-run/', {
+                                    const response = await fetch('https://api.codingboss.in/compiler/practice-run/', {
                                       method: 'POST',
                                       headers: {
                                         'Content-Type': 'application/json',
@@ -967,7 +967,7 @@ const Learn = ({ isLoggedIn, username: usernameProp = '', userRole = '', handleL
                       setIsLabCompiling(true);
                       setLabOutput("Compiling and executing...");
                       try {
-                        const response = await fetch('https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/practice-run/', {
+                        const response = await fetch('https://api.codingboss.in/compiler/practice-run/', {
                           method: 'POST',
                           headers: {
                             'Content-Type': 'application/json',

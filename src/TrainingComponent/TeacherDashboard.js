@@ -6,8 +6,8 @@ import {
 import './DoctorDashboard.css'; // Reuse the ultra-modern proctoring styles
 import { normalizeFrameSource } from '../utils/frameSource';
 
-const API_URL = 'https://unlanded-isela-unmunificently.ngrok-free.dev/api/upload-frame/';
-const DETECTION_API = 'https://unlanded-isela-unmunificently.ngrok-free.dev/api/toggle-detection/';
+const API_URL = 'https://api.codingboss.in/api/upload-frame/';
+const DETECTION_API = 'https://api.codingboss.in/api/toggle-detection/';
 
 const getFrameSource = (frame) => {
   return frame?.latest_frame_url || frame?.frame_url || frame?.image_url || frame?.image || null;
@@ -83,7 +83,7 @@ const TeacherDashboard = ({ handleLogout, username }) => {
 
     try {
       const token = localStorage.getItem("token") || localStorage.getItem("user_token");
-      
+
       const res = await fetch(DETECTION_API, {
         method: 'POST',
         headers: {
@@ -92,10 +92,10 @@ const TeacherDashboard = ({ handleLogout, username }) => {
           'Accept': 'application/json',
           'Authorization': token ? `Bearer ${token}` : ''
         },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           user_id: studentId,
           student_id: studentId,
-          enabled: !currentState 
+          enabled: !currentState
         })
       });
 
@@ -171,7 +171,7 @@ const TeacherDashboard = ({ handleLogout, username }) => {
       }, {});
 
       const mappedList = Object.values(studentMap);
-      
+
       // Sync detection states
       const newDetectionStates = {};
       mappedList.forEach(s => {

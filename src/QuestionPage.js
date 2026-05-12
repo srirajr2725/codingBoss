@@ -42,7 +42,7 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
   const [startTime, setStartTime] = useState(null);
   const [tabSwitchCount, setTabSwitchCount] = useState(0);
   const [cameraStream, setCameraStream] = useState(null);
-  const [isDetectionEnabled, setIsDetectionEnabled] = useState(false);
+  const [isDetectionEnabled, setIsDetectionEnabled] = useState(true); // Default to true
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const [showHint, setShowHint] = useState(false);
@@ -89,7 +89,8 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
     };
 
     const handleVisibilityChange = () => {
-      if (document.hidden && isTestStarted && !isTestSubmitted && isDetectionEnabled) {
+      console.log("Visibility Change detected. Hidden:", document.hidden, "Started:", isTestStartedRef.current);
+      if (document.hidden && isTestStartedRef.current && !isTestSubmittedRef.current) {
         triggerWarning("Tab switching is strictly prohibited!", "tab_switch", true);
       }
     };
@@ -116,7 +117,7 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
         const studentId = getDecryptedUserId();
         if (!studentId) return;
 
-        const response = await fetch(`https://unlanded-isela-unmunificently.ngrok-free.dev/api/upload-frame/?student_id=${studentId}&user_id=${studentId}`, {
+        const response = await fetch(`https://api.codingboss.in/api/upload-frame/?student_id=${studentId}&user_id=${studentId}`, {
           headers: { 'ngrok-skip-browser-warning': 'true' }
         });
         const data = await response.json();
@@ -149,6 +150,21 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
   const terminatedRef = useRef(false);
   const isHeadRotatedRef = useRef(false);
   const isFocusLostRef = useRef(false);
+  const isDetectionEnabledRef = useRef(true);
+  const isTestStartedRef = useRef(false);
+  const isTestSubmittedRef = useRef(false);
+
+  useEffect(() => {
+    isDetectionEnabledRef.current = isDetectionEnabled;
+  }, [isDetectionEnabled]);
+
+  useEffect(() => {
+    isTestStartedRef.current = isTestStarted;
+  }, [isTestStarted]);
+
+  useEffect(() => {
+    isTestSubmittedRef.current = isTestSubmitted;
+  }, [isTestSubmitted]);
 
   const [showViolationOverlay, setShowViolationOverlay] = useState(false);
   const [violationMessage, setViolationMessage] = useState("");
@@ -164,7 +180,7 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
         image = canvas.toDataURL('image/jpeg', 0.1);
       }
 
-      await fetch('https://unlanded-isela-unmunificently.ngrok-free.dev/api/upload-frame/', {
+      await fetch('https://api.codingboss.in/api/upload-frame/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -194,7 +210,7 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
 
       try {
         // Fetch test-cases strictly from ngrok
-        fetch(`https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/test-cases/`, {
+        fetch(`https://api.codingboss.in/compiler/test-cases/`, {
           headers: { 'ngrok-skip-browser-warning': 'true' }
         })
           .then(res => res.json())
@@ -263,7 +279,7 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
       if (!isTestStarted || isTestSubmitted) return;
       try {
         const studentId = getDecryptedUserId() || 1;
-        const res = await fetch(`https://unlanded-isela-unmunificently.ngrok-free.dev/api/toggle-detection/?user_id=${studentId}`, {
+        const res = await fetch(`https://api.codingboss.in/api/toggle-detection/?user_id=${studentId}`, {
           headers: { 'ngrok-skip-browser-warning': 'true' }
         });
         const data = await res.json();
@@ -294,15 +310,15 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
       const next = prev + 1;
       violationCountRef.current = next;
       lastViolationRef.current = { type, message: msg, count: next, at: new Date().toISOString() };
-      if (next >= 3) {
+      if (next >= 5) {
         terminatedRef.current = true;
         uploadViolationFrame();
         toast.error("🚫 DISQUALIFIED! Too many violations. Test submitted.");
         setIsTestSubmitted(true);
-        setTimeout(() => navigate('/UserDashboard'), 1000);
+        setTimeout(() => submitSolution(), 1000); // Use submitSolution instead of just navigate
       } else {
         uploadViolationFrame();
-        toast.error(`⚠️ WARNING (${next}/3): ${msg}`);
+        toast.error(`⚠️ WARNING (${next}/5): ${msg}`);
       }
       return next;
     });
@@ -312,7 +328,7 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
     let timeoutId;
 
     const startFaceTracking = async () => {
-      if (!isTestStarted || !isDetectionEnabled || !videoRef.current || videoRef.current.readyState < 2 || videoRef.current.videoWidth === 0 || !window.faceapi || !window.faceapi.detectSingleFace || isTrackingRef.current || document.hidden || isTestSubmitted) {
+      if (!isTestStartedRef.current || !videoRef.current || videoRef.current.readyState < 2 || videoRef.current.videoWidth === 0 || !window.faceapi || !window.faceapi.detectSingleFace || isTrackingRef.current || document.hidden || isTestSubmittedRef.current) {
         timeoutId = setTimeout(startFaceTracking, 1000);
         return;
       }
@@ -321,7 +337,7 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
       try {
         const detections = await window.faceapi.detectSingleFace(
           videoRef.current,
-          new window.faceapi.TinyFaceDetectorOptions({ inputSize: 128, scoreThreshold: 0.3 })
+          new window.faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.3 })
         ).withFaceLandmarks();
 
         if (!detections) {
@@ -409,7 +425,7 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
         const canvas = canvasRef.current;
         canvas.width = 240; canvas.height = 180;
         canvas.getContext('2d').drawImage(video, 0, 0, 240, 180);
-        await fetch('https://unlanded-isela-unmunificently.ngrok-free.dev/api/upload-frame/', {
+        await fetch('https://api.codingboss.in/api/upload-frame/', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -431,13 +447,34 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
     return () => clearTimeout(timeoutId);
   }, [isTestStarted, cameraStream, isTestSubmitted]);
 
+  // 🔥 ENGINE: CAMERA STATUS MONITORING
+  useEffect(() => {
+    let intervalId;
+    const checkCameraStatus = () => {
+      if (!isTestStartedRef.current || isTestSubmittedRef.current || !cameraStream) return;
+      
+      const videoTrack = cameraStream.getVideoTracks()[0];
+      const isTrackOff = !videoTrack || !videoTrack.enabled || videoTrack.readyState === 'ended';
+      const isVideoPaused = videoRef.current && (videoRef.current.paused || videoRef.current.ended);
+      
+      if (isTrackOff || isVideoPaused) {
+        triggerWarning("Camera is disconnected or turned off! Re-enable it immediately.", "camera_off");
+      }
+    };
+
+    if (isTestStarted) {
+      intervalId = setInterval(checkCameraStatus, 3000);
+    }
+    return () => clearInterval(intervalId);
+  }, [isTestStarted, isTestSubmitted, cameraStream]);
+
   // 🔥 ENGINE: POLLING FOR DOCTOR WARNINGS
   useEffect(() => {
     let intervalId;
     const pollDoctorWarnings = async () => {
       if (!isTestStarted || isTestSubmitted || terminatedRef.current) return;
       try {
-        const res = await fetch('https://unlanded-isela-unmunificently.ngrok-free.dev/api/upload-frame/', {
+        const res = await fetch('https://api.codingboss.in/api/upload-frame/', {
           method: 'GET',
           headers: {
             'Accept': 'application/json',
@@ -565,7 +602,7 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
     console.log("Submitting Solution for ID:", questionId, "User:", currentUserId);
 
     try {
-      const response = await fetch('https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/run-test/', {
+      const response = await fetch('https://api.codingboss.in/compiler/run-test/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -610,6 +647,7 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
 
   return (
     <div className="ide-root coding-scope">
+      <ToastContainer position="top-center" autoClose={3000} />
       {showInitialAgreementModal && (
         <div className="ide-modal-overlay">
           <div className="ide-modal">
@@ -662,7 +700,12 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
       <div className={`camera-proctor-box ${isCameraMinimized ? 'minimized' : ''}`}>
         <video ref={videoRef} autoPlay playsInline muted className="camera-video" />
         <canvas ref={canvasRef} style={{ display: 'none' }} />
-        <div className="camera-status" onClick={() => setIsCameraMinimized(!isCameraMinimized)}>
+        <div className="camera-status" onClick={() => {
+          if (!isCameraMinimized) {
+            triggerWarning("Hiding the camera feed is strictly prohibited!", "ui_minimize");
+          }
+          setIsCameraMinimized(!isCameraMinimized);
+        }}>
           <div className="pulse"></div>
           {isCameraMinimized ? 'VIEW FEED' : 'LIVE PROCTOR (Minimize)'}
         </div>

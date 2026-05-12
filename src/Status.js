@@ -97,7 +97,7 @@ const Status = ({ isLoggedIn, setAccess }) => {
           });
         }
         const token = localStorage.getItem("user_token") || localStorage.getItem("token") || "";
-        const headers = { 
+        const headers = {
           "ngrok-skip-browser-warning": "true",
           "Accept": "application/json",
           "Content-Type": "application/json",
@@ -105,7 +105,7 @@ const Status = ({ isLoggedIn, setAccess }) => {
         };
 
         // total-program-marks returns: { programs_done, total_scored, total_full_marks, result }
-        const tRes = await fetch(`https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/total-program-marks/?user_id=${userId}`, {
+        const tRes = await fetch(`https://api.codingboss.in/compiler/total-program-marks/?user_id=${userId}`, {
           method: "GET", headers
         });
         const tData = tRes.ok ? await tRes.json() : null;
@@ -304,9 +304,9 @@ const Status = ({ isLoggedIn, setAccess }) => {
                 </div>
                 <div className="text-end">
                   <div className="st-test-marks">{programSummary.result}</div>
-                  <div className="st-test-percent" style={{ 
+                  <div className="st-test-percent" style={{
                     color: programSummary.total_full_marks > 0 && (programSummary.total_scored / programSummary.total_full_marks) >= 0.6 ? '#10b981' : '#f59e0b',
-                    fontSize: '0.85rem' 
+                    fontSize: '0.85rem'
                   }}>
                     {programSummary.total_full_marks > 0
                       ? `${((programSummary.total_scored / programSummary.total_full_marks) * 100).toFixed(1)}%`

@@ -38,8 +38,9 @@ const McqTestPage = () => {
   const [isTestStarted, setIsTestStarted] = useState(false);
   const [isTestSubmitted, setIsTestSubmitted] = useState(false);
   const [cameraStream, setCameraStream] = useState(null);
-  const [isDetectionEnabled, setIsDetectionEnabled] = useState(false);
-  
+  const [isDetectionEnabled, setIsDetectionEnabled] = useState(true);
+  const [isCameraMinimized, setIsCameraMinimized] = useState(false);
+
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
 
@@ -53,7 +54,8 @@ const McqTestPage = () => {
     };
 
     const handleVisibilityChange = () => {
-      if (document.hidden && isTestStarted && !isTestSubmitted && isDetectionEnabled) {
+      console.log("Visibility Change detected. Hidden:", document.hidden, "Started:", isTestStartedRef.current);
+      if (document.hidden && isTestStartedRef.current && !isTestSubmittedRef.current) {
         triggerWarning("Tab switching is strictly prohibited!", "tab_switch", true);
       }
     };
@@ -79,6 +81,21 @@ const McqTestPage = () => {
   const terminatedRef = useRef(false);
   const isHeadRotatedRef = useRef(false);
   const isFocusLostRef = useRef(false);
+  const isDetectionEnabledRef = useRef(true);
+  const isTestStartedRef = useRef(false);
+  const isTestSubmittedRef = useRef(false);
+
+  useEffect(() => {
+    isDetectionEnabledRef.current = isDetectionEnabled;
+  }, [isDetectionEnabled]);
+
+  useEffect(() => {
+    isTestStartedRef.current = isTestStarted;
+  }, [isTestStarted]);
+
+  useEffect(() => {
+    isTestSubmittedRef.current = isTestSubmitted;
+  }, [isTestSubmitted]);
 
   const [showViolationOverlay, setShowViolationOverlay] = useState(false);
   const [violationMessage, setViolationMessage] = useState("");
@@ -94,9 +111,9 @@ const McqTestPage = () => {
         image = canvas.toDataURL('image/jpeg', 0.1);
       }
 
-      await fetch('https://unlanded-isela-unmunificently.ngrok-free.dev/api/upload-frame/', {
+      await fetch('https://api.codingboss.in/api/upload-frame/', {
         method: 'POST',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
           'ngrok-skip-browser-warning': 'true'
         },
@@ -110,7 +127,7 @@ const McqTestPage = () => {
           terminated: terminatedRef.current
         })
       });
-    } catch (err) {}
+    } catch (err) { }
   };
 
   const triggerWarning = (msg, type = "proctoring_violation", bypassCooldown = false) => {
@@ -122,12 +139,12 @@ const McqTestPage = () => {
     setViolationMessage(msg);
     setShowViolationOverlay(true);
     setTimeout(() => setShowViolationOverlay(false), 2500);
-    
+
     setTabSwitchCount(prev => {
       const next = prev + 1;
       violationCountRef.current = next;
       lastViolationRef.current = { type, message: msg, count: next, at: new Date().toISOString() };
-      if (next >= 3) { // Disqualified on 3rd violation
+      if (next >= 5) { // Disqualified on 5th violation
         terminatedRef.current = true;
         uploadViolationFrame();
         toast.error("🚫 DISQUALIFIED! Too many violations. Test submitted.");
@@ -135,7 +152,7 @@ const McqTestPage = () => {
         setTimeout(() => submitTest({}), 1000);
       } else {
         uploadViolationFrame();
-        toast.error(`⚠️ WARNING (${next}/3): ${msg}`);
+        toast.error(`⚠️ WARNING (${next}/5): ${msg}`);
       }
       return next;
     });
@@ -146,7 +163,7 @@ const McqTestPage = () => {
     let timeoutId;
 
     const startFaceTracking = async () => {
-      if (!isTestStarted || !isDetectionEnabled || !videoRef.current || videoRef.current.readyState < 2 || !window.faceapi || !window.faceapi.detectSingleFace || isTrackingRef.current || document.hidden) {
+      if (!isTestStartedRef.current || !videoRef.current || videoRef.current.readyState < 2 || !window.faceapi || !window.faceapi.detectSingleFace || isTrackingRef.current || document.hidden || isTestSubmittedRef.current) {
         timeoutId = setTimeout(startFaceTracking, 1000);
         return;
       }
@@ -155,7 +172,7 @@ const McqTestPage = () => {
       try {
         const detections = await window.faceapi.detectSingleFace(
           videoRef.current,
-          new window.faceapi.TinyFaceDetectorOptions({ inputSize: 128, scoreThreshold: 0.3 })
+          new window.faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.3 })
         ).withFaceLandmarks();
 
         if (!detections) {
@@ -171,14 +188,14 @@ const McqTestPage = () => {
           const nose = landmarks.getNose()[3];
           const leftEye = landmarks.getLeftEye()[0];
           const rightEye = landmarks.getRightEye()[3];
-          
+
           const eyeCenterX = (leftEye.x + rightEye.x) / 2;
           const diff = Math.abs(eyeCenterX - nose.x);
-          
+
           console.log("PROCTOR DEBUG:", { diff, eyeWidth: (rightEye.x - leftEye.x) });
 
           // Sensitive rotation detection
-          if (diff > 10) { 
+          if (diff > 10) {
             if (!isHeadRotatedRef.current) {
               isHeadRotatedRef.current = true;
               triggerWarning("Looking away detected!", "head_switch");
@@ -190,10 +207,10 @@ const McqTestPage = () => {
           // Gaze detection
           const eyeWidth = rightEye.x - leftEye.x;
           if (eyeWidth < 30) {
-             // Only count if not already looking away to prevent double counting
-             if (!isHeadRotatedRef.current) {
-                // triggerWarning("Please focus on the screen!", "focus_lost"); 
-             }
+            // Only count if not already looking away to prevent double counting
+            if (!isHeadRotatedRef.current) {
+              // triggerWarning("Please focus on the screen!", "focus_lost"); 
+            }
           }
         }
       } catch (err) {
@@ -244,9 +261,9 @@ const McqTestPage = () => {
           const canvas = canvasRef.current;
           canvas.width = 160; canvas.height = 120; // Smaller for speed
           canvas.getContext('2d', { alpha: false }).drawImage(video, 0, 0, 160, 120);
-          await fetch('https://unlanded-isela-unmunificently.ngrok-free.dev/api/upload-frame/', {
+          await fetch('https://api.codingboss.in/api/upload-frame/', {
             method: 'POST',
-            headers: { 
+            headers: {
               'Content-Type': 'application/json',
               'ngrok-skip-browser-warning': 'true'
             },
@@ -260,11 +277,32 @@ const McqTestPage = () => {
               terminated: terminatedRef.current
             })
           });
-        } catch (e) {} finally { isUploadingRef.current = false; }
+        } catch (e) { } finally { isUploadingRef.current = false; }
       }, 3000);
     }
     return () => clearInterval(intervalId);
   }, [isTestStarted, cameraStream]);
+
+  // 🔥 ENGINE: CAMERA STATUS MONITORING
+  useEffect(() => {
+    let intervalId;
+    const checkCameraStatus = () => {
+      if (!isTestStartedRef.current || isTestSubmittedRef.current || !cameraStream) return;
+      
+      const videoTrack = cameraStream.getVideoTracks()[0];
+      const isTrackOff = !videoTrack || !videoTrack.enabled || videoTrack.readyState === 'ended';
+      const isVideoPaused = videoRef.current && (videoRef.current.paused || videoRef.current.ended);
+      
+      if (isTrackOff || isVideoPaused) {
+        triggerWarning("Camera is disconnected or turned off! Re-enable it immediately.", "camera_off");
+      }
+    };
+
+    if (isTestStarted) {
+      intervalId = setInterval(checkCameraStatus, 3000);
+    }
+    return () => clearInterval(intervalId);
+  }, [isTestStarted, isTestSubmitted, cameraStream]);
 
   // 🔥 ENGINE: POLLING FOR DOCTOR WARNINGS
   useEffect(() => {
@@ -272,9 +310,9 @@ const McqTestPage = () => {
     const pollDoctorWarnings = async () => {
       if (!isTestStarted || isTestSubmitted || terminatedRef.current) return;
       try {
-        const res = await fetch('https://unlanded-isela-unmunificently.ngrok-free.dev/api/upload-frame/', {
+        const res = await fetch('https://api.codingboss.in/api/upload-frame/', {
           method: 'GET',
-          headers: { 
+          headers: {
             'Accept': 'application/json',
             'ngrok-skip-browser-warning': 'true'
           }
@@ -283,11 +321,11 @@ const McqTestPage = () => {
         const list = data.sessions ? data.sessions : Array.isArray(data) ? data : data.results || data.frames || data.data || [];
         const studentId = String(getDecryptedUserId() || 1);
         const myFrames = list.filter(r => String(r.student_id) === studentId);
-        
+
         let doctorDetects = 0;
         let doctorUndetects = 0;
         let isTerminated = false;
-        
+
         myFrames.forEach(f => {
           if (f.violation_type === 'doctor_detect') doctorDetects++;
           if (f.violation_type === 'doctor_undetect') doctorUndetects++;
@@ -297,40 +335,40 @@ const McqTestPage = () => {
         const effectiveDetects = Math.max(0, doctorDetects - doctorUndetects);
 
         if (!window.lastDoctorDetectCountRef) window.lastDoctorDetectCountRef = { current: 0 };
-        
+
         if (effectiveDetects > window.lastDoctorDetectCountRef.current) {
-           const newDetects = effectiveDetects - window.lastDoctorDetectCountRef.current;
-           window.lastDoctorDetectCountRef.current = effectiveDetects;
-           
-           for(let i=0; i<newDetects; i++) {
-             setTimeout(() => {
-               triggerWarning("Doctor issued a warning! Please follow exam rules.", "doctor_detect", true);
-             }, i * 500); // spread out visually
-           }
+          const newDetects = effectiveDetects - window.lastDoctorDetectCountRef.current;
+          window.lastDoctorDetectCountRef.current = effectiveDetects;
+
+          for (let i = 0; i < newDetects; i++) {
+            setTimeout(() => {
+              triggerWarning("Doctor issued a warning! Please follow exam rules.", "doctor_detect", true);
+            }, i * 500); // spread out visually
+          }
         } else if (effectiveDetects < window.lastDoctorDetectCountRef.current) {
-           // Doctor hit "UNDETECT"
-           const reducedBy = window.lastDoctorDetectCountRef.current - effectiveDetects;
-           window.lastDoctorDetectCountRef.current = effectiveDetects;
-           
-           // Reduce the internal tabSwitchCount
-           setTabSwitchCount(prev => {
-             const next = Math.max(0, prev - reducedBy);
-             violationCountRef.current = next;
-             return next;
-           });
-           toast.info("A warning was cleared by the Doctor.", { position: "bottom-center" });
+          // Doctor hit "UNDETECT"
+          const reducedBy = window.lastDoctorDetectCountRef.current - effectiveDetects;
+          window.lastDoctorDetectCountRef.current = effectiveDetects;
+
+          // Reduce the internal tabSwitchCount
+          setTabSwitchCount(prev => {
+            const next = Math.max(0, prev - reducedBy);
+            violationCountRef.current = next;
+            return next;
+          });
+          toast.info("A warning was cleared by the Doctor.", { position: "bottom-center" });
         }
-        
+
         if (isTerminated && !terminatedRef.current) {
-           terminatedRef.current = true;
-           toast.error("🚫 Warning: Doctor issued a critical notice. Please follow exam rules.");
+          terminatedRef.current = true;
+          toast.error("🚫 Warning: Doctor issued a critical notice. Please follow exam rules.");
         }
-      } catch (err) {}
+      } catch (err) { }
     };
 
     if (isTestStarted) {
-       if (!window.lastDoctorDetectCountRef) window.lastDoctorDetectCountRef = { current: 0 };
-       intervalId = setInterval(pollDoctorWarnings, 2000);
+      if (!window.lastDoctorDetectCountRef) window.lastDoctorDetectCountRef = { current: 0 };
+      intervalId = setInterval(pollDoctorWarnings, 2000);
     }
     return () => clearInterval(intervalId);
   }, [isTestStarted, isTestSubmitted]);
@@ -342,7 +380,7 @@ const McqTestPage = () => {
       if (!isTestStarted || isTestSubmitted) return;
       try {
         const studentId = getDecryptedUserId() || 1;
-        const res = await fetch(`https://unlanded-isela-unmunificently.ngrok-free.dev/api/toggle-detection/?user_id=${studentId}`, {
+        const res = await fetch(`https://api.codingboss.in/api/toggle-detection/?user_id=${studentId}`, {
           headers: { 'ngrok-skip-browser-warning': 'true' }
         });
         const data = await res.json();
@@ -350,7 +388,7 @@ const McqTestPage = () => {
         if (data.is_detection_enabled !== undefined) {
           setIsDetectionEnabled(!!data.is_detection_enabled);
         }
-      } catch (err) {}
+      } catch (err) { }
     };
 
     if (isTestStarted) {
@@ -388,8 +426,8 @@ const McqTestPage = () => {
         }
         const params = new URLSearchParams({ subtype: normalizedSubtype });
         const data = await apiClient(`compiler/filter-by-subtype/?${params.toString()}`, 'GET');
-        if (Array.isArray(data) && data.length > 0) { 
-          setQuestions(data); 
+        if (Array.isArray(data) && data.length > 0) {
+          setQuestions(data);
           setTestStartTime(Date.now());
           // Auto-detect type from first question (e.g., 'Technical')
           if (data[0].list) setDetectedType(data[0].list);
@@ -428,7 +466,7 @@ const McqTestPage = () => {
     console.log("SUBMITTING TEST PAYLOAD:", payload);
 
     try {
-      const response = await fetch('https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/evaluate/', {
+      const response = await fetch('https://api.codingboss.in/compiler/evaluate/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -440,11 +478,11 @@ const McqTestPage = () => {
         localStorage.setItem(`mcq_completed_${getDecryptedUserId()}_${normalizedSubtype}_${normalizedCategory}`, 'true');
         setTimeout(() => navigate('/UserDashboard', { replace: true }), 1000);
       }
-    } catch (error) { 
+    } catch (error) {
       console.error("SUBMISSION ERROR:", error);
-      toast.error(`Submission failed: ${error.message || 'Unknown Error'}`); 
-    } finally { 
-      setCompletionLoading(false); 
+      toast.error(`Submission failed: ${error.message || 'Unknown Error'}`);
+    } finally {
+      setCompletionLoading(false);
     }
   };
 
@@ -473,7 +511,7 @@ const McqTestPage = () => {
   return (
     <div style={{ background: '#f8fafc', minHeight: '100vh', position: 'relative' }}>
       <ToastContainer position="top-center" autoClose={3000} />
-      
+
       {showViolationOverlay && (
         <div className="security-alert-overlay">
           <div className="alert-flash-red"></div>
@@ -487,13 +525,21 @@ const McqTestPage = () => {
       )}
 
       <div className="proctoring-dashboard">
-        <div className="camera-proctor-box">
+        <div className={`camera-proctor-box ${isCameraMinimized ? 'minimized' : ''}`}>
           <video ref={videoRef} autoPlay playsInline muted className="camera-video" />
           <canvas ref={canvasRef} style={{ display: 'none' }} />
-          <div className="camera-status"><div className="pulse"></div> LIVE PROCTOR</div>
+          <div className="camera-status" onClick={() => {
+            if (!isCameraMinimized) {
+              triggerWarning("Hiding the camera feed is strictly prohibited!", "ui_minimize");
+            }
+            setIsCameraMinimized(!isCameraMinimized);
+          }}>
+            <div className="pulse"></div> 
+            {isCameraMinimized ? 'VIEW FEED' : 'LIVE PROCTOR (Minimize)'}
+          </div>
         </div>
       </div>
-      <MCQQuiz questions={questions} updateQuestionStatus={() => {}} submitTest={submitTest} />
+      <MCQQuiz questions={questions} updateQuestionStatus={() => { }} submitTest={submitTest} />
     </div>
   );
 };
