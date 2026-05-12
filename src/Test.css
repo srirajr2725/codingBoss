@@ -6,7 +6,8 @@
 .task-container {
   min-height: 100vh;
   padding: 60px 40px;
-  background-color: transparent; /* Removed dark background as requested */
+  background-color: transparent;
+  /* Removed dark background as requested */
   position: relative;
   overflow: hidden;
   font-family: 'Inter', -apple-system, sans-serif;
@@ -29,19 +30,24 @@
 .task-glow-1 {
   top: -100px;
   left: -200px;
-  background: radial-gradient(circle, rgba(255,160,3,0.15) 0%, rgba(255,255,255,0) 70%);
+  background: radial-gradient(circle, rgba(255, 160, 3, 0.15) 0%, rgba(255, 255, 255, 0) 70%);
 }
 
 .task-glow-2 {
   bottom: -200px;
   right: -100px;
-  background: radial-gradient(circle, rgba(0,114,255,0.1) 0%, rgba(255,255,255,0) 70%);
+  background: radial-gradient(circle, rgba(0, 114, 255, 0.1) 0%, rgba(255, 255, 255, 0) 70%);
   animation-delay: -5s;
 }
 
 @keyframes floatOrb {
-  0% { transform: translateY(0) scale(1); }
-  100% { transform: translateY(50px) scale(1.1); }
+  0% {
+    transform: translateY(0) scale(1);
+  }
+
+  100% {
+    transform: translateY(50px) scale(1.1);
+  }
 }
 
 .task-content-wrapper {
@@ -135,7 +141,7 @@
   font-weight: 800;
   letter-spacing: 1px;
   z-index: 10;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
 }
 
 .task-card:nth-child(1) .task-badge {
@@ -227,9 +233,11 @@
 .task-btn::after {
   content: '';
   position: absolute;
-  top: 0; left: -100%;
-  width: 100%; height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
   transition: 0.5s;
 }
 
@@ -268,7 +276,7 @@
   border-radius: 24px;
   padding: 24px 32px;
   margin-top: 20px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.03);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
 }
 
 .pro-tip-icon {
@@ -283,18 +291,164 @@
 }
 
 @keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(40px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @media (max-width: 768px) {
   .task-grid {
     grid-template-columns: 1fr;
   }
+
   .task-container {
     padding: 30px 20px;
   }
+
   .task-title {
     font-size: 2.5rem;
+  }
+}
+
+/* ══════════════════════════════════════════════
+   ELITE ULTRA LAUNCH OVERLAY
+   ══════════════════════════════════════════════ */
+.elite-launch-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(30px) saturate(200%);
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  animation: eliteFadeIn 0.4s ease-out;
+}
+
+.elite-launch-content {
+  text-align: center;
+  max-width: 600px;
+  padding: 40px;
+  animation: eliteScaleUp 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.elite-rocket-glow {
+  width: 100px;
+  height: 100px;
+  background: linear-gradient(135deg, #0072ff 0%, #00c6ff 100%);
+  border-radius: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 30px;
+  box-shadow: 0 20px 40px rgba(0, 114, 255, 0.3), 0 0 0 10px rgba(0, 114, 255, 0.05);
+  animation: elitePulse 2s infinite ease-in-out;
+}
+
+.elite-rocket-icon {
+  font-size: 45px;
+  color: white;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.1));
+}
+
+.elite-launch-title {
+  font-size: 2.8rem;
+  font-weight: 900;
+  color: #0f172a;
+  letter-spacing: -2px;
+  margin-bottom: 12px;
+}
+
+.elite-launch-title span {
+  background: linear-gradient(90deg, #0072ff, #00c6ff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.elite-launch-subtitle {
+  font-size: 1.1rem;
+  color: #64748b;
+  font-weight: 500;
+  margin-bottom: 40px;
+}
+
+.elite-loading-bar-container {
+  width: 100%;
+  height: 6px;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+}
+
+.elite-loading-bar-progress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  background: linear-gradient(90deg, #0072ff, #00c6ff);
+  animation: eliteLoading 2s cubic-bezier(0.65, 0, 0.35, 1) forwards;
+}
+
+@keyframes eliteFadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes eliteScaleUp {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes elitePulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 20px 40px rgba(0, 114, 255, 0.3), 0 0 0 10px rgba(0, 114, 255, 0.05);
+  }
+
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 25px 50px rgba(0, 114, 255, 0.4), 0 0 0 20px rgba(0, 114, 255, 0.02);
+  }
+
+  100% {
+    transform: scale(1);
+    box-shadow: 0 20px 40px rgba(0, 114, 255, 0.3), 0 0 0 10px rgba(0, 114, 255, 0.05);
+  }
+}
+
+@keyframes eliteLoading {
+  0% {
+    transform: translateX(-100%);
+  }
+
+  100% {
+    transform: translateX(0);
   }
 }

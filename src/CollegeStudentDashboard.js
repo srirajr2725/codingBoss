@@ -98,7 +98,7 @@ const Dashboard = ({
 
   const renderContent = () => {
     switch (selectedTab) {
-      case 'Start Learn': return <CourseCard />;
+      case 'Start Learn': return <CourseCard setSelectedTab={setSelectedTab} />;
       case 'Your Status': return <Status setAccess={setAccess} />;
       case 'Task': return <Test />;
       case 'Courses': return <Learn isLoggedIn={isLoggedIn} username={username} userRole={userRole} handleLogout={handleLogout} />;

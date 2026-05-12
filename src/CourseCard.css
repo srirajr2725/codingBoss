@@ -1225,3 +1225,240 @@
   .cc-cta-inner { padding: 48px 28px !important; }
   .cc-cta-title { font-size: 2rem !important; }
 }
+
+/* ══════════════════════════════════════════════
+   ADVANCED ULTRA MODERN DUAL PILLARS
+   ══════════════════════════════════════════════ */
+.cc-dual-pillars {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+  margin: 40px 0 60px;
+  perspective: 1000px;
+}
+
+.cc-pillar-card {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 40px;
+  padding: 40px 32px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.03);
+}
+
+/* Mesh Gradient Backgrounds */
+.learning-pillar::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.15) 0%, transparent 50%),
+              radial-gradient(at 100% 100%, rgba(168, 85, 247, 0.1) 0%, transparent 50%);
+  opacity: 0.6;
+  z-index: -1;
+  transition: opacity 0.5s;
+}
+
+.assessment-pillar::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(at 0% 0%, rgba(255, 160, 3, 0.15) 0%, transparent 50%),
+              radial-gradient(at 100% 100%, rgba(239, 68, 68, 0.1) 0%, transparent 50%);
+  opacity: 0.6;
+  z-index: -1;
+  transition: opacity 0.5s;
+}
+
+.cc-pillar-card:hover {
+  transform: translateY(-20px) rotateX(2deg);
+  background: rgba(255, 255, 255, 0.85);
+  box-shadow: 0 40px 100px rgba(0, 0, 0, 0.1);
+  border-color: rgba(255, 255, 255, 0.8);
+}
+
+.cc-pillar-card:hover::before {
+  opacity: 1;
+}
+
+/* Floating Neon Stroke */
+.cc-pillar-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 48px;
+  padding: 2px;
+  background: linear-gradient(45deg, transparent, var(--pillar-accent), transparent);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.4s;
+}
+
+.cc-pillar-card:hover::after {
+  opacity: 1;
+  animation: neonOrbit 4s linear infinite;
+}
+
+@keyframes neonOrbit {
+  0% { filter: hue-rotate(0deg); }
+  100% { filter: hue-rotate(360deg); }
+}
+
+.cc-pillar-badge {
+  position: absolute;
+  top: 30px;
+  right: 32px;
+  font-size: 0.65rem;
+  font-weight: 900;
+  letter-spacing: 2px;
+  padding: 6px 16px;
+  background: #0f172a;
+  color: white;
+  border-radius: 100px;
+  text-transform: uppercase;
+  z-index: 2;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+
+.cc-pillar-icon-wrapper {
+  width: 70px;
+  height: 70px;
+  border-radius: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 28px;
+  transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 15px 30px rgba(0,0,0,0.05);
+  position: relative;
+  z-index: 2;
+}
+
+.cc-pillar-card:hover .cc-pillar-icon-wrapper {
+  transform: scale(1.1) rotate(-12deg) translateY(-5px);
+  box-shadow: 0 25px 50px rgba(0,0,0,0.1);
+}
+
+.cc-pillar-icon {
+  font-size: 2rem;
+}
+
+.cc-pillar-title {
+  font-size: 1.8rem;
+  font-weight: 950;
+  color: #0f172a;
+  letter-spacing: -1px;
+  margin-bottom: 12px;
+  line-height: 1;
+  z-index: 2;
+}
+
+.cc-pillar-title span {
+  display: block;
+  font-size: 2rem;
+  background: linear-gradient(135deg, var(--pillar-accent), var(--pillar-accent-alt));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.cc-pillar-desc {
+  color: #64748b;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  margin-bottom: 24px;
+  font-weight: 500;
+  z-index: 2;
+}
+
+.cc-pillar-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  z-index: 2;
+}
+
+.cc-pillar-list li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 700;
+  color: #1e293b;
+  font-size: 0.95rem;
+  transition: transform 0.3s;
+}
+
+.cc-pillar-card:hover .cc-pillar-list li {
+  transform: translateX(5px);
+}
+
+.cc-pillar-list li svg {
+  font-size: 1.2rem;
+  color: #10b981;
+  filter: drop-shadow(0 0 5px rgba(16, 185, 129, 0.3));
+}
+
+.cc-pillar-btn {
+  width: 100%;
+  padding: 14px;
+  border-radius: 18px;
+  border: none;
+  font-weight: 900;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  cursor: pointer;
+  z-index: 2;
+  letter-spacing: 0.5px;
+}
+
+.learning-btn {
+  background: #0f172a;
+  color: white;
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.2);
+}
+
+.learning-btn:hover {
+  background: #6366f1;
+  transform: scale(1.02);
+  box-shadow: 0 25px 50px rgba(99, 102, 241, 0.4);
+}
+
+.assessment-btn {
+  background: #0f172a;
+  color: white;
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.2);
+}
+
+.assessment-btn:hover {
+  background: #FFA003;
+  transform: scale(1.02);
+  box-shadow: 0 25px 50px rgba(255, 160, 3, 0.4);
+}
+
+/* Specific pillar accents */
+.learning-pillar { --pillar-accent: #6366f1; --pillar-accent-alt: #a855f7; }
+.assessment-pillar { --pillar-accent: #FFA003; --pillar-accent-alt: #ef4444; }
+
+@media (max-width: 992px) {
+  .cc-dual-pillars {
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
+  .cc-pillar-card {
+    padding: 50px 32px;
+  }
+}

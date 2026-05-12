@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { HashRouter as Router, Route, Routes, Navigate, useLocation } from "react-router-dom";
 import "./index.css";
 import 'bootstrap/dist/css/bootstrap.min.css';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import CryptoJS from "crypto-js";
 import apiClient from "./utils/apiClient";
 
@@ -43,6 +45,7 @@ import CounterSection from "./CounterSection.js";
 import WhyUs from "./WhyUs.js";
 
 import Learn from "./Learn.js";
+import Test from "./Test.js";
 import GlobalAIAssistant from "./GlobalAIAssistant.js";
 import InnovativeLearning from "./InnovativeLearning.js";
 
@@ -157,6 +160,7 @@ function AppWrapper() {
 
   return (
     <>
+      <ToastContainer theme="colored" position="top-center" />
       <Routes>
         {/* Authentication */}
         <Route path="/LoginPage" element={<LoginPage {...{ setIsLoggedIn, setUsername, setUserRole }} />} />
@@ -189,6 +193,7 @@ function AppWrapper() {
         <Route path="/projects/:projectName" element={isLoggedIn ? <ProjectForm /> : <Navigate to="/LoginPage" replace />} />
         <Route path="/QuestionPage" element={isLoggedIn ? <QuestionPage {...{ isLoggedIn, setIsLoggedIn, username, userRole, handleLogout }} /> : <Navigate to="/LoginPage" replace />} />
         <Route path="/courses" element={isLoggedIn ? <Learn {...{ isLoggedIn, username, userRole, handleLogout }} /> : <Navigate to="/LoginPage" replace />} />
+        <Route path="/AssessmentCenter" element={isLoggedIn ? <Test /> : <Navigate to="/LoginPage" replace />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       {isLoggedIn && userRole === 'member' && !['course', 'learn', 'studio', 'question', 'mcq', 'test', 'doctor', 'proctor'].some(kw => (location.pathname + location.hash).toLowerCase().includes(kw)) && <GlobalAIAssistant />}

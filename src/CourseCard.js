@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from "framer-motion";
+import { useNavigate } from 'react-router-dom';
 import {
   FaArrowRight, FaArrowLeft, FaDownload, FaGamepad, FaSearch,
   FaBook, FaBriefcase, FaRocket, FaStar, FaCode, FaCheckCircle,
@@ -7,9 +8,6 @@ import {
   FaQuoteLeft, FaWhatsapp
 } from 'react-icons/fa';
 import './CourseCard.css';
-import banner1 from './images/ultra_python_banner.png';
-import banner2 from './images/ultra_nextjs_banner.png';
-import banner3 from './images/ultra_java_banner.png';
 import slider1 from './images/slider1.png';
 import slider2 from './images/slider2.png';
 import slider3 from './images/slider3.png';
@@ -50,7 +48,8 @@ function Counter({ end, suffix = '' }) {
   return <span ref={ref}>{count}{suffix}</span>;
 }
 
-export default function CourseCard() {
+export default function CourseCard({ setSelectedTab }) {
+  const navigate = useNavigate();
   const [currentView, setCurrentView] = useState('main');
   const [currentAdIndex, setCurrentAdIndex] = useState(0);
   const [activeTab, setActiveTab] = useState(0);
@@ -133,54 +132,7 @@ export default function CourseCard() {
   /* ── RENDER MAIN ── */
   const renderMain = () => (
     <div className="cc-animate">
-
-      {/* ── SLIDER BANNER ── */}
-      <div className="cc-ad-container">
-        <AnimatePresence mode="wait">
-          <motion.div key={currentAdIndex}
-            initial={{ opacity: 0, scale: 1.03 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.97 }}
-            transition={{ duration: 0.55, ease: "easeOut" }}
-            className="cc-ad-banner"
-          >
-            {/* Background image */}
-            <div className="cc-ad-image-bg">
-              <img src={ads[currentAdIndex].img} alt={ads[currentAdIndex].title} loading="lazy" />
-              <div className="cc-ad-overlay" />
-            </div>
-            {/* Content */}
-            <div className="cc-ad-content">
-              <div className="cc-ad-badge" style={{ background: ads[currentAdIndex].accent }}>⭐ PREMIUM OFFER</div>
-              <h2 className="cc-ad-title">{ads[currentAdIndex].title}</h2>
-              <p className="cc-ad-sub">{ads[currentAdIndex].sub}</p>
-              <button className="cc-ad-btn" style={{ background: ads[currentAdIndex].accent }}>
-                {ads[currentAdIndex].btn} <FaArrowRight />
-              </button>
-            </div>
-          </motion.div>
-        </AnimatePresence>
-
-        {/* Navigation arrows */}
-        <button className="cc-slider-arrow cc-slider-prev" onClick={() => setCurrentAdIndex(p => (p - 1 + ads.length) % ads.length)}>
-          <FaArrowLeft />
-        </button>
-        <button className="cc-slider-arrow cc-slider-next" onClick={() => setCurrentAdIndex(p => (p + 1) % ads.length)}>
-          <FaArrowRight />
-        </button>
-
-        {/* Dots + progress */}
-        <div className="cc-slider-footer">
-          <div className="cc-ad-dots">
-            {ads.map((_, i) => <div key={i} className={`cc-ad-dot ${i === currentAdIndex ? 'active' : ''}`} onClick={() => setCurrentAdIndex(i)} />)}
-          </div>
-          <div className="cc-slider-progress">
-            <div className="cc-slider-bar" style={{ width: `${progress}%`, background: ads[currentAdIndex].accent }} />
-          </div>
-        </div>
-      </div>
-
-      {/* ── HERO ── */}
+ {/* ── HERO ── */}
       <div className="cc-hero">
         <motion.div className="cc-tag" initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
           <span>⚡</span> Accelerate Your Tech Career
@@ -199,6 +151,65 @@ export default function CourseCard() {
         </motion.div>
       </div>
 
+           {/* ── DUAL PILLAR SECTION: COURSES VS ASSESSMENT ── */}
+      <div className="cc-section-header">
+        <span className="cc-eyebrow">CHOOSE YOUR PATH</span>
+        <h2 className="cc-section-title">Mastery <span>&</span> Evaluation</h2>
+      </div>
+      
+      <div className="cc-dual-pillars">
+        {/* LEARNING PILLAR */}
+        <motion.div 
+          className="cc-pillar-card learning-pillar"
+          whileHover={{ y: -10 }}
+          onClick={() => setSelectedTab ? setSelectedTab('Courses') : navigate('/courses')}
+        >
+          <div className="cc-pillar-badge">ACADEMY</div>
+          <div className="cc-pillar-icon-wrapper" style={{ background: 'rgba(99, 102, 241, 0.1)' }}>
+            <FaBook className="cc-pillar-icon" style={{ color: '#6366f1' }} />
+          </div>
+          <h3 className="cc-pillar-title">Certified <span>Courses</span></h3>
+          <p className="cc-pillar-desc">
+            Explore our professional curriculum in Java, Python, React, and C. 
+            Build production-grade projects and earn industry certifications.
+          </p>
+          <ul className="cc-pillar-list">
+            <li><FaCheckCircle /> 50+ Specialized Modules</li>
+            <li><FaCheckCircle /> Production-Grade Projects</li>
+            <li><FaCheckCircle /> Industry Mentorship</li>
+          </ul>
+          <button className="cc-pillar-btn learning-btn">
+            Explore Academy <FaArrowRight />
+          </button>
+        </motion.div>
+
+        {/* ASSESSMENT PILLAR */}
+        <motion.div 
+          className="cc-pillar-card assessment-pillar"
+          whileHover={{ y: -10 }}
+          onClick={() => setSelectedTab ? setSelectedTab('Task') : navigate('/AssessmentCenter')}
+        >
+          <div className="cc-pillar-badge">EVALUATION</div>
+          <div className="cc-pillar-icon-wrapper" style={{ background: 'rgba(255, 160, 3, 0.1)' }}>
+            <FaLaptopCode className="cc-pillar-icon" style={{ color: '#FFA003' }} />
+          </div>
+          <h3 className="cc-pillar-title">Assessment <span>Center</span></h3>
+          <p className="cc-pillar-desc">
+            Validate your skills with our proctored MCQ tests and high-fidelity Code Labs. 
+            Track your percentile and placement readiness.
+          </p>
+          <ul className="cc-pillar-list">
+            <li><FaCheckCircle /> Proctored MCQ Exams</li>
+            <li><FaCheckCircle /> Real-time Code Labs</li>
+            <li><FaCheckCircle /> Performance Analytics</li>
+          </ul>
+          <button className="cc-pillar-btn assessment-btn">
+            Start Assessment <FaArrowRight />
+          </button>
+        </motion.div>
+      </div>
+
+
       {/* ── TECH STACK TICKER ── */}
       <div className="cc-ticker-wrapper">
         <div className="cc-ticker">
@@ -209,37 +220,7 @@ export default function CourseCard() {
           ))}
         </div>
       </div>
-
-      {/* ── FEATURE CARDS ── */}
-      <div className="cc-section-header">
-        <span className="cc-eyebrow">What We Offer</span>
-        <h2 className="cc-section-title">Everything You Need to <span>Succeed</span></h2>
-      </div>
-      <div className="cc-feature-grid">
-        {features.map((f, i) => (
-          <motion.div
-            key={i}
-            className="cc-feature-card"
-            style={{ '--card-color': f.color, '--card-bg': `${f.color}15` }}
-            onClick={f.action}
-            whileHover={{ y: -10 }}
-            transition={{ type: 'spring', stiffness: 300 }}
-          >
-            <div className="cc-card-inner">
-              <div className="cc-card-top-row">
-                <div className="cc-card-icon">{f.icon}</div>
-                <div className="cc-card-stat-pill">{f.stats} {f.label}</div>
-              </div>
-              <h3 className="cc-card-title">{f.title}</h3>
-              <p className="cc-card-desc">{f.description}</p>
-              <div className="cc-card-footer">
-                <span className="cc-card-explore">Explore Now <FaArrowRight /></span>
-                <div className="cc-card-arrow"><FaArrowRight /></div>
-              </div>
-            </div>
-          </motion.div>
-        ))}
-      </div>
+      {/* ── TECH STACK TICKER ── */}
 
       {/* ── CERTIFIED COURSES (DIRECTLY ON MAIN PAGE) ── */}
       <div className="cc-section-header" style={{ marginTop: '40px' }}>

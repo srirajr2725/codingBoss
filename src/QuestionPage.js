@@ -49,6 +49,13 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
   const [showAlgorithm, setShowAlgorithm] = useState(false);
   const [showExample, setShowExample] = useState(false);
   const [confirmAction, setConfirmAction] = useState(null); // 'hint' | 'algorithm' | 'example'
+  const [showHelpOptions, setShowHelpOptions] = useState(false);
+  const [helpAgreed, setHelpAgreed] = useState(false); // Initial agreement to see options
+  const [unlockedHelps, setUnlockedHelps] = useState({ hint: false, algorithm: false, sample: false });
+  const [helpToUnlock, setHelpToUnlock] = useState(null); // 'hint' | 'algorithm' | 'sample'
+  const [showInitialAgreementModal, setShowInitialAgreementModal] = useState(false);
+  const [isCameraMinimized, setIsCameraMinimized] = useState(false);
+  const [testCases, setTestCases] = useState([]);
 
   const handleConfirmAction = () => {
     if (confirmAction === 'hint') setShowHint(true);
@@ -186,23 +193,37 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
       if (!questionId) return;
 
       try {
-        // Fetch hints, algorithm, and example_programs strictly from ngrok test-cases
-        const langParam = selectedLanguage === 'Python' ? 'python' : selectedLanguage;
-        fetch(`https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/test-cases/?language=${langParam}`, {
+        // Fetch test-cases strictly from ngrok
+        fetch(`https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/test-cases/`, {
           headers: { 'ngrok-skip-browser-warning': 'true' }
         })
           .then(res => res.json())
           .then(tcData => {
+            // Handle various response structures (results, questions, data, or direct array)
             const allItems = Array.isArray(tcData) ? tcData : (tcData.results || tcData.questions || tcData.data || []);
-            // Filter by questionId
-            const found = allItems.find(q => String(q.id || q.question_id) === String(questionId) || String(q.question) === String(questionId));
+            const targetId = String(questionId || question?.id || "");
 
-            if (found) {
+            // Filter by questionId to get ALL matches
+            const relevantMatches = allItems.filter(q =>
+              String(q.id || q.question_id) === targetId ||
+              String(q.question) === targetId
+            );
+
+            if (relevantMatches.length > 0) {
+              const mainMatch = relevantMatches[0];
+
+              // Map ALL relevant matches to testCases state
+              const normalizedTests = relevantMatches.map(tc => ({
+                input: tc.input || tc.input_data || "None",
+                expected_output: tc.expected_output || tc.output || "None"
+              }));
+              setTestCases(normalizedTests);
+
               setQuestionData(prev => ({
                 ...prev,
-                hints: found.hints || prev?.hints,
-                algorithm: found.algorithm || prev?.algorithm,
-                example_code: found.example_programs || prev?.example_code
+                hints: mainMatch.hints || mainMatch.hint || prev?.hints,
+                algorithm: mainMatch.algorithm || mainMatch.algo || prev?.algorithm,
+                example_code: mainMatch.example_programs || mainMatch.example_code || mainMatch.code_example || prev?.example_code
               }));
             }
           }).catch((err) => { console.error("Test cases fetch failed:", err); });
@@ -214,8 +235,8 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
           setQuestionData(prev => ({
             ...prev,
             ...base,
-            title: base.title || prev?.title,
-            description: base.description || base.question || prev?.description
+            title: base.question || base.title || prev?.title || "Coding Challenge",
+            description: base.description || (base.description !== base.question ? base.question : null) || prev?.description
           }));
         }
       } catch (err) {
@@ -350,6 +371,10 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
         script.async = true;
         script.onload = async () => {
           try {
+            if (!window.faceapi) {
+              console.warn("face-api.js loaded but global object missing");
+              return;
+            }
             const MODEL_URL = "https://justadudewhohacks.github.io/face-api.js/models";
             await Promise.all([
               window.faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
@@ -485,7 +510,7 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 320, height: 240 } });
       setCameraStream(stream);
-      
+
       // Attempt fullscreen but don't block if it fails
       try {
         if (document.documentElement.requestFullscreen) {
@@ -497,9 +522,9 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
 
       setIsTestStarted(true);
       setStartTime(Date.now());
-    } catch (err) { 
+    } catch (err) {
       console.error("Test start failed:", err);
-      toast.error("❌ Camera access is required to start the session!"); 
+      toast.error("❌ Camera access is required to start the session!");
     }
   };
 
@@ -585,16 +610,40 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
 
   return (
     <div className="ide-root coding-scope">
-      <ToastContainer theme="dark" position="top-center" />
-      {confirmAction && (
+      {showInitialAgreementModal && (
         <div className="ide-modal-overlay">
           <div className="ide-modal">
             <FaExclamationTriangle className="ide-modal-icon" />
-            <h3>Wait a moment!</h3>
-            <p>Viewing this section will cost you <strong>2 marks</strong>. Are you sure you want to proceed?</p>
+            <h3>Access Help Options</h3>
+            <p>Accessing the help menu will deduct <strong>2 marks</strong> from your score. Do you wish to continue?</p>
+            <div className="ide-modal-mark-warning">2 Marks will be reduced</div>
             <div className="ide-modal-actions">
-              <button className="ide-btn-cancel" onClick={() => setConfirmAction(null)}>Cancel</button>
-              <button className="ide-btn-proceed" onClick={handleConfirmAction}>Proceed (-2 Marks)</button>
+              <button className="ide-btn-cancel" onClick={() => setShowInitialAgreementModal(false)}>Cancel</button>
+              <button className="ide-btn-proceed" onClick={() => {
+                setHelpAgreed(true);
+                setShowInitialAgreementModal(false);
+              }}>Proceed</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {helpToUnlock && (
+        <div className="ide-modal-overlay">
+          <div className="ide-modal">
+            <FaExclamationTriangle className="ide-modal-icon" />
+            <h3>Unlock Specific Help</h3>
+            <p>Unlocking this specific help resource will deduct another <strong>2 marks</strong>. Are you sure?</p>
+            <div className="ide-modal-mark-warning">2 Marks will be reduced</div>
+            <div className="ide-modal-actions">
+              <button className="ide-btn-cancel" onClick={() => setHelpToUnlock(null)}>Cancel</button>
+              <button className="ide-btn-proceed" onClick={() => {
+                setUnlockedHelps(prev => ({ ...prev, [helpToUnlock]: true }));
+                if (helpToUnlock === 'hint') setShowHint(true);
+                if (helpToUnlock === 'algorithm') setShowAlgorithm(true);
+                if (helpToUnlock === 'sample') setShowExample(true);
+                setHelpToUnlock(null);
+              }}>Unlock (-2 Marks)</button>
             </div>
           </div>
         </div>
@@ -610,10 +659,13 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
           </div>
         </div>
       )}
-      <div className="camera-proctor-box">
+      <div className={`camera-proctor-box ${isCameraMinimized ? 'minimized' : ''}`}>
         <video ref={videoRef} autoPlay playsInline muted className="camera-video" />
         <canvas ref={canvasRef} style={{ display: 'none' }} />
-        <div className="camera-status"><div className="pulse"></div> LIVE PROCTOR</div>
+        <div className="camera-status" onClick={() => setIsCameraMinimized(!isCameraMinimized)}>
+          <div className="pulse"></div>
+          {isCameraMinimized ? 'VIEW FEED' : 'LIVE PROCTOR (Minimize)'}
+        </div>
       </div>
       <aside className="ide-sidebar">
         <div className="ide-sidebar-content">
@@ -621,46 +673,115 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
           <h4>{questionData?.title || 'Challenge'}</h4>
           <div className="ide-desc">{questionData?.description || questionData?.question || 'Loading...'}</div>
 
+          {/* ── ALWAYS VISIBLE DETAILED TEST CASES ── */}
+          {testCases.length > 0 && (
+            <div className="ide-test-cases-help detailed-view" style={{ marginTop: '20px', borderLeft: '4px solid #10b981' }}>
+              <div className="help-option-label" style={{ marginBottom: '15px', color: '#1e293b', fontSize: '0.85rem' }}>
+                <FaCheckCircle style={{ color: '#10b981', marginRight: '8px' }} /> Public Test Cases
+              </div>
+              <div className="ide-test-cases-scroll" style={{ maxHheight: '300px' }}>
+                {testCases.map((tc, idx) => (
+                  <div key={idx} className="ide-tc-item detailed">
+                    <div className="ide-tc-group">
+                      <span className="ide-tc-header">SAMPLE INPUT</span>
+                      <pre className="ide-tc-block" style={{ fontSize: '0.75rem', padding: '12px' }}>{tc.input || "None"}</pre>
+                    </div>
+                    <div className="ide-tc-group">
+                      <span className="ide-tc-header expected">EXPECTED OUTPUT</span>
+                      <pre className="ide-tc-block expected" style={{ fontSize: '0.75rem', padding: '12px' }}>{tc.expected_output || tc.output || "None"}</pre>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="ide-extra-info">
-            <div className="ide-info-section">
-              <h6 onClick={handleToggleHint} style={{ cursor: 'pointer', color: 'var(--ide-text-main)' }}>
-                <FaLightbulb className="text-warning" /> HINT {showHint ? '▲' : '▼'}
-              </h6>
-              {showHint && (
-                <p className="ide-info-text" style={{ whiteSpace: 'pre-wrap' }}>
-                  {questionData?.hints || "1. Check for edge cases like empty strings.\n2. Think about the most efficient loop structure."}
-                </p>
-              )}
-            </div>
+            {!helpAgreed ? (
+              <div className="ide-need-help-container">
+                <span className="ide-need-help-title">Stuck on this challenge?</span>
+                <p className="ide-need-help-desc">Access premium guidance to help you solve the problem.</p>
+                <button className="ide-ultra-help-btn" onClick={() => setShowInitialAgreementModal(true)}>
+                  <FaLightbulb /> Need Help?
+                </button>
+              </div>
+            ) : (
+              <div className="help-options-grid">
+                <div
+                  className={`help-option-card ${showHint ? 'active' : ''}`}
+                  onClick={() => {
+                    if (unlockedHelps.hint) setShowHint(!showHint);
+                    else setHelpToUnlock('hint');
+                  }}
+                >
+                  <div className="help-option-info">
+                    <div className="help-option-icon" style={{ background: 'rgba(255, 160, 3, 0.1)', color: '#FFA003' }}>
+                      <FaLightbulb />
+                    </div>
+                    <div>
+                      <div className="help-option-label">(Help 1)</div>
+                      <div className="help-option-tag">Hint</div>
+                    </div>
+                  </div>
+                  <div className="help-option-arrow">{showHint ? '▲' : '▼'}</div>
+                </div>
+                {showHint && unlockedHelps.hint && (
+                  <div className="help-content-box">
+                    {questionData?.hints || "1. Check for edge cases like empty strings.\n2. Think about the most efficient loop structure."}
+                  </div>
+                )}
 
-            <div className="ide-info-section">
-              <h6 onClick={handleToggleAlgorithm} style={{ cursor: 'pointer', color: 'var(--ide-text-main)' }}>
-                <FaBrain className="text-primary" /> ALGORITHM {showAlgorithm ? '▲' : '▼'}
-              </h6>
-              {showAlgorithm && (
-                <p className="ide-info-text" style={{ whiteSpace: 'pre-wrap' }}>
-                  {questionData?.algorithm || "1. Initialize variables.\n2. Process input data using a loop or recursion.\n3. Apply core logic.\n4. Return result."}
-                </p>
-              )}
-            </div>
+                <div
+                  className={`help-option-card ${showAlgorithm ? 'active' : ''}`}
+                  onClick={() => {
+                    if (unlockedHelps.algorithm) setShowAlgorithm(!showAlgorithm);
+                    else setHelpToUnlock('algorithm');
+                  }}
+                >
+                  <div className="help-option-info">
+                    <div className="help-option-icon" style={{ background: 'rgba(99, 102, 241, 0.1)', color: '#6366f1' }}>
+                      <FaBrain />
+                    </div>
+                    <div>
+                      <div className="help-option-label">(Help 2)</div>
+                      <div className="help-option-tag">Algorithm</div>
+                    </div>
+                  </div>
+                  <div className="help-option-arrow">{showAlgorithm ? '▲' : '▼'}</div>
+                </div>
+                {showAlgorithm && unlockedHelps.algorithm && (
+                  <div className="help-content-box">
+                    {questionData?.algorithm || "1. Initialize variables.\n2. Process input data using a loop or recursion.\n3. Apply core logic.\n4. Return result."}
+                  </div>
+                )}
 
-            <div className="ide-info-section">
-              <h6 onClick={handleToggleExample} style={{ cursor: 'pointer', color: 'var(--ide-text-main)' }}>
-                <FaCode className="text-success" /> EXAMPLE PROGRAM {showExample ? '▲' : '▼'}
-              </h6>
-              {showExample && (
-                <pre className="ide-info-text" style={{
-                  background: 'rgba(0,0,0,0.3)',
-                  padding: '10px',
-                  borderRadius: '8px',
-                  fontSize: '0.75rem',
-                  overflowX: 'auto',
-                  marginTop: '8px'
-                }}>
-                  <code>{questionData?.example_code || "// Solution template\npublic class Solution {\n    public static void main(String[] args) {\n        // Code goes here\n    }\n}"}</code>
-                </pre>
-              )}
-            </div>
+                <div
+                  className={`help-option-card ${showExample ? 'active' : ''}`}
+                  onClick={() => {
+                    if (unlockedHelps.sample) setShowExample(!showExample);
+                    else setHelpToUnlock('sample');
+                  }}
+                >
+                  <div className="help-option-info">
+                    <div className="help-option-icon" style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#10b981' }}>
+                      <FaCode />
+                    </div>
+                    <div>
+                      <div className="help-option-label">(Help 3)</div>
+                      <div className="help-option-tag">Sample Program</div>
+                    </div>
+                  </div>
+                  <div className="help-option-arrow">{showExample ? '▲' : '▼'}</div>
+                </div>
+                {showExample && unlockedHelps.sample && (
+                  <div className="help-content-box example-code-container">
+                    <pre className="ide-sample-pre">
+                      <code>{questionData?.example_code || "// Solution template\npublic class Solution {\n    public static void main(String[] args) {\n        // Code goes here\n    }\n}"}</code>
+                    </pre>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </aside>
