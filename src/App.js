@@ -60,9 +60,9 @@ function AppWrapper() {
     { id: 1, name: "MCQ Test", locked: false },
     { id: 2, name: "Programming", locked: false },
     { id: 3, name: "Task", locked: false },
-    { id: 4, name: "Assignments", locked: false },
-    { id: 5, name: "Courses", locked: false },
-    { id: 6, name: "Company", locked: false },
+    { id: 4, name: "Assignments", locked: true },
+    { id: 5, name: "Courses", locked: true },
+    { id: 6, name: "Company", locked: true },
   ]);
 
   useEffect(() => {
@@ -80,7 +80,10 @@ function AppWrapper() {
     // Check access
     const unlocked = localStorage.getItem("user_token");
     if (unlocked) {
-      setAccess((prev) => prev.map(item => ({ ...item, locked: false })));
+      setAccess((prev) => prev.map(item => {
+        if (["Assignments", "Courses", "Company"].includes(item.name)) return item;
+        return { ...item, locked: false };
+      }));
     }
 
     // 🔥 AUTO-FETCH ACCESS TOKEN IF MISSING

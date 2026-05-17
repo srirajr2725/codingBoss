@@ -1,7 +1,7 @@
 
 async function check() {
   try {
-    const res = await fetch('https://api.codingboss.in/compiler/get-category/');
+    const res = await fetch('https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/get-category/');
     const data = await res.json();
     console.log(JSON.stringify(data, null, 2));
   } catch (err) {

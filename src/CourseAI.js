@@ -79,7 +79,7 @@ const CONCEPT_LIBRARY = [
     keys: ['jvm', 'jdk', 'jre'],
     title: 'JDK, JRE, and JVM',
     text: 'JDK is used to develop Java programs, JRE is used to run Java programs, and JVM is the engine inside the JRE that executes Java bytecode.',
-    code: 'Java source code -> javac compiler -> bytecode -> JVM -> output'
+    code: 'Java source code -> javac https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/ -> bytecode -> JVM -> output'
   },
   {
     keys: ['syntax error', 'compile error', 'runtime error', 'debug', 'bug'],
@@ -512,7 +512,7 @@ const CourseAI = ({ activeLesson, courseData }) => {
     if (!window.speechSynthesis || !text || isMuted) return;
     window.speechSynthesis.cancel();
     const voices = window.speechSynthesis.getVoices?.() || [];
-    
+
     const utterance = new SpeechSynthesisUtterance(text.replace(/\n/g, ' '));
     utterance.rate = 0.95;
 
@@ -520,9 +520,9 @@ const CourseAI = ({ activeLesson, courseData }) => {
     const isTamil = /[\u0B80-\u0BFF]/.test(text);
 
     if (isTamil) {
-      const tamilVoice = voices.find(v => 
-        v.lang === 'ta-IN' || 
-        v.name.toLowerCase().includes('tamil') || 
+      const tamilVoice = voices.find(v =>
+        v.lang === 'ta-IN' ||
+        v.name.toLowerCase().includes('tamil') ||
         v.lang.toLowerCase().includes('ta')
       );
       if (tamilVoice) {

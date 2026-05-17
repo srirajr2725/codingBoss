@@ -5,6 +5,7 @@ import apiClient from "./utils/apiClient";
 import { FaEye, FaEyeSlash, FaLock, FaUser } from "react-icons/fa";
 import Spline from "@splinetool/react-spline";
 import ErrorBoundary from "./Components/ErrorBoundary.js";
+import ForgotPasswordModal from "./Components/ForgotPasswordModal";
 import "./LoginPage.css";
 
 const LoginPage = ({ setIsLoggedIn, setUsername, setUserRole }) => {
@@ -13,6 +14,7 @@ const LoginPage = ({ setIsLoggedIn, setUsername, setUserRole }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showForgotModal, setShowForgotModal] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -32,7 +34,7 @@ const LoginPage = ({ setIsLoggedIn, setUsername, setUserRole }) => {
         backendData = response;
       } catch (err) {
         apiErrorMsg = err?.status === 401 ? "❌ Invalid credentials." : (err.message || "Server error.");
-        
+
         // 2. Hardcoded Fallback ONLY if backend fails and it's the team email
         if (email.toLowerCase() === "thiran@gmail.com" && password === "thiran@360") {
           setIsLoggedIn(true);
@@ -54,6 +56,13 @@ const LoginPage = ({ setIsLoggedIn, setUsername, setUserRole }) => {
         localStorage.setItem("username", email);
         localStorage.setItem("role", backendData.role);
         localStorage.setItem("token", backendData.access || backendData.token);
+        
+        // --- STORE ADDITIONAL STUDENT DETAILS ---
+        if (backendData.username) localStorage.setItem("regNo", backendData.username);
+        if (backendData.institute) localStorage.setItem("dept", backendData.institute);
+        const encryptedPwd = CryptoJS.AES.encrypt(password, "thirancoding360mgai").toString();
+        localStorage.setItem("password", encryptedPwd);
+
         if (backendData.user_id) {
           const encryptedUserID = CryptoJS.AES.encrypt(backendData.user_id.toString(), "thirancoding360mgai").toString();
           localStorage.setItem("userID", encryptedUserID);
@@ -139,6 +148,11 @@ const LoginPage = ({ setIsLoggedIn, setUsername, setUserRole }) => {
                 {showPassword ? <FaEyeSlash /> : <FaEye />}
               </span>
             </div>
+            <div className="forgot-password-link">
+              <Link to="#" onClick={(e) => { e.preventDefault(); setShowForgotModal(true); }}>
+                Forgot Password?
+              </Link>
+            </div>
           </div>
 
           <button type="submit" className="login-btn" disabled={loading}>
@@ -150,6 +164,11 @@ const LoginPage = ({ setIsLoggedIn, setUsername, setUserRole }) => {
           Access restricted to authorized personnel only.
         </p>
       </div>
+
+      <ForgotPasswordModal 
+        isOpen={showForgotModal} 
+        onClose={() => setShowForgotModal(false)} 
+      />
     </div>
   );
 };

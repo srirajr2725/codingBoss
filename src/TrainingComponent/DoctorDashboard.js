@@ -14,10 +14,10 @@ import './DoctorDashboard.css';
 /* ================= CONFIG ================= */
 
 const API_URL =
-  'https://api.codingboss.in/api/upload-frame/';
+  'https://unlanded-isela-unmunificently.ngrok-free.dev/api/upload-frame/';
 
 const DETECTION_API =
-  'https://api.codingboss.in/api/toggle-detection/';
+  'https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/';
 
 const HEAD_SWITCH_LIMIT = 4;
 

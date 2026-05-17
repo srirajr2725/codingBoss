@@ -25,11 +25,11 @@ const Assignments = ({ isLoggedIn, setIsLoggedIn }) => {
   useEffect(() => {
     const fetchAllData = async () => {
       try {
-        const questions = await apiClient('compiler/questions/', 'GET');
+        const questions = await apiClient('https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/questions/', 'GET');
         setProgrammingQuestions(questions);
 
         if (userId) {
-          const completed = await apiClient(`compiler/completed-questions/?user_id=${userId}`, 'GET');
+          const completed = await apiClient(`https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/completed-questions/?user_id=${userId}`, 'GET');
           if (completed?.completed_questions) {
             setCompletedQuestions(completed.completed_questions);
             if (questions.length > 0) {

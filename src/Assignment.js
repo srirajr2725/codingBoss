@@ -14,12 +14,12 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchAssignmentData = async () => {
       try {
-        const details = await apiClient('compiler/assignments/1/details/', 'GET');
+        const details = await apiClient('https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/assignments/1/details/', 'GET');
         if (details && details.questions) {
           setQuestions(details.questions);
         }
 
-        const metaList = await apiClient('compiler/get-assignments/', 'GET');
+        const metaList = await apiClient('https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/get-assignments/', 'GET');
         if (Array.isArray(metaList) && metaList.length > 0) {
           setAssignmentMeta(metaList[0]);
         }
@@ -63,7 +63,7 @@ const Dashboard = () => {
           <div className="as-premium-card">
             <div className="as-card-img-wrapper">
               <img src={img} className="as-card-img" alt="" />
-              <Badge 
+              <Badge
                 className="as-level-badge"
                 bg={level === 'High' ? 'danger' : level === 'Medium' ? 'warning' : 'info'}
               >
@@ -73,9 +73,9 @@ const Dashboard = () => {
             <div className="as-card-content">
               <h3 className="as-card-title">{title.length > 55 ? `${title.substring(0, 55)}...` : title}</h3>
               <p className="as-card-desc">{desc.length > 90 ? `${desc.substring(0, 90)}...` : desc}</p>
-              
+
               {type === 'pending' ? (
-                <button 
+                <button
                   className="as-btn-launch"
                   onClick={() => isRealData ? navigate('/QuestionPage', { state: { questionId: data.id, question: data } }) : navigate('/instructions')}
                 >
@@ -111,7 +111,7 @@ const Dashboard = () => {
             </div>
           </Col>
           <Col md={4} className="text-md-end d-none d-md-block">
-             <FaRocket size={60} style={{ color: '#f59e0b', opacity: 0.1 }} />
+            <FaRocket size={60} style={{ color: '#f59e0b', opacity: 0.1 }} />
           </Col>
         </Row>
       </div>

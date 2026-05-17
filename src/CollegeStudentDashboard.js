@@ -53,9 +53,9 @@ const Dashboard = ({
     { label: 'Start Learn', locked: false, key: 'startlearn', icon: <School /> },
     { label: 'Your Status', locked: false, key: 'yourstatus', icon: <Home /> },
     { label: 'Task', locked: false, key: 'thirantask', icon: <Task /> },
-    { label: 'Courses', locked: false, key: 'thirancourses', icon: <DashboardIcon /> },
-    { label: 'Assignments', locked: false, key: 'thiranassignments', icon: <AssignmentIcon /> },
-    { label: 'Company', locked: false, key: 'thirancompany', icon: <Business /> },
+    { label: 'Courses', locked: true, key: 'thirancourses', icon: <DashboardIcon /> },
+    { label: 'Assignments', locked: true, key: 'thiranassignments', icon: <AssignmentIcon /> },
+    { label: 'Company', locked: true, key: 'thirancompany', icon: <Business /> },
     { label: 'Profile', locked: false, key: 'profile', icon: <Person /> },
   ];
 

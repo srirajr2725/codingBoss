@@ -185,6 +185,37 @@ body {
   transform: scale(1);
 }
 
+/* Fill in the Blanks */
+.fill-blank-container {
+  padding: 20px 0;
+}
+
+.fill-blank-input {
+  width: 100%;
+  padding: 16px 24px;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-main);
+  background: #ffffff;
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.fill-blank-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px var(--primary-light);
+  background: #ffffff;
+}
+
+.fill-hint {
+  margin-top: 12px;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
 /* Footer Navigation */
 .nav-footer {
   display: flex;
@@ -569,4 +600,70 @@ body {
   font-size: 0.95rem;
   line-height: 1.6;
   margin: 0;
+}
+
+/* --- QUESTION LOCK TIMER --- */
+.question-lock-timer {
+  display: flex;
+  align-items: center;
+  padding: 8px 16px;
+  border-radius: 99px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  transition: all 0.3s;
+}
+
+.question-lock-timer.active {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.question-lock-timer.unlocked {
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.disabled-palette {
+  opacity: 0.4;
+  cursor: not-allowed !important;
+  filter: grayscale(1);
+}
+
+/* --- PREMIUM LOCK STYLES --- */
+.option-item.locked-option {
+  cursor: not-allowed !important;
+  opacity: 0.75;
+  background: #f8fafc !important;
+  border-color: #cbd5e1 !important;
+  color: #94a3b8 !important;
+}
+
+.option-item.locked-option:hover {
+  transform: none !important;
+  border-color: #cbd5e1 !important;
+  background: #f8fafc !important;
+}
+
+.fill-blank-input:disabled {
+  background: #f8fafc !important;
+  color: #94a3b8 !important;
+  border-color: #cbd5e1 !important;
+  cursor: not-allowed !important;
+}
+
+.palette-item.locked-palette {
+  background: var(--danger-bg) !important;
+  border: 1px solid rgba(239, 68, 68, 0.3) !important;
+  color: var(--danger) !important;
+  position: relative;
+}
+
+.palette-item.locked-palette::after {
+  content: '🔒';
+  position: absolute;
+  font-size: 0.65rem;
+  top: 1px;
+  right: 1px;
 }

@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaClipboardList, FaCode, FaArrowRight, FaRocket, FaLightbulb } from 'react-icons/fa';
+import { FaClipboardList, FaCode, FaArrowRight, FaRocket, FaLightbulb, FaLock } from 'react-icons/fa';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './Test.css';
@@ -66,20 +66,20 @@ const Test = () => {
                 <div className="task-icon-box" style={{ background: 'rgba(255, 160, 3, 0.1)' }}>
                   <FaClipboardList size={28} color="#FFA003" />
                 </div>
-                <h2>MCQ Mastery</h2>
+                <h2>OneMark Hub</h2>
                 <p>
                   Evaluate your theoretical understanding of core concepts. This multiple-choice assessment covers advanced syntax, logic, and architecture.
                 </p>
                 <button className="task-btn task-btn-mcq" onClick={() => navigate('/TestPage')}>
-                  Start MCQ Assessment <FaArrowRight />
+                  Start OneMark Hub Assessment <FaArrowRight />
                 </button>
               </div>
             </div>
 
-            {/* PROGRAMMING TEST CARD */}
-            <div className="task-card">
-              <div className="task-badge">PRACTICAL SKILLS</div>
-              <div className="task-img-wrapper">
+            {/* PROGRAMMING TEST CARD - LOCKED */}
+            <div className="task-card locked" style={{ opacity: 0.8, cursor: 'not-allowed' }}>
+              <div className="task-badge" style={{ background: '#64748b' }}><FaLock /> LOCKED</div>
+              <div className="task-img-wrapper" style={{ filter: 'grayscale(1)' }}>
                 <img
                   className="task-img"
                   src={progImg}
@@ -87,15 +87,15 @@ const Test = () => {
                 />
               </div>
               <div className="task-card-content">
-                <div className="task-icon-box" style={{ background: 'rgba(0, 114, 255, 0.1)' }}>
-                  <FaCode size={28} color="#0072ff" />
+                <div className="task-icon-box" style={{ background: 'rgba(100, 116, 139, 0.1)' }}>
+                  <FaCode size={28} color="#64748b" />
                 </div>
-                <h2>Code Lab Challenge</h2>
+                <h2>Code Practice Challenge</h2>
                 <p>
                   Bridge the gap between theory and practice. Solve real-world programming challenges and write production-grade code in our live environment.
                 </p>
-                <button className="task-btn task-btn-code" onClick={handleLaunchCodeLab}>
-                  Launch Code Lab <FaRocket />
+                <button className="task-btn task-btn-code" style={{ background: '#64748b', cursor: 'not-allowed' }}>
+                  Code Lab Locked <FaLock style={{ marginLeft: '8px' }} />
                 </button>
               </div>
             </div>

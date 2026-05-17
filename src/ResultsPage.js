@@ -23,11 +23,11 @@ const ResultsPage = () => {
 
         const encrypted = localStorage.getItem("userID");
         if (!encrypted) throw new Error("User session expired");
-        
+
         const bytes = CryptoJS.AES.decrypt(encrypted, "thirancoding360mgai");
         const userId = bytes.toString(CryptoJS.enc.Utf8);
 
-        const data = await apiClient(`compiler/mcq-marks/user/${userId}/`, "GET");
+        const data = await apiClient(`https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/mcq-marks/user/${userId}/`, "GET");
         if (!Array.isArray(data) || data.length === 0) throw new Error("Assessment history not found");
 
         normalize(data[data.length - 1]);
@@ -61,19 +61,19 @@ const ResultsPage = () => {
   return (
     <div className="results-container">
       <div className="results-wrapper">
-        
+
         <div className={`rs-hero-card ${isPass ? 'passed' : 'failed'}`}>
           <div className="rs-score-circle">
             <span className="rs-score-value">{results.score}</span>
             <span className="rs-score-max">/ {results.maxScore}</span>
           </div>
-          
+
           <h2 className="mb-2">{isPass ? "Excellent Achievement!" : "Focus & Improve"}</h2>
           <div className={`rs-status-badge ${isPass ? 'passed' : 'failed'} mb-4`}>
             {isPass ? <FaCheckCircle /> : <FaBullseye />}
             {isPass ? "Certified Proficient" : "Practice Recommended"}
           </div>
-          
+
           <p className="text-muted">You scored higher than 85% of other candidates in this category.</p>
         </div>
 
@@ -83,13 +83,13 @@ const ResultsPage = () => {
             <div className="rs-stat-value">{results.percentage}%</div>
             <div className="rs-stat-label">Accuracy</div>
           </div>
-          
+
           <div className="rs-stat-card">
             <div className="rs-stat-icon"><FaClock /></div>
             <div className="rs-stat-value">{results.timeTaken}m</div>
             <div className="rs-stat-label">Duration</div>
           </div>
-          
+
           <div className="rs-stat-card">
             <div className="rs-stat-icon"><FaTrophy /></div>
             <div className="rs-stat-value">{results.correct}</div>

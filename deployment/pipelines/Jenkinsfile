@@ -13,7 +13,7 @@ pipeline {
         stage("Set Build Env Variables") {
             steps {
                 script {
-                    env.REACT_APP_API_URL = 'https://api.codingboss.in/'
+                    env.REACT_APP_API_URL = 'https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/'
                     env.IMAGE_REPO = "codingboss-prod/app-codingboss"
                     env.REPO_URL = "https://${env.REGISTRY}/v2/${env.IMAGE_REPO}"
                     env.IMAGE_NAME = "${env.REGISTRY}/${env.IMAGE_REPO}:${env.IMAGE_TAG}"

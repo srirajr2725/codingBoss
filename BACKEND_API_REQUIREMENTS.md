@@ -12,7 +12,7 @@ This document outlines the new API endpoints that need to be implemented in your
 
 ### Endpoint
 ```
-GET /api/compiler/check-test-completed/
+GET /api/https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/check-test-completed/
 ```
 
 ### Query Parameters
@@ -46,7 +46,7 @@ GET /api/compiler/check-test-completed/
 
 ### Endpoint
 ```
-POST /api/compiler/mark-test-completed/
+POST /api/https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/mark-test-completed/
 ```
 
 ### Request Body
@@ -77,7 +77,7 @@ POST /api/compiler/mark-test-completed/
 ## 3. Store MCQ Test Results
 
 ### Update Existing Evaluate Endpoint
-**Current Endpoint:** `POST /api/compiler/evaluate/`
+**Current Endpoint:** `POST /api/https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/evaluate/`
 
 ### Enhanced Request Body
 ```json
@@ -136,7 +136,7 @@ class TestCase(models.Model):
 
 ### Endpoint: Get Testcases for a Question
 ```
-GET /api/compiler/questions/{question_id}/testcases/
+GET /api/https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/questions/{question_id}/testcases/
 ```
 
 ### Response (Success - 200)
@@ -167,7 +167,7 @@ GET /api/compiler/questions/{question_id}/testcases/
 
 ### Endpoint: Create/Update Testcases (Admin Only)
 ```
-POST /api/compiler/questions/{question_id}/testcases/
+POST /api/https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/questions/{question_id}/testcases/
 ```
 
 ### Request Body
@@ -198,7 +198,7 @@ POST /api/compiler/questions/{question_id}/testcases/
 
 ### Endpoint
 ```
-POST /api/compiler/questions/submit/
+POST /api/https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/questions/submit/
 ```
 
 ### Request Body
@@ -264,7 +264,7 @@ POST /api/compiler/questions/submit/
 
 ### Endpoint
 ```
-GET /api/compiler/user/{user_id}/test-history/
+GET /api/https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/user/{user_id}/test-history/
 ```
 
 ### Query Parameters

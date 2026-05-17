@@ -117,7 +117,7 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
         const studentId = getDecryptedUserId();
         if (!studentId) return;
 
-        const response = await fetch(`https://api.codingboss.in/api/upload-frame/?student_id=${studentId}&user_id=${studentId}`, {
+        const response = await fetch(`https://unlanded-isela-unmunificently.ngrok-free.dev/api/upload-frame/?student_id=${studentId}&user_id=${studentId}`, {
           headers: { 'ngrok-skip-browser-warning': 'true' }
         });
         const data = await response.json();
@@ -180,7 +180,7 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
         image = canvas.toDataURL('image/jpeg', 0.1);
       }
 
-      await fetch('https://api.codingboss.in/api/upload-frame/', {
+      await fetch('https://unlanded-isela-unmunificently.ngrok-free.dev/api/upload-frame/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -210,7 +210,7 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
 
       try {
         // Fetch test-cases strictly from ngrok
-        fetch(`https://api.codingboss.in/compiler/test-cases/`, {
+        fetch(`https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/test-cases/`, {
           headers: { 'ngrok-skip-browser-warning': 'true' }
         })
           .then(res => res.json())
@@ -245,7 +245,7 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
           }).catch((err) => { console.error("Test cases fetch failed:", err); });
 
         // Sync Primary API info
-        const primaryData = await apiClient(`compiler/question/?question_id=${questionId}`, 'GET');
+        const primaryData = await apiClient(`https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/question/?question_id=${questionId}`, 'GET');
         const base = Array.isArray(primaryData) ? primaryData[0] : primaryData;
         if (base) {
           setQuestionData(prev => ({
@@ -272,29 +272,6 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
     }
   }, [startTime, isTestSubmitted]);
 
-  // 🔥 ENGINE: POLLING FOR DETECTION ENABLED STATUS
-  useEffect(() => {
-    let intervalId;
-    const checkDetectionStatus = async () => {
-      if (!isTestStarted || isTestSubmitted) return;
-      try {
-        const studentId = getDecryptedUserId() || 1;
-        const res = await fetch(`https://api.codingboss.in/api/toggle-detection/?user_id=${studentId}`, {
-          headers: { 'ngrok-skip-browser-warning': 'true' }
-        });
-        const data = await res.json();
-        if (data.is_detection_enabled !== undefined) {
-          setIsDetectionEnabled(!!data.is_detection_enabled);
-        }
-      } catch (err) { }
-    };
-
-    if (isTestStarted) {
-      checkDetectionStatus();
-      intervalId = setInterval(checkDetectionStatus, 5000);
-    }
-    return () => clearInterval(intervalId);
-  }, [isTestStarted, isTestSubmitted]);
 
   const triggerWarning = (msg, type = "proctoring_violation", bypassCooldown = false) => {
     const now = Date.now();
@@ -425,7 +402,7 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
         const canvas = canvasRef.current;
         canvas.width = 240; canvas.height = 180;
         canvas.getContext('2d').drawImage(video, 0, 0, 240, 180);
-        await fetch('https://api.codingboss.in/api/upload-frame/', {
+        await fetch('https://unlanded-isela-unmunificently.ngrok-free.dev/api/upload-frame/', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -452,11 +429,11 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
     let intervalId;
     const checkCameraStatus = () => {
       if (!isTestStartedRef.current || isTestSubmittedRef.current || !cameraStream) return;
-      
+
       const videoTrack = cameraStream.getVideoTracks()[0];
       const isTrackOff = !videoTrack || !videoTrack.enabled || videoTrack.readyState === 'ended';
       const isVideoPaused = videoRef.current && (videoRef.current.paused || videoRef.current.ended);
-      
+
       if (isTrackOff || isVideoPaused) {
         triggerWarning("Camera is disconnected or turned off! Re-enable it immediately.", "camera_off");
       }
@@ -474,7 +451,7 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
     const pollDoctorWarnings = async () => {
       if (!isTestStarted || isTestSubmitted || terminatedRef.current) return;
       try {
-        const res = await fetch('https://api.codingboss.in/api/upload-frame/', {
+        const res = await fetch('https://unlanded-isela-unmunificently.ngrok-free.dev/api/upload-frame/', {
           method: 'GET',
           headers: {
             'Accept': 'application/json',
@@ -569,7 +546,7 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
     if (!sourceCode.trim()) return toast.warning("Enter code first!");
     setIsCompiling(true);
     try {
-      const res = await apiClient("compiler/compile/", "POST", {
+      const res = await apiClient("https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/compile/", "POST", {
         source_code: sourceCode,
         code: sourceCode,
         language: selectedLanguage.charAt(0).toUpperCase() + selectedLanguage.slice(1).toLowerCase(),
@@ -602,7 +579,7 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
     console.log("Submitting Solution for ID:", questionId, "User:", currentUserId);
 
     try {
-      const response = await fetch('https://api.codingboss.in/compiler/run-test/', {
+      const response = await fetch('https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/run-test/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

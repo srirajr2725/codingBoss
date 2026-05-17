@@ -25,8 +25,26 @@ const getDecryptedUserId = () => {
 
 const McqTestPage = () => {
   const { state } = useLocation();
-  const { subtype, filterCategory } = state || {};
+  const { subtype: stateSubtype, filterCategory: stateCategory, remainingTime, lockTime: stateLockTime } = state || {};
+
+  // Persistence for subtype, category, and lockTime
+  const subtype = stateSubtype || localStorage.getItem('mcq_current_subtype');
+  const filterCategory = stateCategory || localStorage.getItem('mcq_current_category');
+  const lockTime = stateLockTime ? parseInt(stateLockTime) : (localStorage.getItem('mcq_current_locktime') ? parseInt(localStorage.getItem('mcq_current_locktime')) : 75);
+
+  useEffect(() => {
+    if (stateSubtype) localStorage.setItem('mcq_current_subtype', stateSubtype);
+    if (stateCategory) localStorage.setItem('mcq_current_category', stateCategory);
+    if (stateLockTime) localStorage.setItem('mcq_current_locktime', stateLockTime.toString());
+  }, [stateSubtype, stateCategory, stateLockTime]);
   const navigate = useNavigate();
+
+  const answersRef = useRef({});
+  const timingsRef = useRef({});
+  const handleAnswersChange = useCallback(({ answers, timings }) => {
+    answersRef.current = answers || {};
+    timingsRef.current = timings || {};
+  }, []);
 
   const [questions, setQuestions] = useState([]);
   const [testStartTime, setTestStartTime] = useState(null);
@@ -40,6 +58,49 @@ const McqTestPage = () => {
   const [cameraStream, setCameraStream] = useState(null);
   const [isDetectionEnabled, setIsDetectionEnabled] = useState(true);
   const [isCameraMinimized, setIsCameraMinimized] = useState(false);
+  const [actualTimeLeft, setActualTimeLeft] = useState(() => {
+    const userId = getDecryptedUserId();
+    if (userId && filterCategory) {
+      const timerKey = `domain_expiry_${userId}_${filterCategory}`;
+      const storedExpiry = localStorage.getItem(timerKey);
+      if (storedExpiry) {
+        const remaining = Math.max(0, Math.floor((parseInt(storedExpiry) - Date.now()) / 1000));
+        return remaining;
+      }
+    }
+    return remainingTime || 1500;
+  });
+
+  // ── TIMER PERSISTENCE ──
+  useEffect(() => {
+    const userId = getDecryptedUserId();
+    if (!userId || !filterCategory) return;
+
+    const timerKey = `domain_expiry_${userId}_${filterCategory}`;
+    const storedExpiry = localStorage.getItem(timerKey);
+    const now = Date.now();
+
+    if (storedExpiry) {
+      const expiry = parseInt(storedExpiry);
+      const remaining = Math.max(0, Math.floor((expiry - now) / 1000));
+      setActualTimeLeft(remaining);
+    } else {
+      // Set new expiry if not exists
+      const expiry = now + (remainingTime || 1500) * 1000;
+      localStorage.setItem(timerKey, expiry.toString());
+      setActualTimeLeft(remainingTime || 1500);
+    }
+  }, [filterCategory, remainingTime]);
+
+  // Update timeLeft and cleanup on finish
+  useEffect(() => {
+    if (isTestSubmitted) {
+      const userId = getDecryptedUserId();
+      localStorage.removeItem('mcq_current_subtype');
+      localStorage.removeItem('mcq_current_category');
+      localStorage.removeItem('mcq_current_locktime');
+    }
+  }, [isTestSubmitted]);
 
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
@@ -111,7 +172,7 @@ const McqTestPage = () => {
         image = canvas.toDataURL('image/jpeg', 0.1);
       }
 
-      await fetch('https://api.codingboss.in/api/upload-frame/', {
+      await fetch('https://unlanded-isela-unmunificently.ngrok-free.dev/api/upload-frame/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -140,22 +201,30 @@ const McqTestPage = () => {
     setShowViolationOverlay(true);
     setTimeout(() => setShowViolationOverlay(false), 2500);
 
-    setTabSwitchCount(prev => {
-      const next = prev + 1;
-      violationCountRef.current = next;
-      lastViolationRef.current = { type, message: msg, count: next, at: new Date().toISOString() };
-      if (next >= 5) { // Disqualified on 5th violation
-        terminatedRef.current = true;
-        uploadViolationFrame();
-        toast.error("🚫 DISQUALIFIED! Too many violations. Test submitted.");
-        setIsTestSubmitted(true);
-        setTimeout(() => submitTest({}), 1000);
-      } else {
-        uploadViolationFrame();
-        toast.error(`⚠️ WARNING (${next}/5): ${msg}`);
-      }
-      return next;
-    });
+    if (type === 'tab_switch') {
+      setTabSwitchCount(prev => {
+        const next = prev + 1;
+        violationCountRef.current = next;
+        lastViolationRef.current = { type, message: msg, count: next, at: new Date().toISOString() };
+        if (next >= 5) { // Disqualified on 5th violation
+          terminatedRef.current = true;
+          uploadViolationFrame();
+          toast.error("🚫 DISQUALIFIED! Too many tab switches. Test submitted.");
+          setIsTestSubmitted(true);
+          setTimeout(() => submitTest(answersRef.current), 1000);
+        } else {
+          uploadViolationFrame();
+          toast.error(`⚠️ WARNING (${next}/5): ${msg}`);
+        }
+        return next;
+      });
+    } else {
+      // For video and other warnings (face_missing, head_switch, camera_off, ui_minimize, doctor_detect)
+      // We upload the frame and warn the student, but do NOT increment the auto-submit violation counter.
+      lastViolationRef.current = { type, message: msg, count: tabSwitchCount, at: new Date().toISOString() };
+      uploadViolationFrame();
+      toast.error(`⚠️ WARNING: ${msg}`);
+    }
   };
 
   // 🔥 ENGINE: FACE TRACKING
@@ -177,13 +246,8 @@ const McqTestPage = () => {
 
         if (!detections) {
           console.log("PROCTOR: No face found");
-          if (!isFocusLostRef.current) {
-            isFocusLostRef.current = true;
-            triggerWarning("Face not detected!", "face_missing");
-          }
+          triggerWarning("Face not detected!", "face_missing");
         } else {
-          isFocusLostRef.current = false; // Reset if face found
-
           const landmarks = detections.landmarks;
           const nose = landmarks.getNose()[3];
           const leftEye = landmarks.getLeftEye()[0];
@@ -196,12 +260,7 @@ const McqTestPage = () => {
 
           // Sensitive rotation detection
           if (diff > 10) {
-            if (!isHeadRotatedRef.current) {
-              isHeadRotatedRef.current = true;
-              triggerWarning("Looking away detected!", "head_switch");
-            }
-          } else {
-            isHeadRotatedRef.current = false;
+            triggerWarning("Looking away detected!", "head_switch");
           }
 
           // Gaze detection
@@ -261,7 +320,7 @@ const McqTestPage = () => {
           const canvas = canvasRef.current;
           canvas.width = 160; canvas.height = 120; // Smaller for speed
           canvas.getContext('2d', { alpha: false }).drawImage(video, 0, 0, 160, 120);
-          await fetch('https://api.codingboss.in/api/upload-frame/', {
+          await fetch('https://unlanded-isela-unmunificently.ngrok-free.dev/api/upload-frame/', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -288,11 +347,11 @@ const McqTestPage = () => {
     let intervalId;
     const checkCameraStatus = () => {
       if (!isTestStartedRef.current || isTestSubmittedRef.current || !cameraStream) return;
-      
+
       const videoTrack = cameraStream.getVideoTracks()[0];
       const isTrackOff = !videoTrack || !videoTrack.enabled || videoTrack.readyState === 'ended';
       const isVideoPaused = videoRef.current && (videoRef.current.paused || videoRef.current.ended);
-      
+
       if (isTrackOff || isVideoPaused) {
         triggerWarning("Camera is disconnected or turned off! Re-enable it immediately.", "camera_off");
       }
@@ -310,7 +369,7 @@ const McqTestPage = () => {
     const pollDoctorWarnings = async () => {
       if (!isTestStarted || isTestSubmitted || terminatedRef.current) return;
       try {
-        const res = await fetch('https://api.codingboss.in/api/upload-frame/', {
+        const res = await fetch('https://unlanded-isela-unmunificently.ngrok-free.dev/api/upload-frame/', {
           method: 'GET',
           headers: {
             'Accept': 'application/json',
@@ -373,30 +432,40 @@ const McqTestPage = () => {
     return () => clearInterval(intervalId);
   }, [isTestStarted, isTestSubmitted]);
 
-  // 🔥 ENGINE: POLLING FOR DETECTION ENABLED STATUS
+  // ── DETECTION STATUS SYNC ──
   useEffect(() => {
-    let intervalId;
-    const checkDetectionStatus = async () => {
-      if (!isTestStarted || isTestSubmitted) return;
+    let isMounted = true;
+    const checkDetection = async () => {
       try {
-        const studentId = getDecryptedUserId() || 1;
-        const res = await fetch(`https://api.codingboss.in/api/toggle-detection/?user_id=${studentId}`, {
+        const studentId = getDecryptedUserId();
+        if (!studentId) return;
+
+        const response = await fetch(`https://unlanded-isela-unmunificently.ngrok-free.dev/api/upload-frame/?student_id=${studentId}&user_id=${studentId}`, {
           headers: { 'ngrok-skip-browser-warning': 'true' }
         });
-        const data = await res.json();
-        // Assuming the response structure is like {"is_detection_enabled": true, ...}
-        if (data.is_detection_enabled !== undefined) {
-          setIsDetectionEnabled(!!data.is_detection_enabled);
+        const data = await response.json();
+
+        if (isMounted) {
+          const sessions = data.sessions || [];
+          const mySession = sessions.find(s => (s.student_id || s.user_id) === studentId);
+          if (mySession && mySession.is_detection_enabled !== undefined) {
+            setIsDetectionEnabled(mySession.is_detection_enabled);
+          }
         }
-      } catch (err) { }
+      } catch (err) {
+        console.warn("Detection sync error:", err.message);
+      }
     };
 
     if (isTestStarted) {
-      checkDetectionStatus();
-      intervalId = setInterval(checkDetectionStatus, 5000);
+      const timer = setInterval(checkDetection, 4000);
+      checkDetection();
+      return () => {
+        isMounted = false;
+        clearInterval(timer);
+      };
     }
-    return () => clearInterval(intervalId);
-  }, [isTestStarted, isTestSubmitted]);
+  }, [isTestStarted]);
 
   useEffect(() => {
     if (isTestStarted && cameraStream && videoRef.current) videoRef.current.srcObject = cameraStream;
@@ -419,34 +488,65 @@ const McqTestPage = () => {
       if (!subtype) { navigate('/TestPage', { replace: true }); return; }
       const normalizedSubtype = String(subtype).trim();
       const normalizedCategory = filterCategory || 'Technical';
+
+      const isNgrokCategory = ['quantitative', 'logical', 'Psychomatric', 'verbal'].includes(normalizedCategory);
+
       try {
         const userId = getDecryptedUserId();
         if (userId && localStorage.getItem(`mcq_completed_${userId}_${normalizedSubtype}_${normalizedCategory}`)) {
           setIsTestCompleted(true); return;
         }
-        const params = new URLSearchParams({ subtype: normalizedSubtype });
-        const data = await apiClient(`compiler/filter-by-subtype/?${params.toString()}`, 'GET');
+
+        let data;
+        if (isNgrokCategory) {
+          // Fetch all for category from ngrok
+          const allQuestions = await apiClient(`https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/sample/?language=${normalizedCategory}`, 'GET');
+          // If the selected subtype is the category itself, don't filter by subtype!
+          if (['quantitative', 'logical', 'Psychomatric', 'verbal'].includes(normalizedSubtype)) {
+            data = Array.isArray(allQuestions) ? allQuestions : [];
+          } else {
+            data = Array.isArray(allQuestions) ? allQuestions.filter(q => String(q.subtype).trim() === normalizedSubtype) : [];
+          }
+        } else {
+          const params = new URLSearchParams({ subtype: normalizedSubtype });
+          data = await apiClient(`https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/filter-by-subtype/?${params.toString()}`, 'GET');
+        }
+
         if (Array.isArray(data) && data.length > 0) {
           setQuestions(data);
           setTestStartTime(Date.now());
-          // Auto-detect type from first question (e.g., 'Technical')
           if (data[0].list) setDetectedType(data[0].list);
           else if (data[0].type) setDetectedType(data[0].type);
         }
         else setError('No questions found.');
-      } catch (err) { setError('Connection error.'); } finally { setLoading(false); }
+      } catch (err) {
+        console.error("FETCH ERROR:", err);
+        setError('Connection error.');
+      } finally { setLoading(false); }
     };
     fetchQuestions();
   }, [subtype, filterCategory, navigate]);
 
-  const submitTest = async (answers) => {
+  const submitTest = async (manualAnswers = null) => {
     setCompletionLoading(true);
     const normalizedSubtype = String(subtype || '').trim();
     const normalizedCategory = filterCategory || 'Technical';
+
+    const activeAnswers = manualAnswers || answersRef.current || {};
+    const activeTimings = timingsRef.current || {};
+
     // Sanitize answers to avoid backend 500 errors on empty selections
     const sanitizedAnswers = Object.fromEntries(
-      Object.entries(answers || {}).filter(([_, value]) => value !== "" && value !== null)
+      Object.entries(activeAnswers).filter(([_, value]) => value !== "" && value !== null)
     );
+
+    // Build timings payload: for any question in questions, provide spent time or 0 if not tracked
+    const timingsPayload = {};
+    questions.forEach(q => {
+      if (q && q.id) {
+        timingsPayload[q.id] = Number(activeTimings[q.id] || 0);
+      }
+    });
 
     const userId = Number(getDecryptedUserId());
     if (!userId) {
@@ -455,29 +555,39 @@ const McqTestPage = () => {
       return;
     }
 
-    const payload = {
-      user_id: userId,
-      type: detectedType || normalizedCategory || "Technical",
-      subtype: normalizedSubtype || "General",
-      answers: sanitizedAnswers,
-      hints_used: 0
-    };
-
-    console.log("SUBMITTING TEST PAYLOAD:", payload);
+    let finalLanguage = 'General';
+    const catLower = String(normalizedCategory || '').toLowerCase();
+    if (catLower.includes('quant')) finalLanguage = 'Quantitative';
+    else if (catLower.includes('logic')) finalLanguage = 'Logical';
+    else if (catLower.includes('psycho')) finalLanguage = 'Psychometric';
+    else if (catLower.includes('verb')) finalLanguage = 'Verbal';
+    else if (normalizedSubtype) {
+      const subLower = String(normalizedSubtype).toLowerCase();
+      if (subLower.includes('quant')) finalLanguage = 'Quantitative';
+      else if (subLower.includes('logic')) finalLanguage = 'Logical';
+      else if (subLower.includes('psycho')) finalLanguage = 'Psychometric';
+      else if (subLower.includes('verb')) finalLanguage = 'Verbal';
+    }
 
     try {
-      const response = await fetch('https://api.codingboss.in/compiler/evaluate/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(payload)
-      });
-      if (response.ok) {
-        toast.success("Test Submitted!");
-        localStorage.setItem(`mcq_completed_${getDecryptedUserId()}_${normalizedSubtype}_${normalizedCategory}`, 'true');
-        setTimeout(() => navigate('/UserDashboard', { replace: true }), 1000);
-      }
+      const payload = {
+        user_id: userId,
+        type: detectedType || normalizedCategory || "Technical",
+        subtype: normalizedSubtype || "General",
+        language: finalLanguage,
+        hints_used: 0,
+        answers: sanitizedAnswers,
+        timings: timingsPayload
+      };
+
+      await apiClient('https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/evaluate/', 'POST', payload);
+
+      toast.success("Test Submitted!");
+      const timerKey = `domain_expiry_${userId}_${normalizedCategory}`;
+      localStorage.removeItem(timerKey);
+
+      localStorage.setItem(`mcq_completed_${getDecryptedUserId()}_${normalizedSubtype}_${normalizedCategory}`, 'true');
+      setTimeout(() => navigate('/TestPage', { replace: true, state: { autoView: 'tests', autoLang: normalizedCategory } }), 1000);
     } catch (error) {
       console.error("SUBMISSION ERROR:", error);
       toast.error(`Submission failed: ${error.message || 'Unknown Error'}`);
@@ -534,12 +644,19 @@ const McqTestPage = () => {
             }
             setIsCameraMinimized(!isCameraMinimized);
           }}>
-            <div className="pulse"></div> 
+            <div className="pulse"></div>
             {isCameraMinimized ? 'VIEW FEED' : 'LIVE PROCTOR (Minimize)'}
           </div>
         </div>
       </div>
-      <MCQQuiz questions={questions} updateQuestionStatus={() => { }} submitTest={submitTest} />
+      <MCQQuiz
+        questions={questions}
+        updateQuestionStatus={() => { }}
+        submitTest={submitTest}
+        initialTimeLeft={actualTimeLeft}
+        initialLockTime={lockTime || 75}
+        onAnswersChange={handleAnswersChange}
+      />
     </div>
   );
 };

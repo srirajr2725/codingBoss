@@ -5,7 +5,7 @@ import {
   FaArrowRight, FaArrowLeft, FaDownload, FaGamepad, FaSearch,
   FaBook, FaBriefcase, FaRocket, FaStar, FaCode, FaCheckCircle,
   FaUserGraduate, FaTrophy, FaLaptopCode, FaChartLine, FaPlay,
-  FaQuoteLeft, FaWhatsapp
+  FaQuoteLeft, FaWhatsapp, FaLock
 } from 'react-icons/fa';
 import './CourseCard.css';
 import slider1 from './images/slider1.png';
@@ -145,8 +145,8 @@ export default function CourseCard({ setSelectedTab }) {
           <b> premium internships</b>, <b> industry-certified courses</b>, and <b> production-grade projects</b>.
         </motion.p>
         <motion.div className="cc-hero-btns" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}>
-          <button className="cc-feature-btn" onClick={() => setCurrentView('courses')}>
-            <FaPlay /> Start Learning Free
+          <button className="cc-feature-btn locked-btn" style={{ background: '#64748b', cursor: 'not-allowed' }}>
+            <FaLock /> Courses Locked
           </button>
         </motion.div>
       </div>
@@ -160,13 +160,13 @@ export default function CourseCard({ setSelectedTab }) {
       <div className="cc-dual-pillars">
         {/* LEARNING PILLAR */}
         <motion.div 
-          className="cc-pillar-card learning-pillar"
-          whileHover={{ y: -10 }}
-          onClick={() => setSelectedTab ? setSelectedTab('Courses') : navigate('/courses')}
+          className="cc-pillar-card learning-pillar locked"
+          whileHover={{ y: 0 }}
+          style={{ opacity: 0.8, cursor: 'not-allowed' }}
         >
-          <div className="cc-pillar-badge">ACADEMY</div>
-          <div className="cc-pillar-icon-wrapper" style={{ background: 'rgba(99, 102, 241, 0.1)' }}>
-            <FaBook className="cc-pillar-icon" style={{ color: '#6366f1' }} />
+          <div className="cc-pillar-badge" style={{ background: '#64748b' }}><FaLock /> LOCKED</div>
+          <div className="cc-pillar-icon-wrapper" style={{ background: 'rgba(100, 116, 139, 0.1)' }}>
+            <FaBook className="cc-pillar-icon" style={{ color: '#64748b' }} />
           </div>
           <h3 className="cc-pillar-title">Certified <span>Courses</span></h3>
           <p className="cc-pillar-desc">
@@ -178,8 +178,8 @@ export default function CourseCard({ setSelectedTab }) {
             <li><FaCheckCircle /> Production-Grade Projects</li>
             <li><FaCheckCircle /> Industry Mentorship</li>
           </ul>
-          <button className="cc-pillar-btn learning-btn">
-            Explore Academy <FaArrowRight />
+          <button className="cc-pillar-btn learning-btn" style={{ background: '#64748b', borderColor: '#64748b' }}>
+            Academy Locked <FaLock style={{ marginLeft: '8px' }} />
           </button>
         </motion.div>
 
@@ -231,16 +231,15 @@ export default function CourseCard({ setSelectedTab }) {
         {courses.map(course => (
           <motion.div
             key={course.id}
-            className="cc-feature-card"
-            style={{ '--card-color': course.color, '--card-bg': `${course.color}15` }}
-            whileHover={{ y: -10 }}
-            onClick={() => { setSelectedCourse(course); setCurrentView('pdf'); }}
+            className="cc-feature-card locked"
+            style={{ '--card-color': '#64748b', '--card-bg': 'rgba(100, 116, 139, 0.05)', cursor: 'not-allowed' }}
+            whileHover={{ y: 0 }}
           >
-            <div className="cc-card-inner" style={{ padding: '24px' }}>
-              <div className="cc-card-image" style={{ width: '100%', height: '180px', borderRadius: '16px', overflow: 'hidden', marginBottom: '20px', position: 'relative' }}>
-                <img src={course.image} alt={course.title} style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.4s' }} />
+            <div className="cc-card-inner" style={{ padding: '24px', opacity: 0.7 }}>
+              <div className="cc-card-image" style={{ width: '100%', height: '180px', borderRadius: '16px', overflow: 'hidden', marginBottom: '20px', position: 'relative', filter: 'grayscale(1)' }}>
+                <img src={course.image} alt={course.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 <div className="cc-card-stat-pill" style={{ position: 'absolute', top: '12px', right: '12px', background: 'rgba(0,0,0,0.6)', color: 'white', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.1)' }}>
-                  {course.level}
+                  <FaLock /> Locked
                 </div>
               </div>
               <h3 className="cc-card-title">{course.title}</h3>
@@ -331,9 +330,8 @@ export default function CourseCard({ setSelectedTab }) {
               </div>
               <h3 className="cc-tab-title">{courses[activeTab].title}</h3>
               <p className="cc-tab-desc">{courses[activeTab].description}</p>
-              <button className="cc-feature-btn" style={{ background: courses[activeTab].color }}
-                onClick={() => { setSelectedCourse(courses[activeTab]); setCurrentView('pdf'); }}>
-                <FaPlay /> Preview Course
+              <button className="cc-feature-btn locked-btn" style={{ background: '#64748b', cursor: 'not-allowed' }}>
+                <FaLock /> Course Preview Locked
               </button>
             </div>
             <div className="cc-tab-right">
@@ -390,8 +388,8 @@ export default function CourseCard({ setSelectedTab }) {
           <p className="cc-cta-sub">Join 5,000+ students already on the path to top tech roles.</p>
 
           <div className="cc-cta-btns">
-            <button className="cc-cta-primary" onClick={() => setCurrentView('courses')}>
-              <FaPlay /> Get Started Free
+            <button className="cc-cta-primary locked-btn" style={{ background: '#64748b', cursor: 'not-allowed' }}>
+              <FaLock /> Academy Access Locked
             </button>
           </div>
 
@@ -418,16 +416,15 @@ export default function CourseCard({ setSelectedTab }) {
         {courses.map(course => (
           <motion.div
             key={course.id}
-            className="cc-feature-card"
-            style={{ '--card-color': course.color, '--card-bg': `${course.color}15` }}
-            whileHover={{ y: -10 }}
-            onClick={() => { setSelectedCourse(course); setCurrentView('pdf'); }}
+            className="cc-feature-card locked"
+            style={{ '--card-color': '#64748b', '--card-bg': 'rgba(100, 116, 139, 0.05)', cursor: 'not-allowed' }}
+            whileHover={{ y: 0 }}
           >
-            <div className="cc-card-inner" style={{ padding: '24px' }}>
-              <div className="cc-card-image" style={{ width: '100%', height: '180px', borderRadius: '16px', overflow: 'hidden', marginBottom: '20px', position: 'relative' }}>
-                <img src={course.image} alt={course.title} style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.4s' }} />
+            <div className="cc-card-inner" style={{ padding: '24px', opacity: 0.7 }}>
+              <div className="cc-card-image" style={{ width: '100%', height: '180px', borderRadius: '16px', overflow: 'hidden', marginBottom: '20px', position: 'relative', filter: 'grayscale(1)' }}>
+                <img src={course.image} alt={course.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 <div className="cc-card-stat-pill" style={{ position: 'absolute', top: '12px', right: '12px', background: 'rgba(0,0,0,0.6)', color: 'white', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.1)' }}>
-                  {course.level}
+                  <FaLock /> Locked
                 </div>
               </div>
               <h3 className="cc-card-title">{course.title}</h3>

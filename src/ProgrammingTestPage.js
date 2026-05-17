@@ -39,7 +39,7 @@ const ProgrammingTestPage = ({
         setError("");
 
         // Using the new endpoint specified by the user
-        const response = await fetch("https://api.codingboss.in/compiler/test-cases/", {
+        const response = await fetch("https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/test-cases/", {
           headers: {
             'Accept': 'application/json',
             'ngrok-skip-browser-warning': 'true'
@@ -59,7 +59,7 @@ const ProgrammingTestPage = ({
           questionsArray = data.data;
         } else {
           // Fallback to legacy structure if new one fails
-          const legacyData = await apiClient("compiler/questions/", "GET");
+          const legacyData = await apiClient("https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/questions/", "GET");
           questionsArray = Array.isArray(legacyData) ? legacyData : (legacyData.questions || []);
         }
 
@@ -89,7 +89,7 @@ const ProgrammingTestPage = ({
 
         // Fallback attempt
         try {
-          const fallbackData = await apiClient("compiler/questions/", "GET");
+          const fallbackData = await apiClient("https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/questions/", "GET");
           const array = Array.isArray(fallbackData) ? fallbackData : (fallbackData.questions || []);
           setQuestions(array);
           setFilteredQuestions(array.filter(q => (q.difficulty || q.level || "Low").toLowerCase() === "low"));

@@ -13,7 +13,7 @@ const CourseJava = ({ isLoggedIn, setIsLoggedIn, userRole, handleLogout, usernam
     const saved = localStorage.getItem(`java_progress_${username.toLowerCase()}`);
     return saved ? parseInt(saved, 10) : 0;
   });
-  
+
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -28,7 +28,7 @@ const CourseJava = ({ isLoggedIn, setIsLoggedIn, userRole, handleLogout, usernam
   useEffect(() => {
     const fetchTopics = async () => {
       try {
-        const data = await apiClient('compiler/content/', 'GET');
+        const data = await apiClient('https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/content/', 'GET');
         const filteredTopics = data.filter((topic) => topic.language === 1);
         const sortedTopics = filteredTopics.sort((a, b) => a.position - b.position);
         setTopics(sortedTopics);
@@ -64,14 +64,14 @@ const CourseJava = ({ isLoggedIn, setIsLoggedIn, userRole, handleLogout, usernam
 
   return (
     <>
-      <Navbar 
-        isLoggedIn={isLoggedIn} 
-        setIsLoggedIn={setIsLoggedIn} 
-        username={username} 
-        userRole={userRole} 
-        handleLogout={handleLogout} 
+      <Navbar
+        isLoggedIn={isLoggedIn}
+        setIsLoggedIn={setIsLoggedIn}
+        username={username}
+        userRole={userRole}
+        handleLogout={handleLogout}
       />
-      
+
       <div className="cc-root">
         <aside className="cc-sidebar">
           <div className="cc-sidebar-title">Curriculum</div>
@@ -82,8 +82,8 @@ const CourseJava = ({ isLoggedIn, setIsLoggedIn, userRole, handleLogout, usernam
               const isActive = index === currentIndex;
 
               return (
-                <li 
-                  key={index} 
+                <li
+                  key={index}
                   className={`cc-topic-item ${isActive ? 'active' : ''} ${isLocked ? 'locked' : ''}`}
                   onClick={() => handleTopicClick(index)}
                 >
@@ -108,8 +108,8 @@ const CourseJava = ({ isLoggedIn, setIsLoggedIn, userRole, handleLogout, usernam
                   <span className="d-block text-muted small mb-1">PRACTICAL CHALLENGE</span>
                   {topics[currentIndex].question}
                 </div>
-                <button 
-                  className="cc-btn-start" 
+                <button
+                  className="cc-btn-start"
                   onClick={() => handleStart(topics[currentIndex].position, currentIndex)}
                 >
                   <FaPlay size={12} className="me-2" /> Start Lab
@@ -119,16 +119,16 @@ const CourseJava = ({ isLoggedIn, setIsLoggedIn, userRole, handleLogout, usernam
           </div>
 
           <div className="cc-footer-nav">
-            <button 
-              className="cc-btn-nav" 
-              onClick={handlePrevious} 
+            <button
+              className="cc-btn-nav"
+              onClick={handlePrevious}
               disabled={currentIndex === 0}
             >
               <FaChevronLeft /> Previous
             </button>
-            <button 
-              className="cc-btn-nav" 
-              onClick={handleNext} 
+            <button
+              className="cc-btn-nav"
+              onClick={handleNext}
               disabled={currentIndex === topics.length - 1 || currentIndex >= unlockedIndex}
             >
               Next <FaChevronRight />

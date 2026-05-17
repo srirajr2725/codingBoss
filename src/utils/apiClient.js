@@ -8,13 +8,27 @@ const apiClient = async (
   customHeaders = {}
 ) => {
   // Clean endpoint
+  const isAbsolute = /^https?:\/\//i.test(endpoint);
   const cleanEndpoint = endpoint.replace(/^\/+/, "");
-  const url = `${BASE_URL.replace(/\/$/, "")}/${cleanEndpoint}`;
+  
+  let url;
+  if (isAbsolute) {
+    url = endpoint;
+  } else {
+    // If the endpoint is for the main authentication system (starts with 'quiz/'),
+    // we must strip the '/compiler/' suffix from the BASE_URL to hit the root '/quiz/' paths correctly.
+    if (cleanEndpoint.startsWith("quiz/")) {
+      const rootBase = BASE_URL.replace(/\/compiler\/?$/, "");
+      url = `${rootBase.replace(/\/$/, "")}/${cleanEndpoint}`;
+    } else {
+      url = `${BASE_URL.replace(/\/$/, "")}/${cleanEndpoint}`;
+    }
+  }
 
   // Automatically grab the token
-  const token = 
-    localStorage.getItem("token") || 
-    localStorage.getItem("user_token") || 
+  const token =
+    localStorage.getItem("token") ||
+    localStorage.getItem("user_token") ||
     localStorage.getItem("access_token");
 
   // Headers
@@ -25,9 +39,15 @@ const apiClient = async (
     ...customHeaders,
   };
 
-  // Attach token automatically
-  if (token && !endpoint.includes("login") && !endpoint.includes("create-user")) {
+  // Attach token automatically ONLY for internal API calls
+  // Allow token for GET requests to 'login' endpoints (used for profile fetch)
+  if (token && !isAbsolute && (method === "GET" || (!endpoint.includes("login") && !endpoint.includes("create-user")))) {
     headers.Authorization = `Bearer ${token}`;
+  }
+
+  // Handle ngrok skip browser warning for any ngrok URLs (relative and absolute)
+  if (url && url.includes("ngrok")) {
+    headers["ngrok-skip-browser-warning"] = "true";
   }
 
   const options = {

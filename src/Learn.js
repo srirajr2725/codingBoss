@@ -318,7 +318,7 @@ const Learn = ({ isLoggedIn, username: usernameProp = '', userRole = '', handleL
     const fetchCourses = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch('https://api.codingboss.in/compiler/course-details/', {
+        const response = await fetch('https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/course-details/', {
           headers: { 'ngrok-skip-browser-warning': 'true' }
         });
         const data = await response.json();
@@ -840,7 +840,7 @@ const Learn = ({ isLoggedIn, username: usernameProp = '', userRole = '', handleL
                                   const blockId = idx;
                                   setIsInlineCompiling(prev => ({ ...prev, [blockId]: true }));
                                   try {
-                                    const response = await fetch('https://api.codingboss.in/compiler/practice-run/', {
+                                    const response = await fetch('https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/practice-run/', {
                                       method: 'POST',
                                       headers: {
                                         'Content-Type': 'application/json',
@@ -967,7 +967,7 @@ const Learn = ({ isLoggedIn, username: usernameProp = '', userRole = '', handleL
                       setIsLabCompiling(true);
                       setLabOutput("Compiling and executing...");
                       try {
-                        const response = await fetch('https://api.codingboss.in/compiler/practice-run/', {
+                        const response = await fetch('https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/practice-run/', {
                           method: 'POST',
                           headers: {
                             'Content-Type': 'application/json',

@@ -118,7 +118,7 @@
 
 #### Check Test Completion
 ```bash
-GET /api/compiler/check-test-completed/?user_id=X&subtype=Java&type=Technical
+GET /api/https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/check-test-completed/?user_id=X&subtype=Java&type=Technical
 ```
 - [ ] Returns `is_completed: true` for completed tests
 - [ ] Returns `is_completed: false` for new tests
@@ -128,7 +128,7 @@ GET /api/compiler/check-test-completed/?user_id=X&subtype=Java&type=Technical
 
 #### Mark Test Completed
 ```bash
-POST /api/compiler/mark-test-completed/
+POST /api/https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/mark-test-completed/
 ```
 - [ ] Accepts user_id, subtype, type, score, total_questions
 - [ ] Creates record in database
@@ -139,7 +139,7 @@ POST /api/compiler/mark-test-completed/
 
 #### Evaluate MCQ
 ```bash
-POST /api/compiler/evaluate/
+POST /api/https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/evaluate/
 ```
 - [ ] Accepts answers object
 - [ ] Calculates correct answers
@@ -151,7 +151,7 @@ POST /api/compiler/evaluate/
 
 #### Submit Coding Test
 ```bash
-POST /api/compiler/questions/submit/
+POST /api/https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/questions/submit/
 ```
 - [ ] Accepts source code and testcase results
 - [ ] Calculates passed testcases

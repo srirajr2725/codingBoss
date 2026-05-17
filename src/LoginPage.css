@@ -21,9 +21,11 @@
   justify-content: center;
   align-items: center;
   padding: 60px;
-  background: #0f172a; /* Deep Navy Background */
+  background: #0f172a;
+  /* Deep Navy Background */
   overflow: hidden;
-  color: #ffffff; /* White text for contrast */
+  color: #ffffff;
+  /* White text for contrast */
 }
 
 .left-content h1 {
@@ -49,18 +51,21 @@
   height: 600px;
   z-index: 5;
   position: relative;
-  overflow: hidden; /* Crucial for clipping */
+  overflow: hidden;
+  /* Crucial for clipping */
 }
 
 /* AGGRESSIVE WATERMARK REMOVAL */
-.spline-wrappers > div,
+.spline-wrappers>div,
 .spline-wrappers canvas {
-  transform: scale(1.08); /* Slight zoom to push logo out */
+  transform: scale(1.08);
+  /* Slight zoom to push logo out */
   transform-origin: center;
-  clip-path: inset(0 0 40px 0); /* Clip the bottom area where logo lives */
+  clip-path: inset(0 0 40px 0);
+  /* Clip the bottom area where logo lives */
 }
 
-.spline-wrappers a, 
+.spline-wrappers a,
 .spline-wrappers [href*="spline.design"] {
   display: none !important;
   opacity: 0 !important;
@@ -73,15 +78,17 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  align-items: center; /* Center horizontally */
+  align-items: center;
+  /* Center horizontally */
   padding: 80px;
   background: #ffffff;
   border-left: 1px solid #f1f5f9;
 }
 
-.login-form > * {
+.login-form>* {
   width: 100%;
-  max-width: 450px; /* Limit width for focus */
+  max-width: 450px;
+  /* Limit width for focus */
 }
 
 .login-form h2 {
@@ -143,6 +150,23 @@ input:focus {
 }
 
 .password-toggle:hover {
+  color: #FFA003;
+}
+
+.forgot-password-link {
+  text-align: right;
+  margin-top: 12px;
+}
+
+.forgot-password-link a {
+  font-size: 0.85rem;
+  color: #64748b;
+  text-decoration: none;
+  font-weight: 700;
+  transition: all 0.3s;
+}
+
+.forgot-password-link a:hover {
   color: #FFA003;
 }
 
@@ -208,9 +232,145 @@ input:focus {
 
 /* --- RESPONSIVE --- */
 @media (max-width: 1024px) {
-  .login-container { flex-direction: column; }
-  .left-content { padding: 40px; }
-  .left-content h1 { font-size: 2.5rem; }
-  .spline-wrappers { height: 350px; }
-  .login-form { padding: 40px; }
+  .login-container {
+    flex-direction: column;
+  }
+
+  .left-content {
+    padding: 40px;
+  }
+
+  .left-content h1 {
+    font-size: 2.5rem;
+  }
+
+  .spline-wrappers {
+    height: 350px;
+  }
+
+  .login-form {
+    padding: 40px;
+  }
+}
+
+/* --- FORGOT PASSWORD MODAL --- */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(15, 23, 42, 0.8);
+  backdrop-filter: blur(10px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.modal-content.forgot-modal {
+  background: #ffffff;
+  padding: 40px;
+  border-radius: 24px;
+  width: 100%;
+  max-width: 450px;
+  position: relative;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.modal-header h2 {
+  font-size: 2rem;
+  margin-bottom: 8px;
+  color: #0f172a;
+}
+
+.modal-header p {
+  color: #64748b;
+  margin-bottom: 32px;
+  font-weight: 500;
+}
+
+.close-btn {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  background: #f1f5f9;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  color: #64748b;
+  transition: all 0.3s;
+}
+
+.close-btn:hover {
+  background: #ef4444;
+  color: white;
+}
+
+.back-btn-alt {
+  padding: 12px 20px;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  color: #64748b;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  transition: all 0.3s;
+}
+
+.back-btn-alt:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.success-view {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.success-icon {
+  font-size: 4rem;
+  color: #22c55e;
+  margin-bottom: 16px;
+}
+
+.animate-fade-in {
+  animation: modalFadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.animate-bounce {
+  animation: bounce 1s infinite;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+@media (max-width: 640px) {
+  .modal-content.forgot-modal {
+    padding: 30px 20px;
+  }
 }
