@@ -221,6 +221,9 @@
   background: #f8fafc;
   border-top: 1px solid var(--ide-border);
   height: 280px;
+  min-height: 150px;
+  resize: vertical;
+  overflow: auto;
   display: flex;
   flex-direction: column;
 }
@@ -266,7 +269,7 @@
 }
 
 .ide-input-panel {
-  width: 320px;
+  flex: 1;
   border-right: 1px solid var(--ide-border);
   display: flex;
   flex-direction: column;
@@ -290,7 +293,7 @@
   color: var(--ide-text-main);
   font-family: var(--ide-font-mono);
   font-size: 0.85rem;
-  resize: none;
+  resize: vertical;
   outline: none;
 }
 
@@ -307,7 +310,7 @@
 /* --- CONTROLS --- */
 .ide-controls {
   position: absolute;
-  bottom: 304px;
+  bottom: 24px;
   right: 24px;
   display: flex;
   gap: 12px;
@@ -390,11 +393,14 @@
 
 /* --- CAMERA PROCTORING --- */
 .camera-proctor-box {
-  position: fixed;
-  bottom: 32px;
-  left: 32px;
-  width: 180px;
-  z-index: 2500;
+  position: fixed !important;
+  top: 24px !important;
+  bottom: auto !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  width: 140px !important;
+  height: 105px !important;
+  z-index: 2500 !important;
   border-radius: 20px;
   overflow: hidden;
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18), 0 0 0 2px rgba(255, 160, 3, 0.25);

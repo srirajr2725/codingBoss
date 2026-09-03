@@ -146,28 +146,28 @@ Already had:
 
 ### Required Endpoints
 
-1. **GET /api/https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/check-test-completed/**
+1. **GET /api/https://untrumpeted-sallie-shallowly.ngrok-free.dev/compiler/check-test-completed/**
    - Check if user has completed a test
    - Prevents retaking
 
-2. **POST /api/https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/mark-test-completed/**
+2. **POST /api/https://untrumpeted-sallie-shallowly.ngrok-free.dev/compiler/mark-test-completed/**
    - Mark test as completed
    - Store score and completion time
 
-3. **POST /api/https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/evaluate/** (Enhanced)
+3. **POST /api/https://untrumpeted-sallie-shallowly.ngrok-free.dev/compiler/evaluate/** (Enhanced)
    - MCQ evaluation with detailed breakdown
    - Return: correct_answers, incorrect_answers, percentage
 
-4. **POST /api/https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/questions/submit/**
+4. **POST /api/https://untrumpeted-sallie-shallowly.ngrok-free.dev/compiler/questions/submit/**
    - Coding test submission
    - Store testcase results
    - Calculate per-testcase scores
 
-5. **GET /api/https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/questions/{id}/testcases/**
+5. **GET /api/https://untrumpeted-sallie-shallowly.ngrok-free.dev/compiler/questions/{id}/testcases/**
    - Get testcases for a coding question
    - Return testcase details and scores
 
-6. **POST /api/https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/questions/{id}/testcases/** (Admin)
+6. **POST /api/https://untrumpeted-sallie-shallowly.ngrok-free.dev/compiler/questions/{id}/testcases/** (Admin)
    - Create/update testcases
    - Set difficulty and point values
 

@@ -14,12 +14,12 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchAssignmentData = async () => {
       try {
-        const details = await apiClient('https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/assignments/1/details/', 'GET');
+        const details = await apiClient('https://untrumpeted-sallie-shallowly.ngrok-free.dev/compiler/assignments/1/details/', 'GET');
         if (details && details.questions) {
           setQuestions(details.questions);
         }
 
-        const metaList = await apiClient('https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/get-assignments/', 'GET');
+        const metaList = await apiClient('https://untrumpeted-sallie-shallowly.ngrok-free.dev/compiler/get-assignments/', 'GET');
         if (Array.isArray(metaList) && metaList.length > 0) {
           setAssignmentMeta(metaList[0]);
         }

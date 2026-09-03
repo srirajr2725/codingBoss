@@ -27,7 +27,7 @@ const ResultsPage = () => {
         const bytes = CryptoJS.AES.decrypt(encrypted, "thirancoding360mgai");
         const userId = bytes.toString(CryptoJS.enc.Utf8);
 
-        const data = await apiClient(`https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/mcq-marks/user/${userId}/`, "GET");
+        const data = await apiClient(`https://untrumpeted-sallie-shallowly.ngrok-free.dev/compiler/mcq-marks/user/${userId}/`, "GET");
         if (!Array.isArray(data) || data.length === 0) throw new Error("Assessment history not found");
 
         normalize(data[data.length - 1]);

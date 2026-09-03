@@ -1,6 +1,6 @@
 async function run() {
   try {
-    const res = await fetch('https://api.codingboss.in/compiler/mcq-marks/user/4823/', {
+    const res = await fetch('https://untrumpeted-sallie-shallowly.ngrok-free.dev/compiler/mcq-marks/user/4823/', {
       headers: { 'ngrok-skip-browser-warning': 'true' }
     });
     if (!res.ok) {

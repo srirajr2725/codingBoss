@@ -5,7 +5,8 @@ import {
   FaArrowRight, FaArrowLeft, FaDownload, FaGamepad, FaSearch,
   FaBook, FaBriefcase, FaRocket, FaStar, FaCode, FaCheckCircle,
   FaUserGraduate, FaTrophy, FaLaptopCode, FaChartLine, FaPlay,
-  FaQuoteLeft, FaWhatsapp, FaLock
+  FaQuoteLeft, FaWhatsapp, FaLock, FaProjectDiagram, FaJava,
+  FaPython, FaReact, FaJsSquare, FaLeaf, FaCube
 } from 'react-icons/fa';
 import './CourseCard.css';
 import slider1 from './images/slider1.png';
@@ -78,11 +79,11 @@ export default function CourseCard({ setSelectedTab }) {
   ];
 
   const courses = [
-    { id: 1, title: "C Programming Masterclass", icon: "📘", image: courseCImg, description: "Master the foundation of all modern programming languages. Learn pointers, memory management, and build robust CLI applications.", color: "#3b82f6", level: "Beginner to Pro", duration: "6 weeks", pdfUrl: "/Clang.pdf", topics: ["Variables & Data Types", "Pointers & Memory", "Structures & Unions", "File I/O", "Data Structures Basics"] },
-    { id: 2, title: "JavaScript ES6+ & Async", icon: "⚡", image: courseJsImg, description: "Deep dive into the language of the web. Master closures, async/await, DOM APIs, and advanced functional programming concepts.", color: "#f59e0b", level: "Intermediate", duration: "8 weeks", pdfUrl: "/javascript.pdf", topics: ["ES6+ Syntax", "Async/Await", "DOM Manipulation", "REST APIs", "Event Loop Mechanics"] },
-    { id: 3, title: "React.js Production Level", icon: "⚛️", image: courseReactImg, description: "Build scalable, high-performance web applications using modern React Hooks, Context API, Redux Toolkit, and Next.js foundations.", color: "#06b6d4", level: "Advanced", duration: "10 weeks", pdfUrl: "/dummy.pdf", topics: ["Components & JSX", "Custom Hooks", "React Router", "Redux Toolkit", "Performance Optimization"] },
-    { id: 4, title: "Python for Data & Web", icon: "🐍", image: coursePythonImg, description: "A comprehensive journey through Python. Automate tasks, build REST APIs with Django, and analyze data with Pandas.", color: "#10b981", level: "Beginner to Pro", duration: "8 weeks", pdfUrl: "/PythonCB.pdf", topics: ["Syntax & OOP", "File Handling", "Django Basics", "Data Libraries", "Web Scraping"] },
-    { id: 5, title: "Enterprise Java & Spring Boot", icon: "☕", image: courseJavaImg, description: "Become an enterprise-ready engineer. Learn Core Java OOP principles, Multithreading, and build microservices with Spring Boot.", color: "#ef4444", level: "Intermediate", duration: "10 weeks", pdfUrl: "/java.pdf", topics: ["OOP & Collections", "Exception Handling", "Multithreading", "Spring Boot", "JPA & Hibernate"] },
+    { id: 1, title: "C Programming Masterclass", icon: <FaCode />, image: courseCImg, description: "Master the foundation of all modern programming languages. Learn pointers, memory management, and build robust CLI applications.", color: "#3b82f6", level: "Beginner to Pro", duration: "6 weeks", pdfUrl: "/Clang.pdf", topics: ["Variables & Data Types", "Pointers & Memory", "Structures & Unions", "File I/O", "Data Structures Basics"] },
+    { id: 2, title: "JavaScript ES6+ & Async", icon: <FaJsSquare />, image: courseJsImg, description: "Deep dive into the language of the web. Master closures, async/await, DOM APIs, and advanced functional programming concepts.", color: "#f59e0b", level: "Intermediate", duration: "8 weeks", pdfUrl: "/javascript.pdf", topics: ["ES6+ Syntax", "Async/Await", "DOM Manipulation", "REST APIs", "Event Loop Mechanics"] },
+    { id: 3, title: "React.js Production Level", icon: <FaReact />, image: courseReactImg, description: "Build scalable, high-performance web applications using modern React Hooks, Context API, Redux Toolkit, and Next.js foundations.", color: "#06b6d4", level: "Advanced", duration: "10 weeks", pdfUrl: "/dummy.pdf", topics: ["Components & JSX", "Custom Hooks", "React Router", "Redux Toolkit", "Performance Optimization"] },
+    { id: 4, title: "Python for Data & Web", icon: <FaPython />, image: coursePythonImg, description: "A comprehensive journey through Python. Automate tasks, build REST APIs with Django, and analyze data with Pandas.", color: "#10b981", level: "Beginner to Pro", duration: "8 weeks", pdfUrl: "/PythonCB.pdf", topics: ["Syntax & OOP", "File Handling", "Django Basics", "Data Libraries", "Web Scraping"] },
+    { id: 5, title: "Enterprise Java & Spring Boot", icon: <FaJava />, image: courseJavaImg, description: "Become an enterprise-ready engineer. Learn Core Java OOP principles, Multithreading, and build microservices with Spring Boot.", color: "#ef4444", level: "Intermediate", duration: "10 weeks", pdfUrl: "/java.pdf", topics: ["OOP & Collections", "Exception Handling", "Multithreading", "Spring Boot", "JPA & Hibernate"] },
   ];
 
   const features = [
@@ -109,10 +110,10 @@ export default function CourseCard({ setSelectedTab }) {
   ];
 
   const techStack = [
-    { name: "Java", emoji: "☕", color: "#f59e0b" }, { name: "Python", emoji: "🐍", color: "#10b981" },
-    { name: "React", emoji: "⚛️", color: "#6366f1" }, { name: "C / C++", emoji: "📘", color: "#ef4444" },
-    { name: "JavaScript", emoji: "⚡", color: "#eab308" }, { name: "Spring Boot", emoji: "🌱", color: "#22c55e" },
-    { name: "Django", emoji: "🎸", color: "#0ea5e9" }, { name: "DSA", emoji: "🔗", color: "#8b5cf6" },
+    { name: "Java", icon: <FaJava />, color: "#f59e0b" }, { name: "Python", icon: <FaPython />, color: "#10b981" },
+    { name: "React", icon: <FaReact />, color: "#6366f1" }, { name: "C / C++", icon: <FaCode />, color: "#ef4444" },
+    { name: "JavaScript", icon: <FaJsSquare />, color: "#eab308" }, { name: "Spring Boot", icon: <FaLeaf />, color: "#22c55e" },
+    { name: "Django", icon: <FaCube />, color: "#0ea5e9" }, { name: "DSA", icon: <FaProjectDiagram />, color: "#8b5cf6" },
   ];
 
   useEffect(() => {
@@ -145,8 +146,8 @@ export default function CourseCard({ setSelectedTab }) {
           <b> premium internships</b>, <b> industry-certified courses</b>, and <b> production-grade projects</b>.
         </motion.p>
         <motion.div className="cc-hero-btns" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}>
-          <button className="cc-feature-btn locked-btn" style={{ background: '#64748b', cursor: 'not-allowed' }}>
-            <FaLock /> Courses Locked
+          <button className="cc-feature-btn" onClick={() => setCurrentView('courses')}>
+            Explore Courses <FaArrowRight style={{ marginLeft: '8px' }} />
           </button>
         </motion.div>
       </div>
@@ -160,13 +161,14 @@ export default function CourseCard({ setSelectedTab }) {
       <div className="cc-dual-pillars">
         {/* LEARNING PILLAR */}
         <motion.div 
-          className="cc-pillar-card learning-pillar locked"
-          whileHover={{ y: 0 }}
-          style={{ opacity: 0.8, cursor: 'not-allowed' }}
+          className="cc-pillar-card learning-pillar"
+          whileHover={{ y: -10 }}
+          onClick={() => { if (setSelectedTab) setSelectedTab('Courses'); else navigate('/courses'); }}
+          style={{ cursor: 'pointer' }}
         >
-          <div className="cc-pillar-badge" style={{ background: '#64748b' }}><FaLock /> LOCKED</div>
-          <div className="cc-pillar-icon-wrapper" style={{ background: 'rgba(100, 116, 139, 0.1)' }}>
-            <FaBook className="cc-pillar-icon" style={{ color: '#64748b' }} />
+          <div className="cc-pillar-badge">ACADEMY</div>
+          <div className="cc-pillar-icon-wrapper" style={{ background: 'rgba(99, 102, 241, 0.1)' }}>
+            <FaBook className="cc-pillar-icon" style={{ color: '#6366f1' }} />
           </div>
           <h3 className="cc-pillar-title">Certified <span>Courses</span></h3>
           <p className="cc-pillar-desc">
@@ -178,8 +180,8 @@ export default function CourseCard({ setSelectedTab }) {
             <li><FaCheckCircle /> Production-Grade Projects</li>
             <li><FaCheckCircle /> Industry Mentorship</li>
           </ul>
-          <button className="cc-pillar-btn learning-btn" style={{ background: '#64748b', borderColor: '#64748b' }}>
-            Academy Locked <FaLock style={{ marginLeft: '8px' }} />
+          <button className="cc-pillar-btn learning-btn">
+            Explore Academy <FaArrowRight style={{ marginLeft: '8px' }} />
           </button>
         </motion.div>
 
@@ -214,8 +216,8 @@ export default function CourseCard({ setSelectedTab }) {
       <div className="cc-ticker-wrapper">
         <div className="cc-ticker">
           {[...techStack, ...techStack].map((t, i) => (
-            <div key={i} className="cc-ticker-item" style={{ '--tc': t.color }}>
-              <span>{t.emoji}</span> {t.name}
+            <div key={i} className="cc-ticker-item" style={{ '--tc': t.color, display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontSize: '1.3rem', display: 'flex', color: t.color }}>{t.icon}</span> <span style={{ fontWeight: 700 }}>{t.name}</span>
             </div>
           ))}
         </div>
@@ -231,15 +233,16 @@ export default function CourseCard({ setSelectedTab }) {
         {courses.map(course => (
           <motion.div
             key={course.id}
-            className="cc-feature-card locked"
-            style={{ '--card-color': '#64748b', '--card-bg': 'rgba(100, 116, 139, 0.05)', cursor: 'not-allowed' }}
-            whileHover={{ y: 0 }}
+            className="cc-feature-card"
+            style={{ '--card-color': course.color, '--card-bg': `${course.color}1a`, cursor: 'pointer' }}
+            whileHover={{ y: -8 }}
+            onClick={() => { setSelectedCourse(course); setCurrentView('pdf'); }}
           >
-            <div className="cc-card-inner" style={{ padding: '24px', opacity: 0.7 }}>
-              <div className="cc-card-image" style={{ width: '100%', height: '180px', borderRadius: '16px', overflow: 'hidden', marginBottom: '20px', position: 'relative', filter: 'grayscale(1)' }}>
+            <div className="cc-card-inner" style={{ padding: '24px' }}>
+              <div className="cc-card-image" style={{ width: '100%', height: '180px', borderRadius: '16px', overflow: 'hidden', marginBottom: '20px', position: 'relative' }}>
                 <img src={course.image} alt={course.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 <div className="cc-card-stat-pill" style={{ position: 'absolute', top: '12px', right: '12px', background: 'rgba(0,0,0,0.6)', color: 'white', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.1)' }}>
-                  <FaLock /> Locked
+                  <FaPlay /> Preview
                 </div>
               </div>
               <h3 className="cc-card-title">{course.title}</h3>
@@ -330,8 +333,8 @@ export default function CourseCard({ setSelectedTab }) {
               </div>
               <h3 className="cc-tab-title">{courses[activeTab].title}</h3>
               <p className="cc-tab-desc">{courses[activeTab].description}</p>
-              <button className="cc-feature-btn locked-btn" style={{ background: '#64748b', cursor: 'not-allowed' }}>
-                <FaLock /> Course Preview Locked
+              <button className="cc-feature-btn" onClick={() => { setSelectedCourse(courses[activeTab]); setCurrentView('pdf'); }}>
+                Preview Course <FaPlay style={{ marginLeft: '8px' }} />
               </button>
             </div>
             <div className="cc-tab-right">
@@ -388,8 +391,8 @@ export default function CourseCard({ setSelectedTab }) {
           <p className="cc-cta-sub">Join 5,000+ students already on the path to top tech roles.</p>
 
           <div className="cc-cta-btns">
-            <button className="cc-cta-primary locked-btn" style={{ background: '#64748b', cursor: 'not-allowed' }}>
-              <FaLock /> Academy Access Locked
+            <button className="cc-cta-primary" onClick={() => setCurrentView('courses')}>
+              Join Academy <FaArrowRight style={{ marginLeft: '8px' }} />
             </button>
           </div>
 
@@ -416,15 +419,16 @@ export default function CourseCard({ setSelectedTab }) {
         {courses.map(course => (
           <motion.div
             key={course.id}
-            className="cc-feature-card locked"
-            style={{ '--card-color': '#64748b', '--card-bg': 'rgba(100, 116, 139, 0.05)', cursor: 'not-allowed' }}
-            whileHover={{ y: 0 }}
+            className="cc-feature-card"
+            style={{ '--card-color': course.color, '--card-bg': `${course.color}1a`, cursor: 'pointer' }}
+            whileHover={{ y: -8 }}
+            onClick={() => { setSelectedCourse(course); setCurrentView('pdf'); }}
           >
-            <div className="cc-card-inner" style={{ padding: '24px', opacity: 0.7 }}>
-              <div className="cc-card-image" style={{ width: '100%', height: '180px', borderRadius: '16px', overflow: 'hidden', marginBottom: '20px', position: 'relative', filter: 'grayscale(1)' }}>
+            <div className="cc-card-inner" style={{ padding: '24px' }}>
+              <div className="cc-card-image" style={{ width: '100%', height: '180px', borderRadius: '16px', overflow: 'hidden', marginBottom: '20px', position: 'relative' }}>
                 <img src={course.image} alt={course.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 <div className="cc-card-stat-pill" style={{ position: 'absolute', top: '12px', right: '12px', background: 'rgba(0,0,0,0.6)', color: 'white', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.1)' }}>
-                  <FaLock /> Locked
+                  <FaPlay /> Preview
                 </div>
               </div>
               <h3 className="cc-card-title">{course.title}</h3>

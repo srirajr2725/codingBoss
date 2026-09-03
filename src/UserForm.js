@@ -22,7 +22,8 @@ import {
   FaCheckCircle,
   FaChartLine,
   FaBullseye,
-  FaListUl
+  FaListUl,
+  FaSignOutAlt
 } from 'react-icons/fa';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -50,12 +51,12 @@ const StudentProfile = () => {
         const storedEmail = localStorage.getItem('username');
         if (!storedEmail) return;
 
-        const data = await apiClient(`https://unlanded-isela-unmunificently.ngrok-free.dev/quiz/users/profile/?email=${storedEmail}`, "GET");
+        const data = await apiClient(`https://untrumpeted-sallie-shallowly.ngrok-free.dev/quiz/users/profile/?email=${storedEmail}`, "GET");
         if (data) {
           setProfile(prev => ({
             ...prev,
-            name: data.name || data.email || prev.name,
-            registerNumber: data.username || prev.registerNumber,
+            name: data.username || data.name || prev.name,
+            registerNumber: data.user_token || prev.registerNumber,
             department: data.institute || prev.department,
             email: data.email || prev.email,
           }));
@@ -64,7 +65,7 @@ const StudentProfile = () => {
             fetchPerformance(data.user_id);
           }
 
-          if (data.username) localStorage.setItem('regNo', data.username);
+          if (data.user_token) localStorage.setItem('regNo', data.user_token);
           if (data.institute) localStorage.setItem('dept', data.institute);
         }
       } catch (error) {
@@ -90,7 +91,7 @@ const StudentProfile = () => {
 
   const fetchPerformance = async (userId) => {
     try {
-      const data = await apiClient(`https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/student-performance/${userId}/`, "GET");
+      const data = await apiClient(`https://untrumpeted-sallie-shallowly.ngrok-free.dev/compiler/student-performance/${userId}/`, "GET");
       setPerformance(data);
     } catch (error) {
       console.error("Failed to fetch performance:", error);
@@ -102,17 +103,37 @@ const StudentProfile = () => {
     setProfile(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleUpdate = () => {
-    localStorage.setItem('regNo', profile.registerNumber);
-    localStorage.setItem('dept', profile.department);
-    toast.success('🚀 Profile Updated Successfully!');
+  const handleUpdate = async () => {
+    try {
+      const storedEncryptedUserID = localStorage.getItem('userID');
+      let userid = null;
+      if (storedEncryptedUserID) {
+          const bytes = CryptoJS.AES.decrypt(storedEncryptedUserID, 'thirancoding360mgai');
+          userid = bytes.toString(CryptoJS.enc.Utf8);
+      }
+
+      await apiClient('https://untrumpeted-sallie-shallowly.ngrok-free.dev/compiler/users/update-profile/', 'POST', {
+        user_id: userid ? parseInt(userid) : null,
+        name: profile.name,
+        register_number: profile.registerNumber,
+        department: profile.department,
+        email: profile.email
+      });
+
+      localStorage.setItem('regNo', profile.registerNumber);
+      localStorage.setItem('dept', profile.department);
+      toast.success('🚀 Profile Updated Successfully!');
+    } catch (error) {
+      console.error("Profile update error:", error);
+      toast.error(error.message || 'Profile update failed.');
+    }
   };
 
   const handleRequestOTP = async () => {
     if (!profile.email) return;
     setLoading(true);
     try {
-      await apiClient("https://unlanded-isela-unmunificently.ngrok-free.dev/quiz/send-otp/", "POST", { email: profile.email });
+      await apiClient("https://untrumpeted-sallie-shallowly.ngrok-free.dev/quiz/send-otp/", "POST", { email: profile.email });
       toast.success("🔑 OTP sent to your email!");
       setResetStep(1);
     } catch (err) {
@@ -126,7 +147,7 @@ const StudentProfile = () => {
     if (!otp || !newPassword) return;
     setLoading(true);
     try {
-      await apiClient("https://unlanded-isela-unmunificently.ngrok-free.dev/quiz/reset-password/", "POST", {
+      await apiClient("https://untrumpeted-sallie-shallowly.ngrok-free.dev/quiz/reset-password/", "POST", {
         email: profile.email,
         otp: otp,
         new_password: newPassword
@@ -145,15 +166,21 @@ const StudentProfile = () => {
     }
   };
 
+  const handleLogout = () => {
+    localStorage.clear();
+    window.location.href = '/LoginPage';
+  };
+
   return (
-    <div className="uf-container uf-animate">
+    <div className={`uf-container uf-animate ${performance ? 'has-performance' : ''}`}>
       <ToastContainer />
-      <Paper className="profile-main-card">
+      <div className="uf-layout-grid">
+        <Paper className="profile-main-card">
         <div className="profile-header-minimal">
           <div className="profile-avatar-wrapper">
             <Avatar
               src={imagePreview}
-              sx={{ width: 140, height: 140, border: '6px solid #fff', boxShadow: '0 10px 30px rgba(0,0,0,0.1)' }}
+              sx={{ width: 110, height: 110, border: '5px solid #fff', boxShadow: '0 10px 30px rgba(0,0,0,0.1)' }}
             >
               {profile.name.charAt(0)}
             </Avatar>
@@ -173,6 +200,13 @@ const StudentProfile = () => {
         <div className="uf-content-body">
           <h3 className="uf-section-title-clean"><FaIdCard className="me-2" /> Academic Credentials</h3>
           <div className="uf-form-grid-modern">
+            <div className="uf-input-group">
+              <label>Full Name</label>
+              <div className="input-with-icon">
+                <FaUser />
+                <input type="text" name="name" value={profile.name} onChange={handleChange} />
+              </div>
+            </div>
             <div className="uf-input-group">
               <label>Register Number</label>
               <div className="input-with-icon">
@@ -223,11 +257,15 @@ const StudentProfile = () => {
           <Button fullWidth className="uf-save-btn-premium" onClick={handleUpdate} sx={{ mt: 4 }}>
             Save Profile Changes <FaCheckCircle style={{ marginLeft: 12 }} />
           </Button>
+
+          <Button fullWidth color="error" variant="outlined" onClick={handleLogout} sx={{ mt: 2, borderRadius: '12px', padding: '12px', fontWeight: 'bold', borderWidth: '2px', '&:hover': { borderWidth: '2px' } }}>
+            Logout <FaSignOutAlt style={{ marginLeft: 12 }} />
+          </Button>
         </div>
       </Paper>
 
       {performance && (
-        <Paper className="profile-main-card" style={{ marginTop: '30px', padding: '32px' }}>
+        <Paper className="profile-main-card performance-side-card">
           <h3 className="uf-section-title-clean"><FaChartLine className="me-2" /> Performance Analytics</h3>
           <div className="performance-overview-grid">
             <div className="perf-mini-card">
@@ -271,6 +309,7 @@ const StudentProfile = () => {
           </div>
         </Paper>
       )}
+      </div>
 
       <style>{`
         .performance-overview-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-top: 24px; }

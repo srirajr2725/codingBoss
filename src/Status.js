@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from "recharts";
-import { FaUnlock, FaHistory, FaChartLine, FaTrophy, FaLightbulb, FaCheckCircle, FaStar, FaCopy, FaBrain } from "react-icons/fa";
+import { FaUnlock, FaHistory, FaChartLine, FaTrophy, FaLightbulb, FaCheckCircle, FaStar, FaCopy, FaBrain, FaLaptopCode, FaFileAlt } from "react-icons/fa";
 import CryptoJS from "crypto-js";
 import apiClient from "./utils/apiClient";
 import "./Status.css";
@@ -148,9 +148,9 @@ const Status = ({ isLoggedIn, setAccess }) => {
         const userId = getUserId();
         if (!userId) return;
 
-        const historyUrl = `https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/mcq-marks/user/${userId}/`;
-        const summaryUrl = `https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/mcq-marks/user/${userId}/summary/`;
-        const programUrl = `https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/total-program-marks/?user_id=${userId}`;
+        const historyUrl = `https://untrumpeted-sallie-shallowly.ngrok-free.dev/compiler/mcq-marks/user/${userId}/`;
+        const summaryUrl = `https://untrumpeted-sallie-shallowly.ngrok-free.dev/compiler/mcq-marks/user/${userId}/summary/`;
+        const programUrl = `https://untrumpeted-sallie-shallowly.ngrok-free.dev/compiler/total-program-marks/?user_id=${userId}`;
 
         // Use a direct fetch for the ngrok summary endpoint to ensure
         // the ngrok browser-warning header is always sent and we get raw JSON.
@@ -231,7 +231,7 @@ const Status = ({ isLoggedIn, setAccess }) => {
           items.forEach(item => {
             const key = resolveCategoryKey(item.language || item.name || "");
             console.log(`  → raw lang: "${item.language || item.name}"  resolved key: "${key}"  display: "${buildDisplay(item)}"`);
-            
+
             // Accumulate total seconds spent across all categories
             totalSeconds += Number(item.total_time_taken_seconds || 0);
 
@@ -362,37 +362,53 @@ const Status = ({ isLoggedIn, setAccess }) => {
 
       <div className="st-header-card">
         <h2 className="st-welcome-h2">
-          Student <span>Analytics</span>{" "}
-          <span style={{ fontSize: "0.9rem", fontWeight: 500, color: "#64748b", letterSpacing: 0 }}>
-            &mdash; {userEmail}
-          </span>
+          Student <span className="highlight">Analytics</span>
+          <span className="email">{userEmail}</span>
         </h2>
       </div>
 
       <div className="st-tile-grid">
         <div className="st-tile">
-          <span className="st-tile-label"><FaHistory /> MCQ TESTS</span>
-          <div className="st-tile-value">{performanceData.totalAttempts}</div>
+          <div className="st-tile-icon"><FaHistory /></div>
+          <div>
+            <span className="st-tile-label">MCQ TESTS</span>
+            <div className="st-tile-value">{performanceData.totalAttempts}</div>
+          </div>
         </div>
         <div className="st-tile">
-          <span className="st-tile-label"><FaTrophy /> MCQ AVG SCORE</span>
-          <div className="st-tile-value" style={{ color: "#10b981" }}>{performanceData.averageScore}%</div>
+          <div className="st-tile-icon"><FaTrophy /></div>
+          <div>
+            <span className="st-tile-label">MCQ AVG SCORE</span>
+            <div className="st-tile-value" style={{ color: "#10b981" }}>{performanceData.averageScore}%</div>
+          </div>
         </div>
         <div className="st-tile">
-          <span className="st-tile-label"><FaBrain /> MCQ TIME SPENT</span>
-          <div className="st-tile-value" style={{ color: "#f59e0b" }}>{formatSeconds(mcqTotalTime)}</div>
+          <div className="st-tile-icon"><FaBrain /></div>
+          <div>
+            <span className="st-tile-label">MCQ TIME SPENT</span>
+            <div className="st-tile-value" style={{ color: "#f59e0b" }}>{formatSeconds(mcqTotalTime)}</div>
+          </div>
         </div>
         <div className="st-tile">
-          <span className="st-tile-label"><FaCheckCircle /> PROGRAMS DONE</span>
-          <div className="st-tile-value" style={{ color: "#6366f1" }}>{programStats.totalTests}</div>
+          <div className="st-tile-icon"><FaCheckCircle /></div>
+          <div>
+            <span className="st-tile-label">PROGRAMS DONE</span>
+            <div className="st-tile-value" style={{ color: "#6366f1" }}>{programStats.totalTests}</div>
+          </div>
         </div>
         <div className="st-tile">
-          <span className="st-tile-label"><FaChartLine /> PROG. AVG MARKS</span>
-          <div className="st-tile-value" style={{ color: "#8b5cf6" }}>{programStats.averageMarks}</div>
+          <div className="st-tile-icon"><FaChartLine /></div>
+          <div>
+            <span className="st-tile-label">PROG. AVG MARKS</span>
+            <div className="st-tile-value" style={{ color: "#8b5cf6" }}>{programStats.averageMarks}</div>
+          </div>
         </div>
         <div className="st-tile">
-          <span className="st-tile-label"><FaStar /> TOTAL MARKS</span>
-          <div className="st-tile-value" style={{ color: "#FFA003" }}>{programTotal}</div>
+          <div className="st-tile-icon"><FaStar /></div>
+          <div>
+            <span className="st-tile-label">TOTAL MARKS</span>
+            <div className="st-tile-value" style={{ color: "#ec4899" }}>{programTotal}</div>
+          </div>
         </div>
       </div>
 
@@ -400,27 +416,30 @@ const Status = ({ isLoggedIn, setAccess }) => {
         <div className="st-cat-tile quants">
           <span className="st-cat-label">QUANTS</span>
           <div className="st-cat-val">{catVal("Quants")}</div>
-          <div className="st-cat-time">⏱️ {formatSeconds(categoryStats["Quants"]?.timeTaken)}</div>
+          <div className="st-cat-time"><FaHistory /> {formatSeconds(categoryStats["Quants"]?.timeTaken)}</div>
         </div>
         <div className="st-cat-tile logical">
           <span className="st-cat-label">LOGICAL</span>
           <div className="st-cat-val">{catVal("Logical")}</div>
-          <div className="st-cat-time">⏱️ {formatSeconds(categoryStats["Logical"]?.timeTaken)}</div>
+          <div className="st-cat-time"><FaHistory /> {formatSeconds(categoryStats["Logical"]?.timeTaken)}</div>
         </div>
         <div className="st-cat-tile psychometric">
           <span className="st-cat-label">PSYCHOMETRIC</span>
           <div className="st-cat-val">{catVal("Psychometric")}</div>
-          <div className="st-cat-time">⏱️ {formatSeconds(categoryStats["Psychometric"]?.timeTaken)}</div>
+          <div className="st-cat-time"><FaHistory /> {formatSeconds(categoryStats["Psychometric"]?.timeTaken)}</div>
         </div>
         <div className="st-cat-tile verbal">
           <span className="st-cat-label">VERBAL</span>
           <div className="st-cat-val">{catVal("Verbal")}</div>
-          <div className="st-cat-time">⏱️ {formatSeconds(categoryStats["Verbal"]?.timeTaken)}</div>
+          <div className="st-cat-time"><FaHistory /> {formatSeconds(categoryStats["Verbal"]?.timeTaken)}</div>
         </div>
       </div>
 
       <div className="st-chart-card">
-        <h6 className="st-chart-title"><FaChartLine color="#FFA003" /> Performance Growth</h6>
+        <h6 className="st-chart-title">
+          <span className="st-chart-title-icon"><FaChartLine /></span>
+          Performance Growth
+        </h6>
         <div style={{ width: "100%", height: 300 }}>
           <ResponsiveContainer>
             <AreaChart data={dailyStats}>
@@ -465,7 +484,7 @@ const Status = ({ isLoggedIn, setAccess }) => {
         {/* LEFT — Programming */}
         <div className="st-history-col">
           <div className="st-col-header">
-            <h6 className="st-history-col-title">💻 Programming Tests</h6>
+            <h6 className="st-history-col-title"><FaLaptopCode className="st-title-icon" style={{ marginRight: '8px' }} /> Programming Tests</h6>
           </div>
           {programSummary ? (
             <div className="st-col-scroll">
@@ -492,7 +511,7 @@ const Status = ({ isLoggedIn, setAccess }) => {
         {/* RIGHT — MCQ & Aptitude */}
         <div className="st-history-col">
           <div className="st-col-header">
-            <h6 className="st-history-col-title">📝 Aptitude & MCQs</h6>
+            <h6 className="st-history-col-title"><FaFileAlt className="st-title-icon" style={{ marginRight: '8px' }} /> Aptitude & MCQs</h6>
           </div>
           <div className="st-col-scroll">
             {mcqResults.length > 0 ? (

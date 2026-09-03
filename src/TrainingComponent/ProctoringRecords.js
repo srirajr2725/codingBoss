@@ -3,7 +3,7 @@ import { FiRefreshCw, FiUser, FiAlertTriangle, FiCamera, FiX, FiClock, FiLayers 
 import './ProctoringRecords.css';
 import { normalizeFrameSource } from '../utils/frameSource';
 
-const API_URL = 'https://unlanded-isela-unmunificently.ngrok-free.dev/api/upload-frame/';
+const API_URL = 'https://untrumpeted-sallie-shallowly.ngrok-free.dev/api/upload-frame/';
 
 const AuthorizedImage = ({ src, alt, style, className }) => {
   const [blobUrl, setBlobUrl] = useState(null);

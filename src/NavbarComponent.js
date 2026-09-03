@@ -123,26 +123,7 @@ const NavbarComponent = ({ isLoggedIn, setIsLoggedIn, userRole, handleLogout, pr
                 <Navbar.Collapse id="basic-navbar-nav">
                     <Nav className="ml-auto acc-creation" style={{ marginLeft: 'auto' }}>
                         {isLoggedIn ? (
-                            <Nav className="user-profile-section" style={{ display: 'flex', alignItems: 'center', marginLeft: '20px' }}>
-                                <div style={{ marginRight: '15px' }}>
-                                    <b> {storedUsername}</b>
-                                </div>
-                                <Dropdown align="end">
-                                    <Dropdown.Toggle variant="unlink" className="profile-dropdown" style={{ display: 'flex', alignItems: 'center' }}>
-                                        <div className="progress-circle-outline" style={{ '--progress': `${displayProgress}` }}>
-                                            <span className="progress-text">{displayProgress}%</span>
-                                        </div>
-                                    </Dropdown.Toggle>
-                                    <Dropdown.Menu>
-                                        <Dropdown.Item onClick={handleProfileClick}>
-                                            <b>Dashboard</b>
-                                        </Dropdown.Item>
-                                        <Dropdown.Item as={Link} to="/" onClick={handleLogout}>
-                                            <b>Logout</b>
-                                        </Dropdown.Item>
-                                    </Dropdown.Menu>
-                                </Dropdown>
-                            </Nav>
+                            <></>
                         ) : (
                             <div className="d-flex justify-content-center align-items-center">
                                 <Link to="/LoginPage">

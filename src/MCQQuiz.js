@@ -33,8 +33,28 @@ function MCQQuiz({ questions, updateQuestionStatus, submitTest, initialTimeLeft,
   const [autoNextEnabled, setAutoNextEnabled] = useState(true);
   const [showHint, setShowHint] = useState(false);
 
+  const getTimersStorageKey = (qId) => {
+    const rawUser = localStorage.getItem('userID') || 'anonymous';
+    const subtype = localStorage.getItem('mcq_current_subtype') || 'default_subtype';
+    const category = localStorage.getItem('mcq_current_category') || 'default_category';
+    return `mcq_qtimer_${rawUser}_${subtype}_${category}_${qId}`;
+  };
+
+  const getQuestionTimeRemaining = (qId) => {
+    if (!qId) return initialLockTime || 75;
+    if (questionTimers[qId] !== undefined) {
+      return questionTimers[qId];
+    }
+    const storageKey = getTimersStorageKey(qId);
+    const saved = localStorage.getItem(storageKey);
+    if (saved !== null) {
+      return parseInt(saved);
+    }
+    return initialLockTime || 75;
+  };
+
   const isQuestionLocked = (qId) => {
-    return (questionTimers[qId] !== undefined ? questionTimers[qId] : (initialLockTime || 75)) <= 0;
+    return getQuestionTimeRemaining(qId) <= 0;
   };
 
   // Initialize
@@ -78,7 +98,7 @@ function MCQQuiz({ questions, updateQuestionStatus, submitTest, initialTimeLeft,
         const newTimers = { ...prev };
         questions.forEach((q) => {
           if (newTimers[q.id] === undefined) {
-            newTimers[q.id] = initialLockTime || 75;
+            newTimers[q.id] = getQuestionTimeRemaining(q.id);
           }
         });
         return newTimers;
@@ -101,12 +121,18 @@ function MCQQuiz({ questions, updateQuestionStatus, submitTest, initialTimeLeft,
 
       // 2. Lock time tracker
       setQuestionTimers((prev) => {
-        const val = prev[qId] !== undefined ? prev[qId] : (initialLockTime || 75);
+        const val = prev[qId] !== undefined ? prev[qId] : getQuestionTimeRemaining(qId);
         if (val <= 0) {
           clearInterval(interval);
-          return prev;
+          return {
+            ...prev,
+            [qId]: 0
+          };
         }
         const nextVal = val - 1;
+        const storageKey = getTimersStorageKey(qId);
+        localStorage.setItem(storageKey, nextVal.toString());
+
         if (nextVal <= 0) {
           clearInterval(interval);
           // Auto navigate to next question if possible
@@ -202,7 +228,15 @@ function MCQQuiz({ questions, updateQuestionStatus, submitTest, initialTimeLeft,
 
   const handleConfirmation = (isConfirmed) => {
     setShowConfirmationDialog(false);
-    if (isConfirmed && submitTest) submitTest(selectedAnswer);
+    if (isConfirmed && submitTest) {
+      if (questions && questions.length > 0) {
+        questions.forEach((q) => {
+          const storageKey = getTimersStorageKey(q.id);
+          localStorage.removeItem(storageKey);
+        });
+      }
+      submitTest(selectedAnswer);
+    }
   };
 
   const formatTime = (seconds) => {
@@ -271,7 +305,7 @@ function MCQQuiz({ questions, updateQuestionStatus, submitTest, initialTimeLeft,
                 {isQuestionLocked(questions[currentQuestionIndex]?.id) ? <FaLock className="me-2" /> : <Clock size={16} className="me-2" />}
                 {isQuestionLocked(questions[currentQuestionIndex]?.id)
                   ? "Question Locked"
-                  : `Locked: ${formatTime(questionTimers[questions[currentQuestionIndex]?.id] !== undefined ? questionTimers[questions[currentQuestionIndex]?.id] : (initialLockTime || 75))}`}
+                  : `Locked: ${formatTime(getQuestionTimeRemaining(questions[currentQuestionIndex]?.id))}`}
               </div>
 
               <button

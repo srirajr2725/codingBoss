@@ -1,6 +1,6 @@
 async function run() {
   try {
-    const url = 'https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/batch-performance-report/';
+    const url = 'https://untrumpeted-sallie-shallowly.ngrok-free.dev/compiler/batch-performance-report/';
     const res = await fetch(url, {
       headers: {
         'ngrok-skip-browser-warning': 'true'

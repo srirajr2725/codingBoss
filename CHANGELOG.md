@@ -198,28 +198,28 @@ Display Results Page
 
 ### Priority 1: CRITICAL
 ```
-1. GET /api/https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/check-test-completed/
+1. GET /api/https://untrumpeted-sallie-shallowly.ngrok-free.dev/compiler/check-test-completed/
    - Prevents test retaking
 
-2. POST /api/https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/mark-test-completed/
+2. POST /api/https://untrumpeted-sallie-shallowly.ngrok-free.dev/compiler/mark-test-completed/
    - Records completion for blocking
 ```
 
 ### Priority 2: IMPORTANT
 ```
-3. POST /api/https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/evaluate/ (Enhanced)
+3. POST /api/https://untrumpeted-sallie-shallowly.ngrok-free.dev/compiler/evaluate/ (Enhanced)
    - Return detailed score breakdown
 
-4. POST /api/https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/questions/submit/
+4. POST /api/https://untrumpeted-sallie-shallowly.ngrok-free.dev/compiler/questions/submit/
    - Coding test submission
 ```
 
 ### Priority 3: OPTIONAL
 ```
-5. GET /api/https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/questions/{id}/testcases/
+5. GET /api/https://untrumpeted-sallie-shallowly.ngrok-free.dev/compiler/questions/{id}/testcases/
    - Manage test cases
 
-6. POST /api/https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/questions/{id}/testcases/
+6. POST /api/https://untrumpeted-sallie-shallowly.ngrok-free.dev/compiler/questions/{id}/testcases/
    - Create/update test cases
 ```
 

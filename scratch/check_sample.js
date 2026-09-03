@@ -16,8 +16,8 @@ async function check(url) {
 }
 
 async function run() {
-  await check('https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/sample/?language=quantitative');
-  await check('https://api.codingboss.in/compiler/sample/?language=quantitative');
+  await check('https://untrumpeted-sallie-shallowly.ngrok-free.dev/compiler/sample/?language=quantitative');
+  await check('https://untrumpeted-sallie-shallowly.ngrok-free.dev/compiler/sample/?language=quantitative');
 }
 
 run();

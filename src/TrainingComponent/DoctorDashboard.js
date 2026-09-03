@@ -14,10 +14,10 @@ import './DoctorDashboard.css';
 /* ================= CONFIG ================= */
 
 const API_URL =
-  'https://unlanded-isela-unmunificently.ngrok-free.dev/api/upload-frame/';
+  'https://untrumpeted-sallie-shallowly.ngrok-free.dev/api/upload-frame/';
 
 const DETECTION_API =
-  'https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/';
+  'https://untrumpeted-sallie-shallowly.ngrok-free.dev/compiler/';
 
 const HEAD_SWITCH_LIMIT = 4;
 

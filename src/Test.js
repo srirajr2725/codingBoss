@@ -76,10 +76,10 @@ const Test = () => {
               </div>
             </div>
 
-            {/* PROGRAMMING TEST CARD - LOCKED */}
-            <div className="task-card locked" style={{ opacity: 0.8, cursor: 'not-allowed' }}>
-              <div className="task-badge" style={{ background: '#64748b' }}><FaLock /> LOCKED</div>
-              <div className="task-img-wrapper" style={{ filter: 'grayscale(1)' }}>
+            {/* PROGRAMMING TEST CARD */}
+            <div className="task-card">
+              <div className="task-badge">LIVE LAB</div>
+              <div className="task-img-wrapper">
                 <img
                   className="task-img"
                   src={progImg}
@@ -87,15 +87,15 @@ const Test = () => {
                 />
               </div>
               <div className="task-card-content">
-                <div className="task-icon-box" style={{ background: 'rgba(100, 116, 139, 0.1)' }}>
-                  <FaCode size={28} color="#64748b" />
+                <div className="task-icon-box" style={{ background: 'rgba(99, 102, 241, 0.1)' }}>
+                  <FaCode size={28} color="#6366f1" />
                 </div>
                 <h2>Code Practice Challenge</h2>
                 <p>
                   Bridge the gap between theory and practice. Solve real-world programming challenges and write production-grade code in our live environment.
                 </p>
-                <button className="task-btn task-btn-code" style={{ background: '#64748b', cursor: 'not-allowed' }}>
-                  Code Lab Locked <FaLock style={{ marginLeft: '8px' }} />
+                <button className="task-btn task-btn-code" onClick={handleLaunchCodeLab}>
+                  Launch Code Lab <FaRocket style={{ marginLeft: '8px' }} />
                 </button>
               </div>
             </div>

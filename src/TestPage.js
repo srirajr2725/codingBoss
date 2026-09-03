@@ -137,7 +137,7 @@ const TestPage = ({ isLoggedIn, setIsLoggedIn, userRole, handleLogout, username 
         // Fetch Completed Tests for robust locking
         const currentUserId = getDecryptedUserId();
         if (currentUserId) {
-          const marksData = await apiClient(`https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/mcq-marks/user/${currentUserId}/`, "GET");
+          const marksData = await apiClient(`https://untrumpeted-sallie-shallowly.ngrok-free.dev/compiler/mcq-marks/user/${currentUserId}/`, "GET");
           if (Array.isArray(marksData?.results)) {
             setCompletedTests(marksData.results);
           }
@@ -159,7 +159,7 @@ const TestPage = ({ isLoggedIn, setIsLoggedIn, userRole, handleLogout, username 
         setLoadingSubtypes(filterLanguage);
         try {
           const response = await apiClient(
-            `https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/sample/?language=${filterLanguage}`,
+            `https://untrumpeted-sallie-shallowly.ngrok-free.dev/compiler/sample/?language=${filterLanguage}`,
             'GET'
           );
 

@@ -17,9 +17,9 @@ async function checkUrl(url) {
 
 async function run() {
   console.log("Checking base domain login endpoint:");
-  await checkUrl('https://unlanded-isela-unmunificently.ngrok-free.dev/quiz/users/login/');
+  await checkUrl('https://untrumpeted-sallie-shallowly.ngrok-free.dev/quiz/users/login/');
   console.log("\nChecking incorrect compiler subpath login endpoint:");
-  await checkUrl('https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/quiz/users/login/');
+  await checkUrl('https://untrumpeted-sallie-shallowly.ngrok-free.dev/compiler/quiz/users/login/');
 }
 
 run();

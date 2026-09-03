@@ -79,7 +79,7 @@ const CONCEPT_LIBRARY = [
     keys: ['jvm', 'jdk', 'jre'],
     title: 'JDK, JRE, and JVM',
     text: 'JDK is used to develop Java programs, JRE is used to run Java programs, and JVM is the engine inside the JRE that executes Java bytecode.',
-    code: 'Java source code -> javac https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/ -> bytecode -> JVM -> output'
+    code: 'Java source code -> javac https://untrumpeted-sallie-shallowly.ngrok-free.dev/compiler/ -> bytecode -> JVM -> output'
   },
   {
     keys: ['syntax error', 'compile error', 'runtime error', 'debug', 'bug'],

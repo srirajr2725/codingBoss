@@ -34,14 +34,14 @@
     "code": "Start -> Input -> Decision -> Process -> Output -> Stop"
   },
   {
-    "title": "https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/",
+    "title": "https://untrumpeted-sallie-shallowly.ngrok-free.dev/compiler/",
     "keywords": [
-      "https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/",
+      "https://untrumpeted-sallie-shallowly.ngrok-free.dev/compiler/",
       "compile",
       "compilation"
     ],
-    "answer": "A https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/ converts source code into machine-level code or bytecode before execution. C uses a https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/ to create executable code. Java https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/ converts .java files into bytecode, then JVM runs that bytecode.",
-    "code": "source code -> https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/ -> executable/bytecode -> output"
+    "answer": "A https://untrumpeted-sallie-shallowly.ngrok-free.dev/compiler/ converts source code into machine-level code or bytecode before execution. C uses a https://untrumpeted-sallie-shallowly.ngrok-free.dev/compiler/ to create executable code. Java https://untrumpeted-sallie-shallowly.ngrok-free.dev/compiler/ converts .java files into bytecode, then JVM runs that bytecode.",
+    "code": "source code -> https://untrumpeted-sallie-shallowly.ngrok-free.dev/compiler/ -> executable/bytecode -> output"
   },
   {
     "title": "Interpreter",
@@ -558,7 +558,7 @@
       "c programming",
       "c language"
     ],
-    "answer": "C is a fast procedural programming language used in operating systems, embedded systems, https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/s, and low-level programming. Learning C helps you understand memory, pointers, arrays, and how programs work close to hardware.",
+    "answer": "C is a fast procedural programming language used in operating systems, embedded systems, https://untrumpeted-sallie-shallowly.ngrok-free.dev/compiler/s, and low-level programming. Learning C helps you understand memory, pointers, arrays, and how programs work close to hardware.",
     "code": "#include <stdio.h>\n\nint main() {\n    printf(\"Hello C\");\n    return 0;\n}"
   },
   {

@@ -1,0 +1,262 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+.notes-container {
+  padding: 10px 40px 60px 40px;
+  background: 
+    radial-gradient(circle at 15% 50%, rgba(99, 102, 241, 0.06), transparent 30%),
+    radial-gradient(circle at 85% 30%, rgba(168, 85, 247, 0.06), transparent 30%),
+    var(--ultra-bg, #f8fafc);
+  min-height: 100vh;
+  animation: ultraFadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  color: #1e293b;
+  position: relative;
+}
+
+.notes-header {
+  text-align: center;
+  margin-bottom: 70px;
+  position: relative;
+}
+
+.ultra-badge {
+  display: inline-block;
+  padding: 8px 20px;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(219, 39, 119, 0.1));
+  border: 1px solid rgba(168, 85, 247, 0.2);
+  color: #7c3aed;
+  font-weight: 700;
+  font-size: 0.85rem;
+  border-radius: 50px;
+  margin-bottom: 20px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  box-shadow: 0 4px 12px rgba(168, 85, 247, 0.08);
+  animation: ultraFadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.notes-header h1 {
+  font-size: 4rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #2563eb 0%, #7c3aed 50%, #db2777 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+  margin-bottom: 18px;
+  letter-spacing: -1.5px;
+  filter: drop-shadow(0px 4px 8px rgba(124, 58, 237, 0.15));
+}
+
+.notes-header p {
+  font-size: 1.25rem;
+  color: #64748b;
+  font-weight: 500;
+  max-width: 600px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+.notes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 36px;
+  position: relative;
+  z-index: 2;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.note-card {
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  border-radius: 28px;
+  padding: 32px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 
+    0 4px 6px -1px rgba(0, 0, 0, 0.02),
+    0 10px 15px -3px rgba(0, 0, 0, 0.02),
+    0 20px 25px -5px rgba(0, 0, 0, 0.02);
+  position: relative;
+  overflow: hidden;
+}
+
+.note-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  border-radius: 28px;
+  padding: 2px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(255,255,255,0.1));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+.note-card:hover {
+  transform: translateY(-10px) scale(1.02);
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 
+    0 25px 50px rgba(99, 102, 241, 0.08), 
+    0 0 0 1px rgba(99, 102, 241, 0.05);
+}
+
+.note-icon {
+  width: 76px;
+  height: 76px;
+  border-radius: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.2rem;
+  margin-right: 28px;
+  position: relative;
+  z-index: 2;
+  transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.note-card:hover .note-icon {
+  transform: scale(1.15) rotate(-8deg);
+}
+
+.note-info {
+  position: relative;
+  z-index: 2;
+  flex: 1;
+}
+
+.note-info h3 {
+  margin: 0 0 8px 0;
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: #0f172a;
+  transition: color 0.3s ease;
+  letter-spacing: -0.5px;
+}
+
+.note-info p {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #94a3b8;
+  transition: color 0.3s ease;
+}
+
+.note-card:hover .note-info h3 {
+  color: #6366f1;
+}
+.note-card:hover .note-info p {
+  color: #64748b;
+}
+
+.note-arrow {
+  position: absolute;
+  right: 32px;
+  top: 50%;
+  transform: translateY(-50%) translateX(-15px);
+  opacity: 0;
+  color: #6366f1;
+  font-size: 1.4rem;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.note-card:hover .note-arrow {
+  opacity: 1;
+  transform: translateY(-50%) translateX(0);
+}
+
+/* Viewer styles */
+.notes-viewer-container {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 80px);
+  padding: 30px 40px;
+  background: var(--ultra-bg, #f8fafc);
+  animation: ultraFadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+.notes-viewer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(20px);
+  padding: 16px 24px;
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.8);
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.03);
+}
+
+.notes-viewer-header h2 {
+  margin: 0;
+  color: #0f172a;
+  font-weight: 800;
+  font-size: 1.5rem;
+  letter-spacing: -0.5px;
+}
+
+.back-btn, .download-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 14px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  text-decoration: none;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+.back-btn {
+  background: #f1f5f9;
+  color: #334155;
+}
+
+.back-btn:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+  transform: translateX(-4px);
+}
+
+.download-btn, a.download-btn {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: #ffffff !important;
+  box-shadow: 0 8px 20px rgba(99, 102, 241, 0.25);
+}
+
+.download-btn:hover {
+  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  box-shadow: 0 12px 25px rgba(99, 102, 241, 0.35);
+  transform: translateY(-2px);
+}
+
+.notes-pdf-wrapper {
+  flex: 1;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.05);
+  background: #ffffff;
+  border: 1px solid rgba(226, 232, 240, 0.6);
+}
+
+@keyframes ultraFadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

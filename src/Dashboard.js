@@ -72,7 +72,7 @@ const Dashboard = ({
           return;
         }
 
-        const data = await apiClient(`https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/mcq-marks/user/${userId}/`, "GET");
+        const data = await apiClient(`https://untrumpeted-sallie-shallowly.ngrok-free.dev/compiler/mcq-marks/user/${userId}/`, "GET");
         if (!Array.isArray(data)) return;
 
         setMcqResults(data);

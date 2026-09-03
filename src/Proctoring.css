@@ -182,20 +182,6 @@
 }
 
 /* --- CAMERA BOX PREMIUM --- */
-.camera-proctor-box {
-  position: fixed;
-  bottom: 24px;
-  left: 24px;
-  width: 180px;
-  height: 135px;
-  border-radius: 20px;
-  overflow: hidden;
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
-  border: 3px solid white;
-  z-index: 1000;
-  background: #000;
-  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
 
 .camera-proctor-box.minimized {
   width: 140px;

@@ -9,7 +9,7 @@ async function testPayload(type, subtype) {
     timings: {}
   };
   try {
-    const res = await fetch('https://api.codingboss.in/compiler/evaluate/', {
+    const res = await fetch('https://untrumpeted-sallie-shallowly.ngrok-free.dev/compiler/evaluate/', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'

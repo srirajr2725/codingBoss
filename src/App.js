@@ -61,7 +61,7 @@ function AppWrapper() {
     { id: 2, name: "Programming", locked: false },
     { id: 3, name: "Task", locked: false },
     { id: 4, name: "Assignments", locked: true },
-    { id: 5, name: "Courses", locked: true },
+    { id: 5, name: "Courses", locked: false },
     { id: 6, name: "Company", locked: true },
   ]);
 

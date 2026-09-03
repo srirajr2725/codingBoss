@@ -30,6 +30,7 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
   const [output, setOutput] = useState('');
   const [stdin, setStdin] = useState('');
   const [isCompiling, setIsCompiling] = useState(false);
+  const [showInputHint, setShowInputHint] = useState(false);
 
   // Question States
   const { questionId, question } = location.state || {};
@@ -41,10 +42,6 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
   const [elapsedTime, setElapsedTime] = useState(0);
   const [startTime, setStartTime] = useState(null);
   const [tabSwitchCount, setTabSwitchCount] = useState(0);
-  const [cameraStream, setCameraStream] = useState(null);
-  const [isDetectionEnabled, setIsDetectionEnabled] = useState(true); // Default to true
-  const videoRef = useRef(null);
-  const canvasRef = useRef(null);
   const [showHint, setShowHint] = useState(false);
   const [showAlgorithm, setShowAlgorithm] = useState(false);
   const [showExample, setShowExample] = useState(false);
@@ -54,7 +51,6 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
   const [unlockedHelps, setUnlockedHelps] = useState({ hint: false, algorithm: false, sample: false });
   const [helpToUnlock, setHelpToUnlock] = useState(null); // 'hint' | 'algorithm' | 'sample'
   const [showInitialAgreementModal, setShowInitialAgreementModal] = useState(false);
-  const [isCameraMinimized, setIsCameraMinimized] = useState(false);
   const [testCases, setTestCases] = useState([]);
 
   const handleConfirmAction = () => {
@@ -91,7 +87,7 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
     const handleVisibilityChange = () => {
       console.log("Visibility Change detected. Hidden:", document.hidden, "Started:", isTestStartedRef.current);
       if (document.hidden && isTestStartedRef.current && !isTestSubmittedRef.current) {
-        triggerWarning("Tab switching is strictly prohibited!", "tab_switch", true);
+        // triggerWarning("Tab switching is strictly prohibited!", "tab_switch", true);
       }
     };
 
@@ -103,60 +99,14 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
     };
   }, []);
 
-  useEffect(() => {
-    if (videoRef.current && cameraStream) {
-      videoRef.current.srcObject = cameraStream;
-    }
-  }, [cameraStream, isTestStarted]);
-
-  // ── DETECTION STATUS SYNC ──
-  useEffect(() => {
-    let isMounted = true;
-    const checkDetection = async () => {
-      try {
-        const studentId = getDecryptedUserId();
-        if (!studentId) return;
-
-        const response = await fetch(`https://unlanded-isela-unmunificently.ngrok-free.dev/api/upload-frame/?student_id=${studentId}&user_id=${studentId}`, {
-          headers: { 'ngrok-skip-browser-warning': 'true' }
-        });
-        const data = await response.json();
-
-        if (isMounted) {
-          const sessions = data.sessions || [];
-          const mySession = sessions.find(s => (s.student_id || s.user_id) === studentId);
-          if (mySession && mySession.is_detection_enabled !== undefined) {
-            setIsDetectionEnabled(mySession.is_detection_enabled);
-          }
-        }
-      } catch (err) {
-        console.warn("Detection sync error:", err.message);
-      }
-    };
-
-    const timer = setInterval(checkDetection, 4000);
-    checkDetection();
-    return () => {
-      isMounted = false;
-      clearInterval(timer);
-    };
-  }, [isTestStarted]);
-
   const isTrackingRef = useRef(false);
   const lastWarningTimeRef = useRef(0);
   const isUploadingRef = useRef(false);
   const violationCountRef = useRef(0);
   const lastViolationRef = useRef(null);
   const terminatedRef = useRef(false);
-  const isHeadRotatedRef = useRef(false);
-  const isFocusLostRef = useRef(false);
-  const isDetectionEnabledRef = useRef(true);
   const isTestStartedRef = useRef(false);
   const isTestSubmittedRef = useRef(false);
-
-  useEffect(() => {
-    isDetectionEnabledRef.current = isDetectionEnabled;
-  }, [isDetectionEnabled]);
 
   useEffect(() => {
     isTestStartedRef.current = isTestStarted;
@@ -172,15 +122,8 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
   const uploadViolationFrame = async () => {
     try {
       let image = null;
-      if (videoRef.current && canvasRef.current && videoRef.current.readyState >= 2) {
-        const canvas = canvasRef.current;
-        canvas.width = 240;
-        canvas.height = 180;
-        canvas.getContext('2d').drawImage(videoRef.current, 0, 0, 240, 180);
-        image = canvas.toDataURL('image/jpeg', 0.1);
-      }
 
-      await fetch('https://unlanded-isela-unmunificently.ngrok-free.dev/api/upload-frame/', {
+      await fetch('https://untrumpeted-sallie-shallowly.ngrok-free.dev/api/upload-frame/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -210,7 +153,7 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
 
       try {
         // Fetch test-cases strictly from ngrok
-        fetch(`https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/test-cases/`, {
+        fetch(`https://untrumpeted-sallie-shallowly.ngrok-free.dev/compiler/test-cases/`, {
           headers: { 'ngrok-skip-browser-warning': 'true' }
         })
           .then(res => res.json())
@@ -245,7 +188,7 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
           }).catch((err) => { console.error("Test cases fetch failed:", err); });
 
         // Sync Primary API info
-        const primaryData = await apiClient(`https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/question/?question_id=${questionId}`, 'GET');
+        const primaryData = await apiClient(`https://untrumpeted-sallie-shallowly.ngrok-free.dev/compiler/question/?question_id=${questionId}`, 'GET');
         const base = Array.isArray(primaryData) ? primaryData[0] : primaryData;
         if (base) {
           setQuestionData(prev => ({
@@ -301,219 +244,6 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
     });
   };
 
-  useEffect(() => {
-    let timeoutId;
-
-    const startFaceTracking = async () => {
-      if (!isTestStartedRef.current || !videoRef.current || videoRef.current.readyState < 2 || videoRef.current.videoWidth === 0 || !window.faceapi || !window.faceapi.detectSingleFace || isTrackingRef.current || document.hidden || isTestSubmittedRef.current) {
-        timeoutId = setTimeout(startFaceTracking, 1000);
-        return;
-      }
-
-      isTrackingRef.current = true;
-      try {
-        const detections = await window.faceapi.detectSingleFace(
-          videoRef.current,
-          new window.faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.3 })
-        ).withFaceLandmarks();
-
-        if (!detections) {
-          if (!isFocusLostRef.current) {
-            isFocusLostRef.current = true;
-            triggerWarning("Face missing! Stay in front of camera.", "face_missing");
-          }
-        } else {
-          isFocusLostRef.current = false;
-
-          const landmarks = detections.landmarks;
-          const nose = landmarks.getNose()[3];
-          const leftEye = landmarks.getLeftEye()[0];
-          const rightEye = landmarks.getRightEye()[3];
-
-          const eyeCenterX = (leftEye.x + rightEye.x) / 2;
-          const diff = Math.abs(eyeCenterX - nose.x);
-
-          if (diff > 10) {
-            if (!isHeadRotatedRef.current) {
-              isHeadRotatedRef.current = true;
-              triggerWarning("Head rotation detected!", "head_switch");
-            }
-          } else {
-            isHeadRotatedRef.current = false;
-          }
-
-          if (rightEye.x - leftEye.x < 30) {
-            if (!isHeadRotatedRef.current) {
-              // triggerWarning("Please focus on the screen!", "focus_lost");
-            }
-          }
-        }
-      } catch (err) {
-        console.error("AI PROCTOR ERROR:", err);
-      } finally {
-        isTrackingRef.current = false;
-        timeoutId = setTimeout(startFaceTracking, 2000);
-      }
-    };
-
-    if (isTestStarted) {
-      if (!window.faceapi) {
-        const script = document.createElement("script");
-        script.src = "https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js";
-        script.crossOrigin = "anonymous";
-        script.async = true;
-        script.onload = async () => {
-          try {
-            if (!window.faceapi) {
-              console.warn("face-api.js loaded but global object missing");
-              return;
-            }
-            const MODEL_URL = "https://justadudewhohacks.github.io/face-api.js/models";
-            await Promise.all([
-              window.faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
-              window.faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL)
-            ]);
-            startFaceTracking();
-          } catch (err) { console.warn("AI Proctor models failed to load - proceeding without face tracking", err); }
-        };
-        script.onerror = () => console.warn("AI Proctor script failed to load");
-        document.body.appendChild(script);
-      } else {
-        startFaceTracking();
-      }
-    }
-    return () => clearTimeout(timeoutId);
-  }, [isTestStarted, isTestSubmitted]);
-
-  useEffect(() => {
-    let timeoutId;
-    const uploadFrame = async () => {
-      if (!isTestStarted || !cameraStream || !videoRef.current || isUploadingRef.current || isTestSubmitted) {
-        timeoutId = setTimeout(uploadFrame, 3000); return;
-      }
-      isUploadingRef.current = true;
-      try {
-        const video = videoRef.current;
-        if (!video || video.readyState < 2 || video.videoWidth === 0) {
-          isUploadingRef.current = false;
-          timeoutId = setTimeout(uploadFrame, 3000);
-          return;
-        }
-        const canvas = canvasRef.current;
-        canvas.width = 240; canvas.height = 180;
-        canvas.getContext('2d').drawImage(video, 0, 0, 240, 180);
-        await fetch('https://unlanded-isela-unmunificently.ngrok-free.dev/api/upload-frame/', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'ngrok-skip-browser-warning': 'true'
-          },
-          body: JSON.stringify({
-            student_id: Number(getDecryptedUserId() || 1),
-            image: canvas.toDataURL('image/jpeg', 0.1),
-            flagged: Boolean(lastViolationRef.current),
-            violation_type: lastViolationRef.current?.type || null,
-            violation_message: lastViolationRef.current?.message || null,
-            violation_count: violationCountRef.current,
-            terminated: false
-          })
-        });
-      } catch (err) { } finally { isUploadingRef.current = false; timeoutId = setTimeout(uploadFrame, 3000); }
-    };
-    if (isTestStarted && cameraStream) uploadFrame();
-    return () => clearTimeout(timeoutId);
-  }, [isTestStarted, cameraStream, isTestSubmitted]);
-
-  // 🔥 ENGINE: CAMERA STATUS MONITORING
-  useEffect(() => {
-    let intervalId;
-    const checkCameraStatus = () => {
-      if (!isTestStartedRef.current || isTestSubmittedRef.current || !cameraStream) return;
-
-      const videoTrack = cameraStream.getVideoTracks()[0];
-      const isTrackOff = !videoTrack || !videoTrack.enabled || videoTrack.readyState === 'ended';
-      const isVideoPaused = videoRef.current && (videoRef.current.paused || videoRef.current.ended);
-
-      if (isTrackOff || isVideoPaused) {
-        triggerWarning("Camera is disconnected or turned off! Re-enable it immediately.", "camera_off");
-      }
-    };
-
-    if (isTestStarted) {
-      intervalId = setInterval(checkCameraStatus, 3000);
-    }
-    return () => clearInterval(intervalId);
-  }, [isTestStarted, isTestSubmitted, cameraStream]);
-
-  // 🔥 ENGINE: POLLING FOR DOCTOR WARNINGS
-  useEffect(() => {
-    let intervalId;
-    const pollDoctorWarnings = async () => {
-      if (!isTestStarted || isTestSubmitted || terminatedRef.current) return;
-      try {
-        const res = await fetch('https://unlanded-isela-unmunificently.ngrok-free.dev/api/upload-frame/', {
-          method: 'GET',
-          headers: {
-            'Accept': 'application/json',
-            'ngrok-skip-browser-warning': 'true'
-          }
-        });
-        const data = await res.json();
-        const list = data.sessions ? data.sessions : Array.isArray(data) ? data : data.results || data.frames || data.data || [];
-        const studentId = String(getDecryptedUserId() || 1);
-        const myFrames = list.filter(r => String(r.student_id) === studentId);
-
-        let doctorDetects = 0;
-        let doctorUndetects = 0;
-        let isTerminated = false;
-
-        myFrames.forEach(f => {
-          if (f.violation_type === 'doctor_detect') doctorDetects++;
-          if (f.violation_type === 'doctor_undetect') doctorUndetects++;
-          if (f.terminated) isTerminated = true;
-        });
-
-        const effectiveDetects = Math.max(0, doctorDetects - doctorUndetects);
-
-        if (!window.lastDoctorDetectCountRef) window.lastDoctorDetectCountRef = { current: 0 };
-
-        if (effectiveDetects > window.lastDoctorDetectCountRef.current) {
-          const newDetects = effectiveDetects - window.lastDoctorDetectCountRef.current;
-          window.lastDoctorDetectCountRef.current = effectiveDetects;
-
-          for (let i = 0; i < newDetects; i++) {
-            setTimeout(() => {
-              triggerWarning("Doctor issued a warning! Please follow exam rules.", "doctor_detect", true);
-            }, i * 500); // spread out visually
-          }
-        } else if (effectiveDetects < window.lastDoctorDetectCountRef.current) {
-          // Doctor hit "UNDETECT"
-          const reducedBy = window.lastDoctorDetectCountRef.current - effectiveDetects;
-          window.lastDoctorDetectCountRef.current = effectiveDetects;
-
-          // Reduce the internal tabSwitchCount
-          setTabSwitchCount(prev => {
-            const next = Math.max(0, prev - reducedBy);
-            violationCountRef.current = next;
-            return next;
-          });
-          toast.info("A warning was cleared by the Doctor.", { position: "bottom-center" });
-        }
-
-        if (isTerminated && !terminatedRef.current) {
-          terminatedRef.current = true;
-          toast.error("🚫 Warning: Doctor issued a critical notice. Please follow exam rules.");
-        }
-      } catch (err) { }
-    };
-
-    if (isTestStarted) {
-      if (!window.lastDoctorDetectCountRef) window.lastDoctorDetectCountRef = { current: 0 };
-      intervalId = setInterval(pollDoctorWarnings, 5000);
-    }
-    return () => clearInterval(intervalId);
-  }, [isTestStarted, isTestSubmitted]);
-
   const formatTime = (seconds) => {
     const m = Math.floor(seconds / 60);
     const s = seconds % 60;
@@ -522,9 +252,6 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
 
   const startTest = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 320, height: 240 } });
-      setCameraStream(stream);
-
       // Attempt fullscreen but don't block if it fails
       try {
         if (document.documentElement.requestFullscreen) {
@@ -538,7 +265,6 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
       setStartTime(Date.now());
     } catch (err) {
       console.error("Test start failed:", err);
-      toast.error("❌ Camera access is required to start the session!");
     }
   };
 
@@ -546,13 +272,21 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
     if (!sourceCode.trim()) return toast.warning("Enter code first!");
     setIsCompiling(true);
     try {
-      const res = await apiClient("https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/compile/", "POST", {
+      const res = await apiClient("https://untrumpeted-sallie-shallowly.ngrok-free.dev/compiler/compile/", "POST", {
         source_code: sourceCode,
         code: sourceCode,
         language: selectedLanguage.charAt(0).toUpperCase() + selectedLanguage.slice(1).toLowerCase(),
         stdin: stdin
       });
-      setOutput(res.output || res.error || "No output captured.");
+      let finalOutput = res.output || res.error || "No output captured.";
+      
+      const mightNeedInput = /Scanner|cin|input\(|sys\.stdin|scanf|BufferedReader|readLine/i.test(sourceCode);
+      if (mightNeedInput && !stdin.trim()) {
+        setShowInputHint(true);
+      } else {
+        setShowInputHint(false);
+      }
+      setOutput(finalOutput);
     } catch (err) { setOutput("Execution error."); } finally { setIsCompiling(false); }
   };
 
@@ -579,7 +313,7 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
     console.log("Submitting Solution for ID:", questionId, "User:", currentUserId);
 
     try {
-      const response = await fetch('https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/run-test/', {
+      const response = await fetch('https://untrumpeted-sallie-shallowly.ngrok-free.dev/compiler/run-test/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -609,6 +343,16 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
     }
   };
 
+  const handleContextMenu = useCallback((e) => {
+    e.preventDefault();
+    toast.warning("Right-click is disabled during the test.");
+  }, []);
+
+  const handleCopyPaste = useCallback((e) => {
+    e.preventDefault();
+    toast.warning("Copy/Paste is disabled during the test.");
+  }, []);
+
   const monacoLang = selectedLanguage.toLowerCase() === 'cpp' ? 'cpp' : selectedLanguage.toLowerCase();
 
   if (!isTestStarted) return (
@@ -623,7 +367,7 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
   );
 
   return (
-    <div className="ide-root coding-scope">
+    <div className="ide-root coding-scope" onContextMenu={handleContextMenu} onCopy={handleCopyPaste} onPaste={handleCopyPaste} onCut={handleCopyPaste}>
       <ToastContainer position="top-center" autoClose={3000} />
       {showInitialAgreementModal && (
         <div className="ide-modal-overlay">
@@ -674,19 +418,6 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
           </div>
         </div>
       )}
-      <div className={`camera-proctor-box ${isCameraMinimized ? 'minimized' : ''}`}>
-        <video ref={videoRef} autoPlay playsInline muted className="camera-video" />
-        <canvas ref={canvasRef} style={{ display: 'none' }} />
-        <div className="camera-status" onClick={() => {
-          if (!isCameraMinimized) {
-            triggerWarning("Hiding the camera feed is strictly prohibited!", "ui_minimize");
-          }
-          setIsCameraMinimized(!isCameraMinimized);
-        }}>
-          <div className="pulse"></div>
-          {isCameraMinimized ? 'VIEW FEED' : 'LIVE PROCTOR (Minimize)'}
-        </div>
-      </div>
       <aside className="ide-sidebar">
         <div className="ide-sidebar-content">
           <div className={`ide-difficulty ${questionData?.difficulty?.toLowerCase() || 'medium'}`}>{questionData?.difficulty || 'Medium'}</div>
@@ -823,16 +554,20 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
           <div className="text-muted small"><FaClock /> {formatTime(elapsedTime)}</div>
         </header>
         <div className="ide-editor-container">
-          <MonacoEditor height="100%" theme="light" language={monacoLang} value={sourceCode} onChange={(val) => setSourceCode(val)} options={{ fontSize: 14, minimap: { enabled: false } }} />
-        </div>
-        <div className="ide-controls">
-          <button className="ide-btn ide-btn-run" onClick={handleCompile} disabled={isCompiling}>{isCompiling ? "Compiling..." : "Run Code"}</button>
-          <button className="ide-btn ide-btn-submit" onClick={submitSolution} disabled={isCompiling}>Submit Solution</button>
+          <MonacoEditor height="100%" theme="light" language={monacoLang} value={sourceCode} onChange={(val) => setSourceCode(val)} options={{ fontSize: 14, minimap: { enabled: false }, contextmenu: false }} />
+          <div className="ide-controls">
+            <button className="ide-btn ide-btn-run" onClick={handleCompile} disabled={isCompiling}>{isCompiling ? "Compiling..." : "Run Code"}</button>
+            <button className="ide-btn ide-btn-submit" onClick={submitSolution} disabled={isCompiling}>Submit Solution</button>
+          </div>
         </div>
         <div className="ide-console">
-          <div className="ide-console-header">
-            <span className="console-tab active"><FaTerminal /> Output</span>
-            <span className="console-tab"><FaRobot /> Input</span>
+          <div className="ide-console-header" style={{ padding: 0 }}>
+            <span className="console-tab" style={{ flex: 1, borderRight: '1px solid var(--ide-border)', justifyContent: 'center', cursor: 'default', color: 'var(--ide-text-main)' }}>
+              <FaRobot /> Input
+            </span>
+            <span className="console-tab" style={{ flex: 1, justifyContent: 'center', cursor: 'default', color: 'var(--ide-text-main)' }}>
+              <FaTerminal /> Output
+            </span>
           </div>
           <div className="ide-console-body">
             <div className="ide-input-panel">
@@ -845,7 +580,13 @@ const QuestionPage = ({ isLoggedIn, userRole, setIsLoggedIn, handleLogout, usern
               />
             </div>
             <div className="ide-console-output">
-              <pre>{output || 'Execution results...'}</pre>
+              <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', margin: 0 }}>{output || 'Execution results...'}</pre>
+              {showInputHint && (
+                <div style={{ marginTop: '16px', padding: '14px', background: 'rgba(245, 158, 11, 0.1)', borderLeft: '4px solid #f59e0b', borderRadius: '4px', color: '#b45309', fontSize: '0.88rem', lineHeight: '1.5' }}>
+                  <strong>💡 HINT:</strong> It looks like your program expects input.<br/>
+                  Please type your input in the <strong>STANDARD INPUT (STDIN)</strong> section on the left before running your code. Do not type here in the output section.
+                </div>
+              )}
             </div>
           </div>
         </div>

@@ -28,7 +28,7 @@ const CourseJava = ({ isLoggedIn, setIsLoggedIn, userRole, handleLogout, usernam
   useEffect(() => {
     const fetchTopics = async () => {
       try {
-        const data = await apiClient('https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/content/', 'GET');
+        const data = await apiClient('https://untrumpeted-sallie-shallowly.ngrok-free.dev/compiler/content/', 'GET');
         const filteredTopics = data.filter((topic) => topic.language === 1);
         const sortedTopics = filteredTopics.sort((a, b) => a.position - b.position);
         setTopics(sortedTopics);

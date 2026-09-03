@@ -267,12 +267,12 @@ cat BACKEND_API_REQUIREMENTS.md
 # See database models section in BACKEND_API_REQUIREMENTS.md
 
 # 3. Implement endpoints in order:
-1. GET /api/https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/check-test-completed/
-2. POST /api/https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/mark-test-completed/
-3. POST /api/https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/evaluate/ (enhance)
-4. POST /api/https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/questions/submit/
-5. GET /api/https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/questions/{id}/testcases/
-6. POST /api/https://unlanded-isela-unmunificently.ngrok-free.dev/compiler/questions/{id}/testcases/
+1. GET /api/https://untrumpeted-sallie-shallowly.ngrok-free.dev/compiler/check-test-completed/
+2. POST /api/https://untrumpeted-sallie-shallowly.ngrok-free.dev/compiler/mark-test-completed/
+3. POST /api/https://untrumpeted-sallie-shallowly.ngrok-free.dev/compiler/evaluate/ (enhance)
+4. POST /api/https://untrumpeted-sallie-shallowly.ngrok-free.dev/compiler/questions/submit/
+5. GET /api/https://untrumpeted-sallie-shallowly.ngrok-free.dev/compiler/questions/{id}/testcases/
+6. POST /api/https://untrumpeted-sallie-shallowly.ngrok-free.dev/compiler/questions/{id}/testcases/
 
 # 4. Test each endpoint
 # See TESTING_CHECKLIST.md for API test procedures

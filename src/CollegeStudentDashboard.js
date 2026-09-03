@@ -10,7 +10,13 @@ import {
   Business,
   Person,
   ChevronLeft,
-  Dashboard as DashboardIcon
+  Dashboard as DashboardIcon,
+  EmojiEvents,
+  ExpandMore,
+  ExpandLess,
+  Folder,
+  WorkspacePremium,
+  Psychology
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import Navbar from './NavbarComponent';
@@ -24,6 +30,24 @@ import apiClient from './utils/apiClient';
 import CompanyCards from './Company';
 import Preloader from './Preloader';
 import CourseCard from './CourseCard';
+import Notes from './Notes';
+import Roadmaps from './Roadmaps';
+import Videos from './Videos';
+import SqlPractice from './SqlPractice';
+import DebugChallenge from './DebugChallenge';
+import OutputPrediction from './OutputPrediction';
+import DailyChallenge from './DailyChallenge';
+import WeeklyContest from './WeeklyContest';
+import Hackathons from './Hackathons';
+import LiveLeaderboard from './LiveLeaderboard';
+import HRPrep from './HRPrep';
+import TechnicalPrep from './TechnicalPrep';
+import AIMockInterview from './AIMockInterview';
+import Projects from './Projects';
+import Certificates from './Certificates';
+import Badges from './Badges';
+import Streak from './Streak';
+import Rankings from './Rankings';
 import './StudentDashboard.css';
 
 import logo from './images/Codingboss-logo-1.png';
@@ -39,6 +63,14 @@ const labelToKey = (label) => {
   return customMap[label.toLowerCase()] || defaultKey;
 };
 
+const ComingSoon = ({ title }) => (
+  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '60vh', textAlign: 'center', color: 'var(--ultra-text-muted)' }}>
+    <Lock style={{ fontSize: '4rem', marginBottom: '16px', color: 'var(--ultra-primary)' }} />
+    <h2>{title}</h2>
+    <p>This module is currently under development. Stay tuned!</p>
+  </div>
+);
+
 const Dashboard = ({
   isLoggedIn,
   setIsLoggedIn,
@@ -50,23 +82,93 @@ const Dashboard = ({
   const isMobile = useMediaQuery('(max-width:1024px)'); // Sidebar collapses at 1024px
 
   const defaultAccess = [
-    { label: 'Start Learn', locked: false, key: 'startlearn', icon: <School /> },
     { label: 'Your Status', locked: false, key: 'yourstatus', icon: <Home /> },
-    { label: 'Task', locked: false, key: 'thirantask', icon: <Task /> },
-    { label: 'Courses', locked: true, key: 'thirancourses', icon: <DashboardIcon /> },
-    { label: 'Assignments', locked: true, key: 'thiranassignments', icon: <AssignmentIcon /> },
-    { label: 'Company', locked: true, key: 'thirancompany', icon: <Business /> },
-    { label: 'Profile', locked: false, key: 'profile', icon: <Person /> },
+    {
+      label: 'Learn', icon: <School />,
+      items: [
+        { label: 'Courses', locked: false },
+        { label: 'Notes', locked: false },
+        { label: 'Roadmaps', locked: false },
+        { label: 'Videos', locked: false }
+      ]
+    },
+    {
+      label: 'Practice', icon: <Task />,
+      items: [
+        { label: 'OneMark Hub & Code Practice', locked: false },
+        { label: 'SQL Practice', locked: false },
+        { label: 'Aptitude', locked: false },
+        { label: 'Debug Challenge', locked: false },
+        { label: 'Output Prediction', locked: false },
+        { label: 'Daily Challenge', locked: false }
+      ]
+    },
+    {
+      label: 'Contests', icon: <EmojiEvents />,
+      items: [
+        { label: 'Weekly Contest', locked: false },
+        { label: 'Hackathons', locked: false },
+        { label: 'Live Leaderboard', locked: false }
+      ]
+    },
+    {
+      label: 'Interview Prep', icon: <Business />,
+      items: [
+        { label: 'HR', locked: false },
+        { label: 'Technical', locked: false },
+        { label: 'Company-wise', locked: false },
+        { label: 'AI Mock Interview', locked: false }
+      ]
+    },
+    { label: 'Projects', icon: <Folder />, locked: false },
+    { label: 'Certificates', icon: <WorkspacePremium />, locked: false },
+    { label: 'AI Mentor', icon: <Psychology />, locked: false },
+    {
+      label: 'Profile', icon: <Person />,
+      items: [
+        { label: 'XP', locked: false },
+        { label: 'Badges', locked: false },
+        { label: 'Streak', locked: false },
+        { label: 'Certificates', locked: false },
+        { label: 'Rankings', locked: false }
+      ]
+    },
   ];
 
   const getInitialAccess = () => {
     return defaultAccess;
   };
 
-  const [selectedTab, setSelectedTab] = useState('Start Learn');
+  const [selectedTab, setSelectedTab] = useState('Your Status');
   const [access, setAccess] = useState(getInitialAccess);
-  const [progress, setProgress] = useState();
+  const [expandedCategories, setExpandedCategories] = useState({});
+  const [progress, setProgress] = useState(0);
   const [loading, setLoading] = useState(true);
+
+  const toggleCategory = (category) => {
+    setExpandedCategories(prev => ({
+      ...prev,
+      [category]: !prev[category]
+    }));
+  };
+
+  const fetchOverallProgress = async (userid) => {
+    try {
+      const [questionsRes, completedRes] = await Promise.all([
+        apiClient('compiler/questions/', 'GET'),
+        apiClient(`compiler/completed_questions/?user_id=${userid}`, 'GET')
+      ]);
+      const questions = Array.isArray(questionsRes) ? questionsRes : (questionsRes.results || []);
+      const completed = Array.isArray(completedRes) ? completedRes[0] : completedRes;
+      
+      if (questions.length > 0 && completed?.completed_questions) {
+        const prog = (completed.completed_questions.length / questions.length) * 100;
+        setProgress(Math.round(prog));
+      }
+    } catch (error) {
+      console.error("Failed to fetch overall progress:", error);
+    }
+  };
 
   const fetchAccess = useCallback(async (email) => {
     setAccess(defaultAccess);
@@ -77,8 +179,18 @@ const Dashboard = ({
     if (userRole === "company") { navigate('/TrainerDashboard'); return; }
 
     const email = localStorage.getItem("username");
+    
+    // Get user ID for progress fetching
+    const storedEncryptedUserID = localStorage.getItem('userID');
+    let userid = null;
+    if (storedEncryptedUserID) {
+        const bytes = CryptoJS.AES.decrypt(storedEncryptedUserID, 'thirancoding360mgai');
+        userid = bytes.toString(CryptoJS.enc.Utf8);
+    }
+
     if (isLoggedIn && email) {
       fetchAccess(email);
+      if (userid) fetchOverallProgress(userid);
     } else if (!isLoggedIn && email) {
       const encPwd = localStorage.getItem("password");
       if (encPwd) {
@@ -90,6 +202,7 @@ const Dashboard = ({
             if (authToken) localStorage.setItem("token", authToken);
             setIsLoggedIn(true);
             fetchAccess(email);
+            if (userid) fetchOverallProgress(userid);
           })
           .catch(() => navigate('/LoginPage'));
       } else navigate('/LoginPage');
@@ -98,14 +211,30 @@ const Dashboard = ({
 
   const renderContent = () => {
     switch (selectedTab) {
-      case 'Start Learn': return <CourseCard setSelectedTab={setSelectedTab} />;
       case 'Your Status': return <Status setAccess={setAccess} />;
-      case 'Task': return <Test />;
       case 'Courses': return <Learn isLoggedIn={isLoggedIn} username={username} userRole={userRole} handleLogout={handleLogout} />;
-      case 'Assignments': return <Assignment />;
-      case 'Company': return <CompanyCards progress={progress} setSelectedTab={setSelectedTab} />;
-      case 'Profile': return <UserForm setSelectedTab={setSelectedTab} />;
-      default: return null;
+      case 'Notes': return <Notes />;
+      case 'Roadmaps': return <Roadmaps />;
+      case 'Videos': return <Videos />;
+      case 'SQL Practice': return <SqlPractice />;
+      case 'Debug Challenge': return <DebugChallenge />;
+      case 'Output Prediction': return <OutputPrediction />;
+      case 'Daily Challenge': return <DailyChallenge />;
+      case 'Weekly Contest': return <WeeklyContest />;
+      case 'Hackathons': return <Hackathons />;
+      case 'Live Leaderboard': return <LiveLeaderboard />;
+      case 'HR': return <HRPrep />;
+      case 'Technical': return <TechnicalPrep />;
+      case 'AI Mock Interview': return <AIMockInterview />;
+      case 'Projects': return <Projects />;
+      case 'Certificates': return <Certificates />;
+      case 'OneMark Hub & Code Practice': return <Test />;
+      case 'Company-wise': return <CompanyCards progress={progress} setSelectedTab={setSelectedTab} />;
+      case 'XP': return <UserForm setSelectedTab={setSelectedTab} />;
+      case 'Badges': return <Badges />;
+      case 'Streak': return <Streak />;
+      case 'Rankings': return <Rankings />;
+      default: return <ComingSoon title={selectedTab} />;
     }
   };
 
@@ -122,29 +251,48 @@ const Dashboard = ({
           </h2>
         </div>
         <nav className="sd-nav-list">
-          {access.map(tab => (
-            <div
-              key={tab.label}
-              className={`sd-nav-item ${selectedTab === tab.label ? 'active' : ''} ${tab.locked ? 'locked' : ''}`}
-              onClick={() => !tab.locked && setSelectedTab(tab.label)}
-            >
-              <div className="sd-nav-icon">
-                {tab.locked ? <Lock style={{ fontSize: '1.1rem' }} /> : tab.icon}
+          {access.map(item => (
+            <div key={item.label} className="sd-nav-group">
+              <div
+                className={`sd-nav-item ${selectedTab === item.label && !item.items ? 'active' : ''} ${item.locked ? 'locked' : ''}`}
+                onClick={() => {
+                  if (item.locked) return;
+                  if (item.items) {
+                    toggleCategory(item.label);
+                  } else {
+                    setSelectedTab(item.label);
+                  }
+                }}
+              >
+                <div className="sd-nav-icon">
+                  {item.locked ? <Lock style={{ fontSize: '1.1rem' }} /> : item.icon}
+                </div>
+                <span className="sd-nav-text" style={{ flexGrow: 1, display: 'flex', alignItems: 'center' }}>{item.label}</span>
+                {item.items && (
+                  <div className="sd-nav-expand-icon" style={{ display: 'flex', alignItems: 'center' }}>
+                    {expandedCategories[item.label] ? <ExpandLess /> : <ExpandMore />}
+                  </div>
+                )}
               </div>
-              <span className="sd-nav-text">{tab.label}</span>
+              {item.items && (
+                <div className={`sd-nav-subitems ${expandedCategories[item.label] ? 'open' : ''}`}>
+                  {item.items.map(subItem => (
+                    <div
+                      key={subItem.label}
+                      className={`sd-nav-subitem ${selectedTab === subItem.label ? 'active' : ''} ${subItem.locked ? 'locked' : ''}`}
+                      onClick={() => !subItem.locked && setSelectedTab(subItem.label)}
+                    >
+                      <span className="sd-nav-text">{subItem.label}</span>
+                      {subItem.locked && <Lock style={{ fontSize: '0.9rem', marginLeft: 'auto' }} />}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           ))}
         </nav>
 
-        <div className="sd-progress-box">
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--ultra-text-muted)', marginBottom: '10px', fontWeight: 700 }}>
-            <span>OVERALL PROGRESS</span>
-            <span style={{ color: 'var(--ultra-text-main)' }}>{progress || 0}%</span>
-          </div>
-          <div className="sd-progress-bar">
-            <div className="sd-progress-fill" style={{ width: `${progress || 0}%` }}></div>
-          </div>
-        </div>
+
       </aside>
 
       {/* ULTRA MAIN WRAPPER */}

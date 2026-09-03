@@ -19,7 +19,7 @@ const ForgotPasswordModal = ({ isOpen, onClose }) => {
     setLoading(true);
 
     try {
-      await apiClient("https://unlanded-isela-unmunificently.ngrok-free.dev/quiz/send-otp/", "POST", { email });
+      await apiClient("https://untrumpeted-sallie-shallowly.ngrok-free.dev/quiz/send-otp/", "POST", { email });
       setStep(2);
     } catch (err) {
       setError(err.message || "Failed to send OTP. Please check your email.");
@@ -35,7 +35,7 @@ const ForgotPasswordModal = ({ isOpen, onClose }) => {
     setLoading(true);
 
     try {
-      await apiClient("https://unlanded-isela-unmunificently.ngrok-free.dev/quiz/reset-password/", "POST", {
+      await apiClient("https://untrumpeted-sallie-shallowly.ngrok-free.dev/quiz/reset-password/", "POST", {
         email,
         otp,
         new_password: newPassword
@@ -65,7 +65,7 @@ const ForgotPasswordModal = ({ isOpen, onClose }) => {
     <div className="modal-overlay">
       <div className="modal-content forgot-modal animate-fade-in">
         <button className="close-btn" onClick={() => { onClose(); resetModal(); }}><FaTimes /></button>
-        
+
         {success ? (
           <div className="success-view text-center">
             <FaCheckCircle className="success-icon animate-bounce" />
@@ -118,9 +118,9 @@ const ForgotPasswordModal = ({ isOpen, onClose }) => {
                     <button type="button" className="back-btn-alt" onClick={() => setStep(1)}>
                       <FaArrowLeft className="me-2" /> Back
                     </button>
-                    <button 
-                      type="button" 
-                      className="login-btn" 
+                    <button
+                      type="button"
+                      className="login-btn"
                       style={{ marginTop: 0 }}
                       onClick={() => otp.length === 6 ? setStep(3) : setError("Please enter 6 digits.")}
                     >
